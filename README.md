@@ -1,8 +1,14 @@
 <div align="center">
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.jpg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo-light.jpg">
+  <img alt="Pico" src="docs/assets/logo-light.jpg" width="200">
+</picture>
+
 # Pico
 
-**A fast AI chat platform for Urdu, Hindi, and Roman Urdu speakers, with a live code-preview workspace and task agents.**
+**An all-in-one AI workspace for Urdu, Hindi, and Roman Urdu speakers, combining multi-model chat, task agents, and a live code-preview environment.**
 
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22.5-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
@@ -20,7 +26,7 @@
 
 ## Overview
 
-Pico is a ChatGPT-style assistant with three parts:
+Pico is an all-in-one AI workspace with three core components:
 
 - **Chat:** multi-model conversations with streaming, markdown, math, and attachments.
 - **Agents and tools:** task-focused assistants (study, career, business, creative, and more) with browser-side utilities such as PDF, QR, image, and formatting tools.
