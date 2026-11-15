@@ -15,13 +15,22 @@ export const _defaultSystemMessage =
   import.meta.env.VITE_DEFAULT_SYSTEM_MESSAGE ??
   '';
 
-export const modelOptions: ModelOptions[] = ['openai/gpt-oss-20b', 'openai/gpt-oss-120b'];
+export const modelOptions: ModelOptions[] = ['auto', 'quick', 'smart', 'deep'];
 
-export const defaultModel: ModelOptions = 'openai/gpt-oss-20b';
+export const modelLabels: Record<ModelOptions, string> = {
+  auto: 'Magic',
+  quick: 'Quick',
+  smart: 'Smart',
+  deep: 'Deep',
+};
+
+export const defaultModel: ModelOptions = 'auto';
 
 export const modelMaxToken = {
-  'openai/gpt-oss-20b': 131072,
-  'openai/gpt-oss-120b': 131072,
+  auto: 131072,
+  quick: 131072,
+  smart: 131072,
+  deep: 131072,
   'gpt-3.5-turbo': 4096,
   'gpt-3.5-turbo-0301': 4096,
   'gpt-3.5-turbo-0613': 4096,
@@ -44,13 +53,21 @@ export const modelMaxToken = {
 };
 
 export const modelCost = {
-  'openai/gpt-oss-20b': {
-    prompt: { price: 0.00003, unit: 1000 },
-    completion: { price: 0.00014, unit: 1000 },
+  auto: {
+    prompt: { price: 0.00005, unit: 1000 },
+    completion: { price: 0.00008, unit: 1000 },
   },
-  'openai/gpt-oss-120b': {
-    prompt: { price: 0.00004, unit: 1000 },
-    completion: { price: 0.00019, unit: 1000 },
+  quick: {
+    prompt: { price: 0.00005, unit: 1000 },
+    completion: { price: 0.00008, unit: 1000 },
+  },
+  smart: {
+    prompt: { price: 0.00015, unit: 1000 },
+    completion: { price: 0.0006, unit: 1000 },
+  },
+  deep: {
+    prompt: { price: 0.0001, unit: 1000 },
+    completion: { price: 0.0005, unit: 1000 },
   },
   'gpt-3.5-turbo': {
     prompt: { price: 0.0015, unit: 1000 },

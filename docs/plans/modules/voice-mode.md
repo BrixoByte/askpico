@@ -1,6 +1,14 @@
 # Voice Mode
 
-**Status:** Planning. Build in the order below, from easiest to hardest.
+**Status:** Steps 2, 4, and 6 implemented (see "Implementation status" below). Step 5 (quota/referral) and Step 7 (Whisper) remain planned.
+
+## Implementation status
+
+- **Step 2 (continuous listening):** `apps/web/src/voice/stt.ts` — `SpeechInput` wraps Web SpeechRecognition (`continuous`, `interimResults`, auto-restart on `end`, 3s silence timeout per utterance, mapped errors with bounded auto-retry). Android WebView uses the native `SpeechRecognizer` bridge (`PicoBridge.startVoiceInput`/`stopVoiceInput` → `window.PicoVoice` events) implemented in `MainActivity.kt`. Utterances merge over a 600ms window before submit.
+- **Step 4 (TTS chain):** `services/api/src/tts.js` + `POST /api/tts` and `GET /api/tts/status`. Provider order via `TTS_PROVIDERS` (default `edge,laptop`): Edge TTS (`msedge-tts`, gated by `EDGE_TTS_ENABLED=true`, voice via `TTS_VOICE`) → laptop service (`TTS_SERVICE_URL`) → 503 → client `speechSynthesis`. Client `apps/web/src/voice/tts.ts` (`Speaker`) plays server audio through a Web Audio filter chain (high-pass 90Hz, presence EQ, warmth shelf, gain) with plain `<audio>` fallback.
+- **Step 6 (voice-to-voice):** `apps/web/src/voice/session.ts` (`VoiceSession`, driven by `VoiceController.tsx`) subscribes to the chat store, chunks streamed replies via `sentenceChunker.ts`, and queues sentences to `Speaker`. Barge-in: speech onset or any utterance during playback/generation stops audio and cancels generation (`setGenerating(false)`), then submits the utterance as the next turn; "stop"-class phrases only interrupt. Composer mic toggle + `VoiceStatus` strip in `ChatContent`. Spoken turns send `requestType: 'voice'` through `useSubmit` → `/api/chat` for routing.
+- **Env flags:** `EDGE_TTS_ENABLED=true` enables the Edge provider; `TTS_SERVICE_URL` enables the laptop provider; `TTS_VOICE` picks the voice; `TTS_PROVIDERS` overrides order. With none set, `/api/tts` returns 503 and the browser `speechSynthesis` fallback speaks — voice still works.
+
 **Owner:** Pico product team
 **Source:** Consolidated from the feature catalogue and the roadmap.
 **Out of scope:** Voice model training (Voice Roadmap Phase 2, fine-tuning an open-source TTS on recorded audio). It is described in the [feature catalogue](../product/feature-catalog.md), section 4.

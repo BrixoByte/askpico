@@ -289,6 +289,28 @@ const withTimeout = <T>(promise: Promise<T>, ms: number, onTimeout: () => void) 
 
 const logStep = (step: string, detail: unknown = '') => console.log(`[preview] ${step}`, detail);
 
+// Truncated generation is the most common preview failure: an unclosed fence
+// is captured as a complete file, then esbuild reports "Unexpected end of
+// file" deep inside wasm internals. Check each source first so the user gets
+// the file name and a clear remedy.
+const findSyntaxError = async (
+  esbuild: typeof Esbuild,
+  files: Map<string, string>
+): Promise<{ path: string; detail: string } | null> => {
+  for (const [path, content] of files) {
+    if (!/\.(jsx|tsx|js|ts)$/.test(path)) continue;
+    try {
+      await esbuild.transform(content, { loader: loaderFor(path), jsx: 'automatic' });
+    } catch (err) {
+      const raw = err instanceof Error ? err.message : String(err);
+      const detail =
+        /ERROR:\s*([^\n]+)/.exec(raw)?.[1] ?? raw.split('\n')[0];
+      return { path, detail };
+    }
+  }
+  return null;
+};
+
 const auditSourceFiles = (files: Map<string, string>) => {
   files.forEach((content, path) => {
     if (!/\.(jsx|tsx|js|ts)$/.test(path)) return;
@@ -357,6 +379,14 @@ export const bundleReactArtifact = async (
     step = 'Step 2: esbuild initialization and build';
     const controller = new AbortController();
     const esbuild = await withTimeout(ensureInitialized(), PREVIEW_TIMEOUT_MS, () => controller.abort());
+    const syntaxError = await findSyntaxError(esbuild, files);
+    if (syntaxError) {
+      throw new Error(
+        `"${syntaxError.path}" is incomplete or has a syntax error and cannot be previewed.\n` +
+          `The generated code was likely cut off mid-file (${syntaxError.detail}).\n` +
+          `Regenerate the artifact or ask Pico to finish writing ${syntaxError.path}, then refresh the preview.`
+      );
+    }
     logStep(step, 'esbuild-wasm initialized, invoking esbuild.build');
     const result = await withTimeout(
       esbuild.build({

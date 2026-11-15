@@ -84,7 +84,7 @@ apps/web/src/
     auth-slice.ts              # existing: API key and endpoint (keep)
     user-slice.ts              # new: user, plan, days active, referral code
   components/Auth/
-    AuthModal.tsx              # sign up and log in tabs
+    AuthModal.tsx              # sign up and log in tabs, served under auth.askpico.app via hostname routing
     GoogleButton.tsx           # Google sign-in button
     EmailLinkForm.tsx          # email input and "check your inbox" state
     GuestBanner.tsx            # "Save your chats: sign up" banner

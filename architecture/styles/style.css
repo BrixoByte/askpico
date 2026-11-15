@@ -1,0 +1,21 @@
+/* Pico Viewer - Style Studio UI: palette swatches, legend card, dashed async-edge flow.
+   Imported by styles.css. Plain CSS, no build step. */
+.style-menu { min-width: 230px; }
+.pal-sw { display: inline-flex; gap: 2px; margin-right: 4px; }
+.pal-sw i { width: 8px; height: 14px; border-radius: 2px; display: inline-block; }
+.legend {
+  position: absolute; left: 16px; top: 64px; z-index: 14; min-width: 150px; max-width: 220px;
+  padding: 10px 12px; border-radius: var(--radius-md); background: var(--surface);
+  border: 1px solid var(--border); box-shadow: var(--shadow-2);
+  backdrop-filter: blur(var(--blur)); -webkit-backdrop-filter: blur(var(--blur));
+  font-size: 11.5px; color: var(--text);
+}
+.legend[hidden] { display: none; }
+.lg-title { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin-bottom: 6px; }
+.lg-row { display: flex; align-items: center; gap: 8px; padding: 2px 0; color: var(--muted); }
+.lg-sw { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+.lg-dash { width: 18px; height: 0; border-top: 2px dashed var(--accent); flex-shrink: 0; }
+.diagram path[stroke-dasharray] { animation: dashFlow 1s linear infinite; }
+@keyframes dashFlow { to { stroke-dashoffset: -20; } }
+[data-motion="off"] .diagram path[stroke-dasharray] { animation: none; }
+@media (prefers-reduced-motion: reduce) { .diagram path[stroke-dasharray] { animation: none; } }

@@ -46,7 +46,7 @@ const LiveWeather = () => {
   };
 
   return (
-    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-white p-4'>
+    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4'>
       <div className='flex gap-2'>
         <input
           className='flex-1 rounded-lg border border-surface-line px-3 py-2 text-sm'

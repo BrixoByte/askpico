@@ -1,0 +1,107 @@
+%% title: Backend API — request pipeline
+%% description: How a POST /api/chat request flows through global middleware, per-route gates, quota and routing, LLM fallback, streaming, and post-processing.
+%% owner: Pico core
+%% updated: 2026-11-10
+
+flowchart TD
+    REQ["Client request (apps/web)"] --> MW["server.js — global middleware"]
+    %% @node REQ role=client desc="Fetch calls from the web app" file="apps/web/src/api/api.ts"
+    %% @node MW role=api desc="JSON body parser 2mb (skipped for attachments/extract and artifact/submission)" file="services/api/src/server.js"
+
+    CORS["CORS headers + OPTIONS 204 short-circuit"]
+    %% @node CORS role=api desc="Origins from serverConfig.corsOrigins; runs on every request" file="services/api/src/server.js"
+
+    subgraph GATE["Per-route gates — /api/chat, in this order"]
+        RL["rateLimit — per client IP, 30 per 60s"]
+        AUTHX["requireUser — Bearer token to Supabase user"]
+        UL["userLimits.chat — per user, 30 per 60s"]
+        VAL["validateChatMessages — roles + size caps"]
+        QUOTA["Account and system checks — token cap, voice quota, pause and budget flags, ban status"]
+    end
+    %% @node RL role=safety desc="Fixed-window limiter keyed by IP; 429 + Retry-After" file="services/api/src/security.js"
+    %% @node AUTHX role=auth desc="requireUser calls getUserFromToken; other routes use requireSignedInUser" file="services/api/src/server.js"
+    %% @node UL role=safety desc="Keyed by user id, so token refresh does not reset it" file="services/api/src/server.js"
+    %% @node VAL role=safety desc="Max 200 messages x 100k chars, role allowlist" file="services/api/src/security.js"
+    %% @node QUOTA role=api desc="roll_daily_tokens, debitVoiceQuota (voice requests), llm_requests_paused, circuit_breaker_active, banned status" file="services/api/src/server.js"
+
+    MW --> CORS --> RL --> AUTHX --> UL --> VAL --> QUOTA
+
+    subgraph PIPE["Prompt and routing"]
+        VREC["recallContextSafe — vector recall on cues"]
+        MODE["resolveRoutingMode — plan + consume_routing_mode"]
+        FOCUS2["withMemory + withThread — prompt assembly"]
+    end
+    %% @node VREC role=memory desc="Embeds the last user message only when recall cues match" file="services/api/src/memory/vectorSearch.js"
+    %% @node MODE role=api desc="Plan from subscriptions; reserves a tier, downgrades at cap" file="services/api/src/routingService.js"
+    %% @node FOCUS2 role=memory desc="Global Brain, thread facts, recent messages, retrieved context" file="services/api/src/server.js"
+
+    QUOTA --> VREC --> MODE --> FOCUS2
+
+    subgraph LLMOUT["LLM call — llmClient.js"]
+        MODELS["modelsForMode — quick/smart/deep_fast/deep_pro"]
+        ATTEMPT["attemptModel — 20s timeout per model"]
+        FALLBACK["fetchWithFallback — retry on 429/5xx"]
+        SSE["sanitizeSseStream — hides model name as 'pico'"]
+    end
+    %% @node MODELS role=llm desc="Model chain per mode from config + env overrides" file="services/api/src/routing.js"
+    %% @node ATTEMPT role=llm desc="OpenAI-compatible /chat/completions POST" file="services/api/src/llmClient.js"
+    %% @node FALLBACK role=llm desc="Non-fallback 4xx fails fast; only 429/5xx advance" file="services/api/src/llmClient.js"
+    %% @node SSE role=llm desc="Rewrites payload.model so upstream name never leaks" file="services/api/src/llmClient.js"
+
+    FOCUS2 --> MODELS --> ATTEMPT --> FALLBACK --> SSE
+
+    subgraph POST["Post-processing + telemetry"]
+        INDEX2["indexTurnMemorySafe — embed + insert turn"]
+        TEL["recordRequest → log_request RPC — tokens, cost"]
+    end
+    %% @node INDEX2 role=async desc="Fire-and-forget; runs when a stream or JSON reply completes" file="services/api/src/memory/vectorWorker.js"
+    %% @node TEL role=async desc="Fire-and-forget; log_request also trips the circuit breaker over budget" file="services/api/src/server.js"
+
+    SSE --> INDEX2
+    SSE --> TEL
+    SSE --> RES["Streamed SSE or JSON reply"]
+    %% @node RES role=api desc="SSE or JSON written to the client by the /api/chat handler" file="services/api/src/server.js"
+
+    subgraph VER["Separate client call — POST /api/chat/verify"]
+        VERIFY["verifyReply — ungrounded-span check"]
+    end
+    %% @node VERIFY role=safety desc="Replaces flagged spans with [Verify Local Data]; failures return the original reply" file="services/api/src/orchestrator.js"
+
+    subgraph OTHER["Other route groups"]
+        AGENTEP["/api/agent/route, chat, truncate — specialist pipeline"]
+        THREADEP["/api/thread/focus — thread facts"]
+        MEMEP["/api/memory + /api/preferences/theme — signed-in only"]
+        VOICEP["/api/voice/session-start, heartbeat, session-complete — voice quota"]
+        TTSEP["/api/tts — signed-in only"]
+        TOOLEP["/api/tools/:tool, attachments/extract, artifact/css, artifact/submission"]
+        IMGEP["/api/image/generate + providers"]
+        ACCTEP["usage, account, referral, coupons, client-log, admin"]
+    end
+    %% @node AGENTEP role=api desc="Specialist pipeline (see agents.mmd)" file="services/api/src/server.js"
+    %% @node THREADEP role=memory desc="Sanitized thread focus facts" file="services/api/src/server.js"
+    %% @node MEMEP role=memory desc="Global Brain and theme persistence" file="services/api/src/server.js"
+    %% @node VOICEP role=voice desc="Daily voice seconds quota" file="services/api/src/voiceQuota.js"
+    %% @node TTSEP role=voice desc="TTS synthesis through tts.js providers" file="services/api/src/tts.js"
+    %% @node TOOLEP role=tool desc="External tools, attachment text extraction, artifact CSS and submissions" file="services/api/src/server.js"
+    %% @node IMGEP role=tool desc="Provider chain for image generation" file="services/api/src/imageProviders/index.js"
+    %% @node ACCTEP role=api desc="Account, referral, coupon, usage routes and /api/admin router" file="services/api/src/server.js"
+
+    subgraph SB["Supabase — tables and RPCs"]
+        USERS[("auth.users — token check")]
+        SUB2[("subscriptions — plan")]
+        RPC2[("RPCs: consume_routing_mode, roll_daily_tokens, log_request")]
+        MEMT[("memory_items — pgvector recall and insert")]
+    end
+    %% @node USERS role=db desc="getUserFromToken validates the access token" file="services/api/src/supabase.js"
+    %% @node SUB2 role=db desc="getUserPlan reads the plan" file="services/api/src/supabase.js"
+    %% @node RPC2 role=db desc="Quota reservation, daily tokens, request logging" file="supabase/migrations/0002_routing.sql"
+    %% @node MEMT role=db desc="pgvector rows and match_memory_items RPC" file="supabase/migrations/0005_memory_items.sql"
+
+    AUTHX --> USERS
+    QUOTA --> SUB2
+    QUOTA --> RPC2
+    MODE --> SUB2
+    MODE --> RPC2
+    TEL --> RPC2
+    VREC --> MEMT
+    INDEX2 --> MEMT

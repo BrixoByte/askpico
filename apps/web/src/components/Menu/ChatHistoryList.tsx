@@ -4,122 +4,48 @@ import { useTranslation } from 'react-i18next';
 import SearchModal from './SearchModal';
 import SidebarNav from './SidebarNav';
 import ChatHistory from './ChatHistory';
-import ChatFolder from './ChatFolder';
 import NewChat from './NewChat';
 
 import { SearchIcon } from '@icon/ui';
 
-import {
-  ChatHistoryInterface,
-  ChatHistoryFolderInterface,
-  ChatInterface,
-  FolderCollection,
-} from '@type/chat';
+import { ChatHistoryInterface, ChatInterface } from '@type/chat';
 
 import useStore from '@store/store';
+import { useAgentSelection } from '@store/agentSelection';
+import { useIsSignedIn } from '@utils/authGate';
 
-const MAX_RECENT_CHATS = 5;
+const MAX_RECENT_CHATS = 6;
 
 const getRecency = (chat: { updatedAt?: number; createdAt?: number }) =>
   chat.updatedAt ?? chat.createdAt ?? 0;
 
-const getDayStart = (d: Date) =>
-  new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
-
-type DateGroup =
-  | 'today'
-  | 'yesterday'
-  | 'sevenDays'
-  | 'older';
-
-const groupChatsByDate = (chats: ChatHistoryInterface[]) => {
-  const now = new Date();
-  const todayStart = getDayStart(now);
-  const yesterdayStart = todayStart - 86400000;
-  const sevenDaysStart = todayStart - 6 * 86400000;
-
-  const groups: Record<DateGroup, ChatHistoryInterface[]> = {
-    today: [],
-    yesterday: [],
-    sevenDays: [],
-    older: [],
-  };
-
-  chats.forEach((chat) => {
-    if (getRecency(chat) === 0) {
-      groups.older.push(chat);
-      return;
-    }
-    const d = new Date(getRecency(chat));
-    if (isNaN(d.getTime())) {
-      groups.older.push(chat);
-      return;
-    }
-    const dayStart = getDayStart(d);
-    if (dayStart >= todayStart) groups.today.push(chat);
-    else if (dayStart >= yesterdayStart) groups.yesterday.push(chat);
-    else if (dayStart >= sevenDaysStart) groups.sevenDays.push(chat);
-    else groups.older.push(chat);
-  });
-
-  return groups;
-};
-
-const SECTION_LABELS: { key: DateGroup; label: string }[] = [
-  { key: 'today', label: 'Today' },
-  { key: 'yesterday', label: 'Yesterday' },
-  { key: 'sevenDays', label: '7 days' },
-  { key: 'older', label: 'Older' },
-];
-
-const ChatHistoryList = () => {
+const ChatHistoryList = ({ fillHeight = true }: { fillHeight?: boolean }) => {
   const { t } = useTranslation();
-  const [chatFolders, setChatFolders] = useState<ChatHistoryFolderInterface>(
-    {}
-  );
   const [noChatFolders, setNoChatFolders] = useState<ChatHistoryInterface[]>(
     []
   );
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const signedIn = useIsSignedIn();
+  const activeAgentId = useAgentSelection((s) => s.activeAgentId);
 
   const updateFolders = useRef(() => {
-    const _folders: ChatHistoryFolderInterface = {};
     const _noFolders: ChatHistoryInterface[] = [];
     const chats = useStore.getState().chats;
-    const folders = useStore.getState().folders;
 
     if (chats) {
       chats.forEach((chat: ChatInterface, index: number) => {
-        if (!chat.folder) {
-          _noFolders.push({
-            title: chat.title,
-            index: index,
-            id: chat.id,
-            createdAt: chat.createdAt,
-            updatedAt: chat.updatedAt,
-          });
-        } else {
-          if (!_folders[chat.folder]) _folders[chat.folder] = [];
-          _folders[chat.folder].push({
-            title: chat.title,
-            index: index,
-            id: chat.id,
-            createdAt: chat.createdAt,
-            updatedAt: chat.updatedAt,
-          });
-        }
+        _noFolders.push({
+          title: chat.title,
+          index: index,
+          id: chat.id,
+          createdAt: chat.createdAt,
+          updatedAt: chat.updatedAt,
+          lastAgentId: chat.lastAgentId ?? null,
+        });
       });
     }
 
-    const _chatFolders: ChatHistoryFolderInterface = {};
-    for (const folderId in _folders) {
-      if (!folders[folderId]) continue;
-      _chatFolders[folderId] = _folders[folderId];
-    }
-
     _noFolders.sort((a, b) => getRecency(b) - getRecency(a));
-
-    setChatFolders(_chatFolders);
     setNoChatFolders(_noFolders.slice(0, MAX_RECENT_CHATS));
   }).current;
 
@@ -149,65 +75,73 @@ const ChatHistoryList = () => {
   }, []);
 
   return (
-    <div className='flex flex-col min-h-0 flex-1'>
+    <div className={`flex flex-col ${fillHeight ? 'min-h-0 flex-1' : ''}`}>
       <div className='mb-2 flex items-center gap-2'>
         <div className='min-w-0 flex-1'>
           <NewChat />
         </div>
-        <button
-          className='flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-surface-line bg-white text-ink-muted transition-colors hover:text-ink'
-          onClick={() => setIsSearchOpen(true)}
-          aria-label='search chats'
-        >
-          <SearchIcon className='h-4 w-4' />
-        </button>
+        {signedIn && (
+          <button
+            className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-surface-line bg-surface text-ink-muted transition-colors after:absolute after:-inset-1.5 after:content-[''] hover:text-ink"
+            onClick={() => setIsSearchOpen(true)}
+            aria-label='search chats'
+          >
+            <SearchIcon className='h-4 w-4' />
+          </button>
+        )}
       </div>
       <SearchModal
-        isOpen={isSearchOpen}
+        isOpen={signedIn && isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
       />
-      <SidebarNav />
-      <div
-        id='chat-history-scroll'
-        className='flex-1 min-h-0 overflow-y-auto pt-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
-      >
-        {Object.keys(chatFolders).map((folderId) => (
-          <ChatFolder
-            folderChats={chatFolders[folderId]}
-            folderId={folderId}
-            key={folderId}
-          />
-        ))}
-        <ChatSectionList chats={noChatFolders} />
+      <div className={`flex flex-col ${fillHeight ? 'min-h-0 flex-1 overflow-y-auto' : ''} [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
+        <SidebarNav />
+        {signedIn && (
+          <div id='chat-history-scroll' className='pt-0.5'>
+            <ChatSectionList
+              chats={
+                activeAgentId
+                  ? noChatFolders.filter((c) => c.lastAgentId === activeAgentId)
+                  : noChatFolders
+              }
+              onSeeAll={() => setIsSearchOpen(true)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-const ChatSectionList = ({ chats }: { chats: ChatHistoryInterface[] }) => {
-  const groups = groupChatsByDate(chats);
-
+const ChatSectionList = ({
+  chats,
+  onSeeAll,
+}: {
+  chats: ChatHistoryInterface[];
+  onSeeAll: () => void;
+}) => {
   return (
-    <>
-      {SECTION_LABELS.map(({ key, label }) => {
-        const groupChats = groups[key];
-        if (groupChats.length === 0) return null;
-        return (
-          <div key={key} className='mb-2'>
-            <div className='px-3 pb-0.5 text-[11px] font-medium uppercase tracking-wider text-ink-muted'>
-              {label}
-            </div>
-            {groupChats.map((chat) => (
-              <ChatHistory
-                title={chat.title}
-                chatIndex={chat.index}
-                key={`${chat.title}-${chat.index}`}
-              />
-            ))}
-          </div>
-        );
-      })}
-    </>
+    <div className='mb-2'>
+      <div className='sticky top-0 z-10 flex items-center justify-between bg-transparent px-3 pb-2 text-[11px] font-medium uppercase tracking-wider text-ink-muted'>
+        <span>Recent</span>
+        <button
+          type='button'
+          onClick={onSeeAll}
+          className='-mx-1 inline-flex min-h-[48px] items-center px-1 normal-case tracking-normal text-zinc-400 transition-colors hover:text-[#8AE000] dark:hover:text-[#9EFF00]'
+        >
+          See All &rarr;
+        </button>
+      </div>
+      <div className='flex flex-col gap-1.5'>
+        {chats.map((chat) => (
+          <ChatHistory
+            title={chat.title}
+            chatIndex={chat.index}
+            key={`${chat.title}-${chat.index}`}
+          />
+        ))}
+      </div>
+    </div>
   );
 };
 

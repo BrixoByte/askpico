@@ -23,7 +23,7 @@ const FreelanceRate = () => {
   const net = valid ? gross * (1 - fee / 100) : null;
 
   return (
-    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-white p-4 text-sm'>
+    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4 text-sm'>
       <label className='flex flex-col gap-1'>
         <span className='text-ink-soft'>Hourly rate (USD)</span>
         <input

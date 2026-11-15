@@ -10,6 +10,8 @@ const Toast = () => {
   const setToastShow = useStore((state) => state.setToastShow);
 
   const [timeoutID, setTimeoutID] = useState<number>();
+  const [rendered, setRendered] = useState<boolean>(toastShow);
+  const [leaving, setLeaving] = useState<boolean>(false);
 
   useEffect(() => {
     if (toastShow) {
@@ -23,26 +25,51 @@ const Toast = () => {
     }
   }, [toastShow, status, message]);
 
-  return toastShow ? (
+  useEffect(() => {
+    if (toastShow) {
+      setRendered(true);
+      setLeaving(false);
+      return;
+    }
+    if (!rendered) return;
+    setLeaving(true);
+    const exitID = window.setTimeout(() => {
+      setRendered(false);
+      setLeaving(false);
+    }, 200);
+    return () => window.clearTimeout(exitID);
+  }, [toastShow]);
+
+  if (!rendered) return <></>;
+
+  return (
     <div
-      className={`flex fixed right-5 bottom-5 z-[1000] items-center w-3/4 md:w-full max-w-xs p-4 mb-4 text-gray-500 dark:text-gray-400 rounded-lg shadow-md border border-gray-400/30 animate-bounce`}
+      className={`fixed right-5 bottom-5 z-[1000] w-3/4 md:w-full max-w-xs mb-4 overflow-hidden rounded-2xl border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.2)] ${
+        leaving ? 'toast-out' : 'toast-in'
+      }`}
       role='alert'
     >
-      <StatusIcon status={status} />
-      <div className='ml-3 text-sm font-normal'>{message}</div>
-      <button
-        type='button'
-        className='ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700'
-        aria-label='Close'
-        onClick={() => {
-          setToastShow(false);
-        }}
-      >
-        <CloseIcon />
-      </button>
+      <img
+        src='/assets/Neon%20Green%20Notification%20UI%20Card.jpg'
+        alt=''
+        aria-hidden='true'
+        className='absolute inset-0 h-full w-full object-cover'
+      />
+      <div className='relative z-10 flex items-center p-4 text-zinc-100'>
+        <StatusIcon status={status} />
+        <div className='ml-3 flex-1 text-sm font-normal'>{message}</div>
+        <button
+          type='button'
+          className='ml-auto -mx-1.5 -my-1.5 inline-flex h-8 w-8 rounded-lg p-1.5 text-zinc-300 transition-colors hover:bg-white/10 hover:text-white'
+          aria-label='Close'
+          onClick={() => {
+            setToastShow(false);
+          }}
+        >
+          <CloseIcon />
+        </button>
+      </div>
     </div>
-  ) : (
-    <></>
   );
 };
 

@@ -51,7 +51,7 @@ const PdfMerge = () => {
   };
 
   return (
-    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-white p-4 text-sm'>
+    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4 text-sm'>
       <input type='file' accept='application/pdf' multiple onChange={(e) => addFiles(e.target.files)} />
       <ol className='flex flex-col gap-1'>
         {files.map((file, index) => (

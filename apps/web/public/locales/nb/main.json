@@ -1,16 +1,15 @@
-{
+﻿{
   "save": "Lagre",
   "generate": "Generere",
   "cancel": "Avbryt",
   "confirm": "Bekreft",
   "warning": "Advarsel",
-  "clearMessageWarning": "Vær oppmerksom på at ved å sende inn denne meldingen, vil alle påfølgende meldinger bli slettet!",
-  "clearConversationWarning": "Vær oppmerksom på at ved å bekrefte denne handlingen, vil alle meldinger bli slettet!",
-  "clearConversation": "Tøm samtale",
+  "clearMessageWarning": "VÃ¦r oppmerksom pÃ¥ at ved Ã¥ sende inn denne meldingen, vil alle pÃ¥fÃ¸lgende meldinger bli slettet!",
+  "clearConversationWarning": "VÃ¦r oppmerksom pÃ¥ at ved Ã¥ bekrefte denne handlingen, vil alle meldinger bli slettet!",
+  "clearConversation": "TÃ¸m samtale",
   "import": "Importer",
   "export": "Eksporter",
   "author": "Laget av Jing Hua",
-  "about": "Om & Sponsor",
   "api": "API",
   "personal": "Personlig",
   "free": "Gratis",
@@ -20,7 +19,7 @@
   "system": "System",
   "newChat": "Ny Chat",
   "lightMode": "Lys Modus",
-  "darkMode": "Mørk Modus",
+  "darkMode": "MÃ¸rk Modus",
   "setting": "Innstillinger",
   "image": "Bilde",
   "autoTitle": "Auto generer tittel",
@@ -29,19 +28,19 @@
   "prompt": "Oppgave",
   "promptLibrary": "Oppgavebibliotek",
   "name": "Navn",
-  "search": "Søk",
+  "search": "SÃ¸k",
   "total": "Totalt",
   "resetCost": "Tilbakestill kostnader",
   "countTotalTokens": "Tell totale token",
   "morePrompts": "Du kan finne flere oppgaver her: ",
-  "clearPrompts": "Tøm oppgave",
+  "clearPrompts": "TÃ¸m oppgave",
   "postOnShareGPT": {
-    "title": "Innlegg på ShareGPT",
-    "warning": "Vær oppmerksom på at ved å poste samtalen din på ShareGPT, vil den bli offentlig tilgjengelig og synlig for alle. Når den er postet, kan samtalen ikke skjules eller slettes, og den kan bli arkivert eller delt av andre. Vi anbefaler deg å tenke nøye gjennom og unngå å dele sensitiv eller privat informasjon på denne plattformen."
+    "title": "Innlegg pÃ¥ ShareGPT",
+    "warning": "VÃ¦r oppmerksom pÃ¥ at ved Ã¥ poste samtalen din pÃ¥ ShareGPT, vil den bli offentlig tilgjengelig og synlig for alle. NÃ¥r den er postet, kan samtalen ikke skjules eller slettes, og den kan bli arkivert eller delt av andre. Vi anbefaler deg Ã¥ tenke nÃ¸ye gjennom og unngÃ¥ Ã¥ dele sensitiv eller privat informasjon pÃ¥ denne plattformen."
   },
   "newFolder": "Ny mappe",
   "cloneChat": "Klone chat",
   "cloned": "Klonet",
-  "enterToSubmit": "Trykk enter for å sende",
-  "submitPlaceholder": "Skriv en melding eller klikk på [/] for oppgave..."
+  "enterToSubmit": "Trykk enter for Ã¥ sende",
+  "submitPlaceholder": "Skriv en melding eller klikk pÃ¥ [/] for oppgave..."
 }

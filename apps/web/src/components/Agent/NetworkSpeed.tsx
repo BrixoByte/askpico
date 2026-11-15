@@ -143,7 +143,7 @@ const NetworkSpeed = () => {
   };
 
   return (
-    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-white p-4 text-sm'>
+    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4 text-sm'>
       <button className='btn btn-primary self-start' onClick={run} disabled={running}>
         {running ? 'Testing...' : 'Start speed test'}
       </button>

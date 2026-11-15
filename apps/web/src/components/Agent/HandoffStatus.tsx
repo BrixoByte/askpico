@@ -47,7 +47,7 @@ const HandoffStatus = () => {
               )}
               <span
                 className={`rounded-full px-3 py-1 font-medium transition-all duration-500 ${
-                  reached ? 'bg-white text-ink shadow-soft' : 'text-ink-muted'
+                  reached ? 'bg-surface text-ink shadow-soft' : 'text-ink-muted'
                 } ${active ? 'animate-pulse' : ''}`}
               >
                 {label}

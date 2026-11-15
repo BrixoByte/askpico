@@ -43,8 +43,8 @@ const ArtifactCard = ({
       aria-label={`open artifact ${title}`}
       className='group relative my-3 flex h-40 w-full items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 via-red-600 to-red-800 text-white shadow-card transition hover:brightness-110 disabled:opacity-70'
     >
-      <div className='absolute inset-0 bg-black/10' />
-      <span className='relative flex h-16 w-16 items-center justify-center rounded-full bg-white/95 text-red-600 shadow-xl transition group-hover:scale-110'>
+      <div className='absolute inset-0 bg-ink/10' />
+      <span className='relative flex h-16 w-16 items-center justify-center rounded-full bg-surface/95 text-red-600 shadow-xl transition group-hover:scale-110'>
         <svg viewBox='0 0 24 24' fill='currentColor' className='h-8 w-8 translate-x-0.5'>
           <path d='M8 5v14l11-7z' />
         </svg>

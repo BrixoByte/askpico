@@ -23,13 +23,13 @@ Costly, complex, or legally sensitive features are tracked in the [Roadmap](road
 | Plan | Price (PKR) | Limits |
 |---|---|---|
 | Free | 0 | 30 min/day voice, referral rewards |
-| Weekly Pass | 250–350 / week | 2 hr/day voice, all tools |
-| Monthly Pro | 799–999 / month | 2 hr/day voice, priority AI |
-| Ultra | 1,499–1,999 / month | No daily voice limit, exclusive moods and skins |
+| Weekly Pass | 299 / week | 2 hr/day voice, all Pro features for 7 days |
+| Monthly Pro | 1,499 / month | 2 hr/day voice, priority AI |
+| Ultra (post-beta) | TBD / month | No daily voice limit, exclusive moods and skins |
 
 - **Payments:** JazzCash, EasyPaisa, and local cards are required. International cards alone would exclude most Pakistani users.
 - **iOS (future):** iOS is not in the current plan. Digital purchases on iOS must use Apple In-App Purchase (commission applies). Verify the current Apple policy before any iOS work.
-- **Revenue estimate:** 112 Pro users at an average of PKR 899 is about PKR 100k MRR. 1,000 Pro users is about PKR 8–9 lakh MRR. Infrastructure cost (free Edge TTS, guest local LLM, low-cost text LLM) can stay near PKR 15–30k per month.
+- **Revenue estimate:** 67 Pro users at PKR 1,499 is about PKR 100k MRR. 1,000 Pro users is about PKR 15 lakh MRR. Infrastructure cost (free Edge TTS, guest local LLM, low-cost text LLM) can stay near PKR 15–30k per month.
 
 ## 4. Voice Roadmap (Copyright-Safe)
 
@@ -523,3 +523,101 @@ API routing: Route 1 (direct free APIs, temporary, for development) and Route 2 
 
 - The Document Maker in the Office agent replaces the earlier "Assignment Rephraser" idea.
 - Each agent has a primary name and variants. Select one final name for each agent before release.
+
+## 17. Open-Source Integrations (MIT and Apache-2.0)
+
+Features built on permissively licensed open-source projects. Each row credits the creator. Copied code must keep the project's license notice (see `THIRD_PARTY_NOTICES`). Hours are not estimated yet.
+
+| # | Feature | Creator and source | License | Platform | Runs on | Cost | Agent | Caveat |
+|---|---|---|---|---|---|---|---|---|
+| 58 | Whiteboard and diagram editor | Excalidraw (`excalidraw/excalidraw`) | MIT | Web, PC, Mobile | Device (lazy-loaded chunk) | Device | Creative, Office | Large bundle. Load only when the tool opens |
+| 59 | AI writing humanizer (removes AI-style phrasing) | `blader` (`blader/humanizer`) | MIT | Web, PC, Mobile | LLM with the humanizer prompt rules | LLM tokens | Career | Ported as prompt logic, not as a separate service |
+| 60 | HTML page redesign tool | `Kayforkind` (`Kayforkind/reimagine-it`) | MIT | Web, PC | Verify runtime after reading the repo | To be verified | Hacker, Creative | Built as a CLI. Needs a server or local step to run in Pico |
+| 61 | Product and marketing video from HTML | HeyGen (`heygen-com/hyperframes`) | Apache-2.0 | Web | Backend render (headless browser and ffmpeg) | Server compute | Studio | Keep the Apache NOTICE file. Render jobs need a worker |
+| 62 | AI image and video studio UI (Higgsfield-style) | OpenStudio Contributors (`generalizingai/OpenStudio`) | MIT | Web | Client UI; generation through a backend proxy to the provider | Provider cost per generation | Creative, Studio | Port UI from Next.js to Vite. Provider keys stay on the backend. Check `packages/` licenses before copying |
+
+### 17.1 Notes
+
+- Features 61, 63, 65, 66, 67, and 68 run as external services (separate processes called over HTTP). They are not bundled into the Pico build.
+- Copyleft and source-available projects (AGPL, GPL, Elastic, Sustainable Use, non-commercial) and projects that need a separate alternative are excluded.
+- Heavy platforms that overlap existing Pico features are excluded: cal.diy (scheduling, Next.js and Postgres), Chatwoot (support desk, Rails), Hindsight (memory, overlaps the existing Global Brain).
+
+### 17.2 More product features
+
+| # | Feature | Creator and source | License | Platform | Runs on | Cost | Agent | Caveat |
+|---|---|---|---|---|---|---|---|---|
+| 63 | Live web search with cited AI answers | ItzCrazyKns (`ItzCrazyKns/Vane`, formerly Perplexica) | MIT | Web, PC, Mobile | External service; Pico backend calls `POST /api/search` | Provider cost per query; search engines are free | Hacker, Study | Run SearXNG unmodified as a separate service. SearXNG is AGPL-3.0, so modifying it requires publishing that source |
+| 64 | Science skills (chemistry, physics, biology) | K-Dense-AI (`K-Dense-AI/scientific-agent-skills`) | MIT | Web, PC, Mobile | LLM with selected skill prompts | LLM tokens | Study | Overlaps features 46 to 48. Port only the skills that add value |
+| 65 | Image to 3D model | img2threejs (`img2threejs/img2threejs`) | Apache-2.0 | Web | To be verified | To be verified | Creative | Keep the Apache NOTICE file. Runtime not verified yet |
+| 66 | Voice input and output | Leonxlnx (`Leonxlnx/earshot`) | MIT | Web, PC, Mobile | Device (CPU-only) | Device | Core | Part of voice mode (v2+). See [Voice mode](../modules/voice-mode.md). Not verified yet |
+| 67 | Web lookup and page scraping | D4Vinci (`D4Vinci/Scrapling`) | BSD-3-Clause | Web | External Python service | Server compute | Live, Study | Respect robots.txt and site terms. Keep the BSD notice |
+| 68 | AI slide deck generator | Presenton (`presenton/presenton`) | Apache-2.0 | Web | External service | LLM tokens and server compute | Office | Keep the Apache NOTICE file |
+| 69 | Free public API directory | public-apis (`public-apis/public-apis`) | MIT | Web | Static data source for the catalogue of free APIs | Zero | Live | Reference data. Verify each API's terms before use |
+
+### 17.3 Dev tooling (not product features)
+
+These help build Pico. They do not ship in the app. Track them here so the team can adopt them.
+
+| Repo | Creator | License | Use |
+|---|---|---|---|
+| `microsoft/playwright` | Microsoft | Apache-2.0 | End-to-end tests for web and marketing |
+| `obra/superpowers` | obra | MIT | Agent workflow skills |
+| `addyosmani/agent-skills` | Addy Osmani | MIT | Engineering skills for agents |
+| `nextlevelbuilder/ui-ux-pro-max-skill` | nextlevelbuilder | MIT | UI and UX design guidance |
+| `tirth8205/code-review-graph` | tirth8205 | MIT | Smaller code context for AI review |
+| `tirth8205/Understand-Anything` | tirth8205 | MIT | Codebase knowledge graph |
+| `supabase/agent-skills` | Supabase | MIT | Supabase schema and RLS work |
+| `every-app/open-seo` | every-app | MIT | SEO audit for the marketing site |
+| `zubair-trabzada/geo-seo-claude` | Zubair Trabzada | MIT | SEO skill for the marketing site |
+| `JayPokale/Chisle` | JayPokale | MIT | Lower AI token use |
+| `dietrichgebert/ponytail` | dietrichgebert | MIT | Lean-code prompt skill |
+| `getagentseal/codeburn` | getagentseal | MIT | Local tracking of AI coding cost |
+| `nateherkai/scroll-craft` | nateherkai | MIT | Scroll-driven page effects |
+| `vercel-labs/skills` | Vercel Labs | MIT | Installs agent skills |
+| `citrolabs/ego-lite` | citrolabs | MIT | Browser for agent QA sessions |
+| `Jakeschincariol/arena-skill` | Jake Schincariol | MIT | Prompt testing with tournament scoring |
+| `reticlehq/reticle` | reticlehq | Apache-2.0 | Runtime preview of generated apps |
+| `anthropics/knowledge-work-plugins` | Anthropic | Apache-2.0 | Plugin design reference |
+| `shreyaskarnik/argo`, `alchaincyf/huashu-motion`, `rossark0/rossark-motion-skill`, `talsiach/take-one`, `NiazMorshed2007/reanimate`, `vincentsch/explainroo`, `win4r/video-director` | Various (all MIT) | MIT | Marketing video and animation skills |
+| `affaan-m/ecc`, `pingdotgg/t3code`, `stablyai/orca`, `Q00/ouroboros` | Various (all MIT) | MIT | Optional coding-agent harnesses |
+
+### 17.4 Excluded
+
+- **`Panniantong/Agent-Reach`** (MIT): scrapes social sites. Platform terms risk. Reference only.
+- **`tashfeenahmed/freellmapi`** (MIT code): README says personal use only. Provider terms likely forbid resale.
+- **`ace-step/ACE-Step-1.5`** (MIT code): model weights license must be checked first.
+- **`TauricResearch/TradingAgents`, `bilawalsidhu/gods-eye-view`, `google-research/timesfm`, `omacom/omarchy`, `rehan-remade/universal-modder`, `robbietilton/compositor`, `expo/skills`**: not relevant to Pico.
+- **`OpenWhispr/openwhispr`** (MIT): desktop dictation app. Reference for voice mode design only (see feature 66).
+- **`letta-ai/letta`** (Apache-2.0): agent memory server. Heavy and overlaps feature 78. Not built.
+- **`Deci-AI/super-gradients` (YOLO-NAS)**: code is Apache-2.0, but pretrained weights have separate terms. Not used until those are checked.
+- **`LLMRouter`, `Nanobot`**: not verified on GitHub. Not included until their licenses are confirmed.
+
+## 18. AI, Visualization, and Agent Infrastructure (MIT and Apache-2.0)
+
+Licenses in this section were checked through the GitHub API on the repo's license field. Hours are not estimated yet. Items marked "Python" need a Python service, because `services/api` is Express (Node).
+
+| # | Feature | Creator and source | License | Platform | Runs on | Cost | Agent | Caveat |
+|---|---|---|---|---|---|---|---|---|
+| 70 | Mermaid diagrams in chat (flowchart, mindmap, sequence, ER, Gantt, state) | mermaid-js (`mermaid-js/mermaid`) | MIT | Web, PC, Mobile | Device (lazy-loaded chunk) | Device | Core, Hacker, Study | Theme with the Pico palette through `themeVariables`. Render only after the LLM reply is complete, to avoid half-written syntax |
+| 71 | Pan, zoom, and export for diagrams (PNG, SVG) | panzoom (`timmywil/panzoom`) | MIT | Web, PC, Mobile | Device | Device | Core | Pair with feature 70. Test on low-end phones |
+| 72 | Auto-generated charts from JSON | Recharts (`recharts/recharts`) for React, or Chart.js (`chartjs/Chart.js`) | MIT | Web, PC, Mobile | Device | Device | Business, Study | Pick one library. Good fit for Micro-Khata (feature 41) and budgets |
+| 73 | Export chat, notes, or reports to PDF | jsPDF (`parallax/jsPDF`) and html2pdf.js (`eKoopmans/html2pdf.js`) | MIT | Web, PC, Mobile | Device | Device | Office, Career | Long pages use memory. Set a page limit |
+| 74 | Intent router: small model vs large model | Semantic Router (`aurelio-labs/semantic-router`) | MIT | Backend | Python service, or a Node port after review | Embedding tokens | Core | Implements the routing idea in section 5 (model routing). Needs an embedding model |
+| 75 | Semantic response cache | GPTCache (`zilliztech/GPTCache`) | MIT | Backend | Backend with a vector store | Storage | Core | Cache per user. Never cache personal or account data |
+| 76 | Multi-LLM gateway with fallback and cost tracking | LiteLLM (`BerriAI/litellm`) | MIT core; `enterprise/` folder has separate terms | Backend | Python proxy | Provider cost | Core | Use only the core. Do not use the `enterprise/` folder. Python |
+| 77 | Validated JSON for tool calls | Instructor (`567-labs/instructor`) | MIT | Backend | Python. Express would use a schema validator instead | LLM tokens | Core | Helps Feature 14 and device-action payloads |
+| 78 | Long-term user memory | mem0 (`mem0ai/mem0`) | Apache-2.0 | Backend | Backend with a vector store | Storage and LLM tokens | Core | Overlaps the existing Global Brain. Decide before building. Store only with user consent |
+| 79 | Multi-step agent workflows | LangGraph (`langchain-ai/langgraph`) | MIT | Backend | Backend | LLM tokens | Core | Dev and backend use for the agent layer. See [Agent development](../engineering/agent-development.md) |
+| 80 | Web task agent (background price check, lookup) | Browser-Use (`browser-use/browser-use`) | MIT | Web | Python service with a headless browser | Server compute | Live, Hacker | Check site terms and robots.txt. Heavy. Pairs with feature 67 |
+| 81 | Document Q&A with local retrieval | txtai (`neuml/txtai`, Apache-2.0) or RAGLite (`superlinear-ai/raglite`, MPL-2.0) | Apache-2.0 / MPL-2.0 | Backend | Python service | Server compute | Study, Office | Maps to roadmap Feature 1 (PDF chat). With MPL-2.0, keep modified RAGLite files open |
+| 82 | Local vector search for app shortcuts | LanceDB (`lancedb/lancedb`) or Chroma (`chroma-core/chroma`) | Apache-2.0 | Device or backend | Device (LanceDB has a JS SDK) | Device | Core | Verify JS support and mobile build size before choosing |
+| 83 | "Hey PICO" wake word | openWakeWord (`dscripka/openWakeWord`) or Porcupine (`Picovoice/porcupine`) | Apache-2.0 | Android, PC | Device | Device | Core | Porcupine needs a Picovoice access key and has free-tier limits. Check commercial terms. Voice mode v2+ |
+| 84 | Natural on-device TTS (option to Edge TTS) | Kokoro (`hexgrad/kokoro`) | Apache-2.0 | Web, PC, Mobile | Device or backend | Device | Core | Voice mode Phase 2 candidate. Verify the model weights license on its model page |
+| 85 | Image and screenshot understanding | Moondream (`vikhyat/moondream`) | Apache-2.0 | Backend first | Backend | Server compute | Creative, Core | Verify the model weights license on its model card before use |
+
+### 18.1 Notes
+
+- Feature 80 and feature 67 both do web lookups. Build one shared service.
+- Web-LLM (`mlc-ai/web-llm`, Apache-2.0) is already Feature 28 on the roadmap. It is not repeated here.
+- Items 74 to 81 and 83 need a backend or a separate Python process. Plan them with the backend work in section 11.
+- Several claims in the earlier chat about these tools were not verified. This section lists only what the repo license check confirmed. Check capability claims (for example, latency or accuracy) on each project's docs before relying on them.

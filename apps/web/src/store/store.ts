@@ -30,6 +30,7 @@ import {
   migrateV6,
   migrateV7,
   migrateV8,
+  migrateV9,
 } from './migrate';
 
 export type StoreState = ChatSlice &
@@ -49,7 +50,6 @@ export type StoreSlice<T> = (
 
 export const createPartializedState = (state: StoreState) => ({
   chats: state.chats,
-  currentChatIndex: state.currentChatIndex,
   apiKey: state.apiKey,
   apiEndpoint: state.apiEndpoint,
   theme: state.theme,
@@ -62,6 +62,7 @@ export const createPartializedState = (state: StoreState) => ({
   firstVisit: state.firstVisit,
   folders: state.folders,
   enterToSubmit: state.enterToSubmit,
+  replyLanguage: state.replyLanguage,
   inlineLatex: state.inlineLatex,
   markdownMode: state.markdownMode,
   totalTokenUsed: state.totalTokenUsed,
@@ -90,7 +91,7 @@ const useStore = create<StoreState>()(
     {
       name: 'free-chat-gpt',
       partialize: (state) => createPartializedState(state),
-      version: 9,
+      version: 10,
       migrate: (persistedState, version) => {
         switch (version) {
           case 0:
@@ -111,6 +112,8 @@ const useStore = create<StoreState>()(
             migrateV7(persistedState as LocalStorageInterfaceV7oV8);
           case 8:
             migrateV8(persistedState as LocalStorageInterfaceV8ToV9);
+          case 9:
+            migrateV9(persistedState as LocalStorageInterfaceV8ToV9);
             break;
         }
         return persistedState as StoreState;
@@ -118,5 +121,29 @@ const useStore = create<StoreState>()(
     }
   )
 );
+
+const ACTIVE_CHAT_KEY = 'pico-active-chat-id';
+
+const restoreActiveChat = () => {
+  const { chats, currentChatIndex, setCurrentChatIndex } = useStore.getState();
+  if (!chats?.length) return;
+  const savedId = sessionStorage.getItem(ACTIVE_CHAT_KEY);
+  const saved = savedId ? chats.findIndex((chat) => chat.id === savedId) : -1;
+  const index = saved >= 0 ? saved : 0;
+  if (currentChatIndex !== index) setCurrentChatIndex(index);
+};
+
+restoreActiveChat();
+
+useStore.subscribe((state) => {
+  const id = state.chats?.[state.currentChatIndex]?.id;
+  if (id) sessionStorage.setItem(ACTIVE_CHAT_KEY, id);
+});
+
+export const closeActiveChat = () => {
+  sessionStorage.removeItem(ACTIVE_CHAT_KEY);
+  window.history.replaceState(null, '', '/');
+  useStore.getState().setCurrentChatIndex(-1);
+};
 
 export default useStore;

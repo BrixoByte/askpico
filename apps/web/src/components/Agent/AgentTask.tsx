@@ -92,7 +92,7 @@ const AgentTask = ({
       </div>
       {error && <p className='text-red-600'>{error}</p>}
       {output && (
-        <pre className='max-h-96 overflow-auto whitespace-pre-wrap rounded-lg border border-surface-line bg-white p-3 font-sans text-sm'>
+        <pre className='max-h-96 overflow-auto whitespace-pre-wrap rounded-lg border border-surface-line bg-surface p-3 font-sans text-sm'>
           {output}
         </pre>
       )}

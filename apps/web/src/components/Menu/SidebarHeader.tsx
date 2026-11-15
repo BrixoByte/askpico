@@ -1,36 +1,37 @@
 import React from 'react';
 import useStore from '@store/store';
 
-import { PanelLeftIcon } from '@icon/ui';
+import { ChevronsLeftIcon } from '@icon/ui';
 
-const SidebarHeader = () => {
+const SidebarHeader = ({
+  hideCollapse = false,
+  collapseAlways = false,
+}: {
+  hideCollapse?: boolean;
+  collapseAlways?: boolean;
+}) => {
   const setHideSideMenu = useStore((state) => state.setHideSideMenu);
 
   return (
-    <div className='flex items-center justify-between px-1 pb-2 pt-0'>
-      <div className='flex items-center gap-2.5'>
-        <div className='flex h-7 w-7 items-center justify-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 text-white shadow-soft'>
-          <svg
-            viewBox='0 0 24 24'
-            fill='none'
-            className='h-4.5 w-4.5'
-            stroke='currentColor'
-            strokeWidth='2'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-          >
-            <path d='M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4L12 3z' />
-            <path d='M19 14l1 2.6L22.6 18l-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1.4L19 14z' />
-          </svg>
-        </div>
-        <span className='text-[15px] font-semibold text-ink'>Pico</span>
+    <div className='flex items-center justify-between gap-3 px-1 pb-4 pt-0'>
+      <div className='flex h-14 items-center gap-2.5 overflow-hidden'>
+        <img
+          src='/assets/brand/logo-sidebar-light.png'
+          alt='Pico logo'
+          className='h-[2.8rem] w-auto max-w-full object-contain md:h-32 dark:hidden'
+        />
+        <img
+          src='/assets/brand/logo-sidebar-dark.png'
+          alt='Pico logo'
+          className='hidden h-[2.8rem] w-auto max-w-full object-contain md:h-32 dark:block'
+        />
       </div>
       <button
-        className='flex h-8 w-8 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-black/5 hover:text-ink'
+        className={`${hideCollapse ? 'hidden' : collapseAlways ? 'flex' : 'hidden md:flex'} icon-btn !h-12 !w-12 shrink-0 rounded-full !border-ink/10 !bg-ink/5 shadow-lg backdrop-blur-md transition-all hover:!bg-ink/10 dark:!border-white/10 dark:!bg-white/5 dark:hover:!bg-white/10`}
         onClick={() => setHideSideMenu(true)}
         aria-label='close sidebar'
       >
-        <PanelLeftIcon className='h-4 w-4' />
+        <ChevronsLeftIcon className='h-4 w-4' />
       </button>
     </div>
   );

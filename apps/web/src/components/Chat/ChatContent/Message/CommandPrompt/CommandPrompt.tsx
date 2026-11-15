@@ -112,7 +112,7 @@ const CommandPrompt = ({
       <div
         className={`${
           dropDown ? '' : 'hidden'
-        } absolute bottom-full left-1/2 z-20 mb-2 w-[calc(100%-12px)] -translate-x-1/2 rounded-xl border border-surface-line bg-white p-2 shadow-card`}
+        } absolute bottom-full left-1/2 z-20 mb-2 w-[calc(100%-12px)] -translate-x-1/2 rounded-xl border border-surface-line bg-white dark:bg-zinc-900 p-2 shadow-card`}
       >
         <div className='prose dark:prose-invert'>
           <SearchBar

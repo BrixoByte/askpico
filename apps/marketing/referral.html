@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Referral | PICO</title>
+  <meta name="description" content="How the PICO referral program works, when rewards are given, and the anti-abuse rules." />
+  <link rel="canonical" href="https://askpico.app/referral" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <div class="page">
+
+    <header class="navbar-wrap">
+      <nav class="navbar" aria-label="Main">
+        <a class="navbar__brand" href="index.html"><span class="navbar__logo" aria-hidden="true"></span><span data-brand>PICO</span></a>
+        <div class="navbar__links">
+          <a href="index.html">Home</a>
+          <a href="features.html">Features</a>
+          <a href="pricing.html">Pricing</a>
+          <a href="referral.html" aria-current="page">Referral</a>
+          <a href="about.html">About Us</a>
+        </div>
+        <div class="navbar__actions">
+          <a class="navbar__login" href="https://auth.askpico.app">Sign In</a>
+          <a class="btn btn--primary btn--sm" href="https://chat.askpico.app">Download</a>
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode">
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          </button>
+          <button class="navbar__toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu"><span></span></button>
+        </div>
+        <div class="navbar__mobile" id="mobile-menu">
+          <a href="index.html">Home</a>
+          <a href="features.html">Features</a>
+          <a href="pricing.html">Pricing</a>
+          <a href="referral.html">Referral</a>
+          <a href="about.html">About Us</a>
+          <a href="https://auth.askpico.app">Sign In</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-hero">
+        <div class="container">
+          <span class="eyebrow">Referral</span>
+          <h1>Invite friends, earn voice time</h1>
+          <p class="page-hero__lead">Rewards are added after real activity, not just a sign-up.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="prose">
+            <h2>How the link works</h2>
+            <p>Sign in to get your personal code. Share your link, which looks like <code>https://askpico.app/?ref=YOUR_CODE</code>. When someone opens it, the code fills in automatically. Signing up without a code is also fine.</p>
+
+            <h2>When rewards are given</h2>
+            <ul>
+              <li>Signing up alone gives no reward.</li>
+              <li>A reward is added after the referred user completes a real activity, such as their first voice session or email verification.</li>
+              <li>Rewards add minutes to your daily voice limit.</li>
+            </ul>
+
+            <h2>Anti-abuse rules</h2>
+            <p>Using your own link, creating repeat accounts, or referring the same person again gives no reward. Every reward event is recorded, and we may review accounts that look fake.</p>
+
+            <h2>Questions</h2>
+            <p>For referral questions, write to <a href="mailto:hello@askpico.app">hello@askpico.app</a>.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="container">
+        <div class="footer" style="margin-top:48px">
+          <div class="footer__brand">
+            <span class="logo"><span data-brand>PICO</span></span>
+            <p>An AI productivity companion for Urdu, Hindi, and Roman Urdu speakers.</p>
+          </div>
+          <div class="footer__block">
+            <p class="footer__label">General</p>
+            <div class="footer__links">
+              <a href="index.html">Home</a>
+              <a href="features.html">Features</a>
+              <a href="pricing.html">Pricing</a>
+              <a href="referral.html">Referral</a>
+            </div>
+          </div>
+          <div class="footer__block">
+            <p class="footer__label">Company</p>
+            <div class="footer__links">
+              <a href="about.html">About us</a>
+              <a href="https://chat.askpico.app">Product</a>
+              <a href="privacy.html">Privacy Policy</a>
+              <a href="terms.html">Terms of Service</a>
+              <a href="contact.html">Contact</a>
+            </div>
+          </div>
+          <div class="footer__block">
+            <p class="footer__label">We'd love to help you with FAQs</p>
+            <a class="footer__email" href="mailto:hello@askpico.app">hello@askpico.app</a>
+            <p class="footer__label" style="margin-top:28px">Community</p>
+            <p class="footer__address">Community chat: coming soon.</p>
+          </div>
+        </div>
+        <p class="watermark" aria-hidden="true" data-brand style="position:static;transform:none;width:auto;text-align:left;font-size:120px;color:var(--line-strong);margin-top:40px">PICO</p>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

@@ -6,7 +6,7 @@ const SqlFormatter = () => {
   const [output, setOutput] = useState('');
 
   return (
-    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-white p-4 text-sm'>
+    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4 text-sm'>
       <textarea
         aria-label='sql input'
         className='min-h-[100px] rounded-lg border border-surface-line px-3 py-2 font-mono'

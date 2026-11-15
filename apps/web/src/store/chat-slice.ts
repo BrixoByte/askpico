@@ -1,4 +1,4 @@
-import { StoreSlice } from './store';
+import { StoreSlice, StoreState } from './store';
 import { ChatInterface, FolderCollection, MessageInterface } from '@type/chat';
 
 export interface ChatSlice {
@@ -38,6 +38,10 @@ export const createChatSlice: StoreSlice<ChatSlice> = (set, get) => ({
     set((prev: ChatSlice) => ({
       ...prev,
       currentChatIndex: currentChatIndex,
+      artifactPanelOpen:
+        currentChatIndex === prev.currentChatIndex
+          ? (prev as StoreState).artifactPanelOpen
+          : false,
     }));
   },
   setGenerating: (generating: boolean) => {

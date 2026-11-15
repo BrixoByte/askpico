@@ -16,7 +16,7 @@ interface ImageGenerateCardProps {
 }
 
 const buttonClass =
-  'rounded-lg border border-surface-line bg-white px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:bg-surface-muted disabled:opacity-50';
+  'rounded-lg border border-surface-line bg-surface px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:bg-surface-muted disabled:opacity-50';
 
 const ImageGenerateCard = ({
   prompt,
@@ -60,7 +60,7 @@ const ImageGenerateCard = ({
       className={
         state === 'success'
           ? 'w-full overflow-hidden rounded-xl shadow-[0_4px_18px_rgba(17,12,46,0.10)]'
-          : 'w-full max-w-md overflow-hidden rounded-2xl border border-surface-line bg-white p-3 shadow-card'
+          : 'w-full max-w-md overflow-hidden rounded-2xl border border-surface-line bg-surface p-3 shadow-card'
       }
     >
       {state !== 'success' && (
@@ -88,7 +88,7 @@ const ImageGenerateCard = ({
             download={`pico-image.${extension}`}
             aria-label='Download image'
             title='Download'
-            className='absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-ink opacity-0 shadow-card transition-opacity hover:bg-white focus:opacity-100 group-hover:opacity-100'
+            className='absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 text-ink opacity-0 shadow-card transition-opacity hover:bg-surface focus:opacity-100 group-hover:opacity-100'
           >
             <svg
               viewBox='0 0 24 24'

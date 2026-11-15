@@ -1,11 +1,15 @@
 import { StoreSlice, StoreState } from './store';
-import { Theme } from '@type/theme';
+import { Theme, FontStyle } from '@type/theme';
 import { ConfigInterface, TotalTokenUsed } from '@type/chat';
 import { _defaultChatConfig, _defaultSystemMessage } from '@constants/chat';
 
+export type ReplyLanguage = 'urdu' | 'roman-urdu' | 'english';
+
 export interface ConfigSlice {
   openConfig: boolean;
+  replyLanguage: ReplyLanguage;
   theme: Theme;
+  fontStyle: FontStyle;
   autoTitle: boolean;
   hideMenuOptions: boolean;
   advancedMode: boolean;
@@ -19,6 +23,7 @@ export interface ConfigSlice {
   totalTokenUsed: TotalTokenUsed;
   setOpenConfig: (openConfig: boolean) => void;
   setTheme: (theme: Theme) => void;
+  setFontStyle: (fontStyle: FontStyle) => void;
   setAutoTitle: (autoTitle: boolean) => void;
   setAdvancedMode: (advancedMode: boolean) => void;
   setDefaultChatConfig: (defaultChatConfig: ConfigInterface) => void;
@@ -30,11 +35,14 @@ export interface ConfigSlice {
   setMarkdownMode: (markdownMode: boolean) => void;
   setCountTotalTokens: (countTotalTokens: boolean) => void;
   setTotalTokenUsed: (totalTokenUsed: TotalTokenUsed) => void;
+  setReplyLanguage: (replyLanguage: ReplyLanguage) => void;
 }
 
 export const createConfigSlice: StoreSlice<ConfigSlice> = (set, get) => ({
   openConfig: false,
+  replyLanguage: 'urdu',
   theme: 'light',
+  fontStyle: 'sans',
   hideMenuOptions: false,
   hideSideMenu: false,
   autoTitle: false,
@@ -56,6 +64,12 @@ export const createConfigSlice: StoreSlice<ConfigSlice> = (set, get) => ({
     set((prev: ConfigSlice) => ({
       ...prev,
       theme: theme,
+    }));
+  },
+  setFontStyle: (fontStyle: FontStyle) => {
+    set((prev: ConfigSlice) => ({
+      ...prev,
+      fontStyle: fontStyle,
     }));
   },
   setAutoTitle: (autoTitle: boolean) => {
@@ -123,6 +137,12 @@ export const createConfigSlice: StoreSlice<ConfigSlice> = (set, get) => ({
     set((prev: ConfigSlice) => ({
       ...prev,
       totalTokenUsed: totalTokenUsed,
+    }));
+  },
+  setReplyLanguage: (replyLanguage: ReplyLanguage) => {
+    set((prev: ConfigSlice) => ({
+      ...prev,
+      replyLanguage: replyLanguage,
     }));
   },
 });

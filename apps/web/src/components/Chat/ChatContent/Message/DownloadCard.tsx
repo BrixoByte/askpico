@@ -12,15 +12,15 @@ const DownloadCard = ({
   const format = file.name.split('.').pop()?.toUpperCase() ?? 'FILE';
 
   return (
-    <div className='relative flex h-14 w-full items-center rounded-2xl border border-brand-200 bg-brand-50 pl-16 pr-36 shadow-soft'>
-      <span className='absolute left-4 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg bg-white text-[10px] font-semibold text-brand-700 shadow-soft'>
+    <div className='relative flex h-14 w-full items-center rounded-2xl border border-brand-200 bg-brand-50 pl-14 pr-[5.5rem] sm:pl-16 sm:pr-36 shadow-soft'>
+      <span className='absolute left-3 sm:left-4 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg bg-surface text-[10px] font-semibold text-brand-700 shadow-soft'>
         {format}
       </span>
       <p className='min-w-0 flex-1 truncate text-sm text-ink'>{children}</p>
       <a
         href={file.url}
         download={file.name}
-        className='absolute right-4 top-1/2 flex -translate-y-1/2 items-center gap-2 rounded-full bg-brand-500 px-4 py-2 text-sm font-medium text-white shadow-soft transition-all hover:bg-brand-600'
+        className='absolute right-3 sm:right-4 top-1/2 flex -translate-y-1/2 items-center gap-2 rounded-full bg-brand-500 px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm font-medium text-white shadow-soft transition-all hover:bg-brand-600'
       >
         <svg
           className='h-4 w-4'

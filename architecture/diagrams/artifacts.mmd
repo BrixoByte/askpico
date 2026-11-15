@@ -1,0 +1,15 @@
+%% title: Artifacts and outputs
+%% description: Build artifacts the app produces: web dist, desktop shell, mobile shell, and the static marketing site.
+%% owner: Pico core
+%% updated: 2026-11-10
+
+flowchart LR
+    SRC["Client code (apps/web)"] --> BUILD["apps/web/dist — vite build"]
+    %% @node SRC role=client desc="React + Vite chat app source" file="apps/web"
+    %% @node BUILD role=artifact desc="tsc + vite build output folder" file="apps/web/dist"
+    BUILD --> DESK["Electron desktop shell"]
+    %% @node DESK role=artifact desc="Electron shell wrapping the web app" file="apps/desktop"
+    BUILD --> MOB["Mobile WebView shell"]
+    %% @node MOB role=artifact desc="Kotlin WebView shell (beta)" file="apps/mobile"
+    SRC --> MKT["Marketing site build"]
+    %% @node MKT role=artifact desc="Static landing page, no build step" file="apps/marketing" %% TODO: confirm deploy output

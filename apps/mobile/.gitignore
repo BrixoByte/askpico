@@ -1,0 +1,18 @@
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+.cxx/
+app/build/
+.kotlin/
+
+# Generated: syncWebAssets copies apps/web/dist here at build time
+app/src/staging/assets/web/
+
+# JVM crash logs
+hs_err_pid*.log
+replay_pid*.log
+
+# Testing scratch artifacts (screenshots, cdp logs, round outputs)
+testing/

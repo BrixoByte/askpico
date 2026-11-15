@@ -65,7 +65,7 @@ const PdfSplit = () => {
   };
 
   return (
-    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-white p-4 text-sm'>
+    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4 text-sm'>
       <input type='file' accept='application/pdf' onChange={(e) => loadFile(e.target.files?.[0])} />
       {file && <p className='text-gray-500'>{file.name} · {pageCount} pages</p>}
       <input

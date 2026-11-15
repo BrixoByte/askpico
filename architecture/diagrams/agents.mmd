@@ -1,0 +1,43 @@
+%% title: Agents and tools
+%% description: Specialist routing, personas, and tool dispatch in the Express API.
+%% owner: Pico core
+%% updated: 2026-11-10
+
+flowchart LR
+    REQ["POST /api/agent/chat"] --> ROUTE["routeMessage — picks specialist"]
+    %% @node REQ role=api desc="Agent chat endpoint" file="services/api/src/server.js"
+    %% @node ROUTE role=agent desc="LLM router: core or one of 9 specialists, sticky per thread" file="services/api/src/orchestrator.js"
+
+    subgraph SPECS["Specialists — personas.js"]
+        STUDY["study, doctor, business"]
+        CAREER["career, hacker, creative"]
+        OFFICE["office, lock_in, live"]
+    end
+    %% @node STUDY role=agent desc="Knowledge and health specialist personas" file="services/api/src/personas.js"
+    %% @node CAREER role=agent desc="Writing and coding specialist personas" file="services/api/src/personas.js"
+    %% @node OFFICE role=agent desc="Documents, focus, live-data personas" file="services/api/src/personas.js"
+
+    ROUTE --> SPEC["runSpecialist — persona + history + memory"]
+    %% @node SPEC role=agent desc="Builds system prompt, calls model, saves turn" file="services/api/src/orchestrator.js"
+    SPECS --> SPEC
+    SPEC --> HIST["agentStore — agent_messages history"]
+    %% @node HIST role=db desc="Last 10 messages per user+agent+chat" file="services/api/src/agentStore.js"
+    SPEC --> EMRG["emergency.js — doctor guard"]
+    %% @node EMRG role=safety desc="Overrides doctor replies on emergency phrases" file="services/api/src/emergency.js"
+    SPEC --> LLM["callLlm — fallback chain"]
+    %% @node LLM role=llm desc="Tries models in order until one answers" file="services/api/src/orchestrator.js"
+
+    subgraph TOOLS["Tools — toolRegistry + toolAdapters"]
+        EXT["external: weather, currency, crypto,<br/>wiki, pubchem, stock"]
+        BRW["browser: pdf-to-png"]
+    end
+    %% @node EXT role=tool desc="Live-data APIs called via /api/tools/:tool" file="services/api/src/toolRegistry.js"
+    %% @node BRW role=tool desc="Runs in the client on uploaded files" file="services/api/src/toolRegistry.js"
+
+    PLAN["planDataTool / routeAttachment"] --> TOOLS
+    %% @node PLAN role=agent desc="Picks tool id and params from the message" file="services/api/src/orchestrator.js"
+    REQ --> PLAN
+    SPEC --> VER["verifyReply — fact check"]
+    %% @node VER role=safety desc="Flags ungrounded numbers and names" file="services/api/src/verify.js"
+    VER --> RES["Final answer"]
+    %% @node RES role=api desc="Verified reply returned to the client" file="services/api/src/server.js"

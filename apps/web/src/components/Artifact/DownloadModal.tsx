@@ -55,14 +55,14 @@ const DownloadModal = ({
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm'>
-      <div className='w-80 rounded-2xl border border-surface-line bg-white p-6 shadow-xl'>
+      <div className='w-80 rounded-2xl border border-surface-line bg-surface p-6 shadow-xl'>
         <h3 className='text-base font-semibold text-ink'>Preparing your desktop package...</h3>
         {error ? (
           <>
             <p className='mt-3 text-sm text-red-600'>{error}</p>
             <div className='mt-5 flex justify-end'>
               <button
-                className='rounded-lg border border-surface-line bg-white px-3 py-1.5 text-sm text-ink-soft hover:bg-surface-muted'
+                className='rounded-lg border border-surface-line bg-surface px-3 py-1.5 text-sm text-ink-soft hover:bg-surface-muted'
                 onClick={onClose}
               >
                 Close

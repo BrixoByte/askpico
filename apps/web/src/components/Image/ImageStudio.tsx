@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import useStore from '@store/store';
 import { StudioItemInterface } from '@store/image-slice';
 import { runStudioGeneration } from '@utils/studioGeneration';
+import { gateSignedIn } from '@utils/authGate';
 import { SparkleIcon } from '@icon/ui';
 import ImageControls from './ImageControls';
 import ImageDropdown from './ImageDropdown';
@@ -143,7 +144,7 @@ const ImageStudio = () => {
     e.target.value = '';
   };
 
-  const handleGenerate = () => {
+  const startGeneration = () => {
     const text = prompt.trim();
     if (text === '' || imageProvider === '') return;
     const fullPrompt = `${STYLE_PREFIX[style]}${text}`;
@@ -169,6 +170,10 @@ const ImageStudio = () => {
     })();
   };
 
+  const handleGenerate = () => {
+    void gateSignedIn('Sign in to generate images.', startGeneration);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
@@ -177,11 +182,11 @@ const ImageStudio = () => {
   };
 
   return (
-    <div className='flex h-full min-h-0 flex-1 flex-col bg-white text-ink'>
-      <div className='flex items-center justify-between px-5 py-3'>
+    <div className='relative flex h-full min-h-0 w-full flex-1 flex-col bg-surface text-ink'>
+      <div className='flex items-center justify-between px-8 py-4'>
         <span className='text-sm font-semibold text-ink'>Image Studio</span>
         <button
-          className='rounded-lg border border-surface-line bg-white px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:bg-surface-muted'
+          className='rounded-lg border border-surface-line bg-surface px-3 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:bg-surface-muted'
           onClick={() => setImageMode(false)}
         >
           Back to chat
@@ -235,7 +240,7 @@ const ImageStudio = () => {
         </div>
       </div>
 
-      <div className='absolute left-4 top-1/2 z-20 flex -translate-y-1/2 flex-col items-center gap-1 rounded-xl border border-surface-line bg-white/80 p-1 shadow-card backdrop-blur'>
+      <div className='absolute left-4 top-1/2 z-20 flex -translate-y-1/2 flex-col items-center gap-1 rounded-xl border border-surface-line bg-surface/80 p-1 shadow-card backdrop-blur'>
         <button
           type='button'
           aria-label='cursor mode'
@@ -262,7 +267,7 @@ const ImageStudio = () => {
         </button>
       </div>
 
-      <div className='absolute right-4 top-1/2 z-20 flex -translate-y-1/2 flex-col items-center gap-1 rounded-xl border border-surface-line bg-white/80 p-1 shadow-card backdrop-blur'>
+      <div className='absolute right-4 top-1/2 z-20 flex -translate-y-1/2 flex-col items-center gap-1 rounded-xl border border-surface-line bg-surface/80 p-1 shadow-card backdrop-blur'>
         <button type='button' aria-label='zoom out' onClick={() => zoomTo(zoom / 1.2)} className={widgetButtonClass(false)}>
           -
         </button>
@@ -279,11 +284,11 @@ const ImageStudio = () => {
         </button>
       </div>
 
-      <div className='pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center px-4 pb-4 pt-2'>
+      <div className='pointer-events-none absolute bottom-6 left-1/2 z-10 w-full max-w-4xl -translate-x-1/2 px-4'>
         <div className='pointer-events-auto mx-auto flex w-full max-w-3xl items-stretch gap-2'>
-        <div className='flex flex-col justify-center gap-1 rounded-2xl border border-surface-line bg-white/70 p-1.5 shadow-card backdrop-blur'>
+        <div className='flex flex-col justify-center gap-1 rounded-2xl border border-surface-line bg-surface/70 p-1.5 shadow-card backdrop-blur transition-all duration-200 dark:border-zinc-800 dark:bg-zinc-900/90 dark:hover:border-emerald-500/50 dark:focus-within:border-emerald-500/50'>
           <button
-            className='flex w-14 flex-col items-center gap-1 rounded-xl bg-white px-1.5 py-2 text-[10px] font-medium text-ink shadow-card'
+            className='flex w-14 flex-col items-center gap-1 rounded-xl bg-surface px-1.5 py-2 text-[10px] font-medium text-ink shadow-card'
             aria-label='image mode active'
           >
             <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' className='h-4 w-4' aria-hidden='true'>
@@ -306,7 +311,7 @@ const ImageStudio = () => {
           </button>
         </div>
 
-        <div className='flex min-w-0 flex-1 flex-col gap-1.5 rounded-2xl border border-gray-200/80 bg-white/70 p-2 shadow-card backdrop-blur'>
+        <div className='flex min-w-0 flex-1 flex-col gap-1.5 rounded-2xl border border-gray-200/80 bg-surface/70 p-2 shadow-card backdrop-blur transition-all duration-200 dark:border-zinc-800 dark:bg-zinc-900/90 dark:hover:border-emerald-500/50 dark:focus-within:border-emerald-500/50'>
           <textarea
             className='m-0 max-h-24 w-full resize-none overflow-y-auto border-0 bg-transparent p-1 text-sm leading-5 text-ink placeholder:text-ink-muted focus:outline-none focus:ring-0'
             placeholder='Describe what you want to create...'
@@ -318,9 +323,11 @@ const ImageStudio = () => {
           <div className='mt-auto flex flex-wrap items-center gap-1.5'>
             <button
               type='button'
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() =>
+                gateSignedIn('Sign in to attach files.', () => fileInputRef.current?.click())
+              }
               aria-label='attach file'
-              className='flex h-8 w-8 items-center justify-center rounded-full border border-surface-line bg-white text-base text-ink-soft hover:bg-surface-muted'
+              className='flex h-8 w-8 items-center justify-center rounded-full border border-surface-line bg-surface text-base text-ink-soft hover:bg-surface-muted'
             >
               +
             </button>
@@ -375,10 +382,10 @@ const ImageStudio = () => {
               type='button'
               onClick={() => setStyle(style === item ? 'none' : item)}
               aria-pressed={style === item}
-              className={`flex h-auto w-14 flex-col items-center justify-center gap-1 rounded-xl border text-[9px] font-semibold uppercase transition-colors ${
+              className={`flex h-auto w-14 flex-col items-center justify-center gap-1 rounded-xl border text-[9px] font-semibold uppercase transition-all duration-200 ease-in-out ${
                 style === item
                   ? 'border-brand-300 bg-brand-50 text-brand-700'
-                  : 'border-surface-line bg-white/70 text-ink-soft backdrop-blur hover:bg-white'
+                  : 'border-surface-line bg-surface/70 text-ink-soft backdrop-blur hover:border-emerald-500/50 hover:bg-surface dark:border-zinc-800'
               }`}
             >
               <span className='flex h-5 w-5 items-center justify-center rounded-full border border-current text-xs leading-none'>
@@ -390,7 +397,7 @@ const ImageStudio = () => {
         </div>
 
         <button
-          className='flex w-20 shrink-0 flex-col items-center justify-center gap-1 rounded-2xl bg-brand-500 text-xs font-semibold uppercase tracking-wide text-white shadow-soft transition-all hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50'
+          className='flex w-20 shrink-0 flex-col items-center justify-center gap-1 rounded-2xl bg-brand-500 text-xs font-semibold uppercase tracking-wide text-white shadow-soft transition-all hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#9EFF00] dark:text-black dark:hover:bg-[#86D900]'
           disabled={prompt.trim() === '' || imageProvider === ''}
           onClick={handleGenerate}
         >

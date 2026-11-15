@@ -1,0 +1,68 @@
+%% title: Pico Architecture
+%% description: Clients, Express API, Supabase, and client-side memory layers
+%% owner: Pico core
+%% updated: 2026-11-10
+
+flowchart LR
+    subgraph Clients["Clients"]
+        Web["apps/web — React + Vite chat app<br/>(Electron desktop shell)"]
+        Mkt["apps/marketing — landing page"]  
+        Adm["apps/admin"]
+        Mob["apps/mobile — Kotlin WebView shell (beta)"]
+    end
+    %% @node Web role=client desc="React + Vite chat app" file="apps/web"
+    %% @node Mkt role=client desc="Landing page" file="apps/marketing"
+    %% @node Adm role=client desc="Admin panel app" file="apps/admin"
+    %% @node Mob role=client desc="Kotlin WebView shell (beta)" file="apps/mobile"
+
+    subgraph API["Backend — services/api (Express)"]
+        SRV["server.js — routes / middleware"]
+        ORCH["orchestrator.js — routing + specialists"]
+        LLMC["llmClient.js — provider fallback + SSE"]
+        TTS["tts.js — voice synthesis"]
+        MEM["memory.js — Global Brain prompt block"]
+        WRK["workers/ — admin jobs + intent tags"]
+    end
+    %% @node SRV role=api desc="Express routes, CORS, rate limits, auth" file="services/api/src/server.js"
+    %% @node ORCH role=agent desc="Specialist router, tool planner, fact-check" file="services/api/src/orchestrator.js"
+    %% @node LLMC role=llm desc="Model fallback chain, SSE sanitizer" file="services/api/src/llmClient.js"
+    %% @node TTS role=voice desc="TTS provider chain" file="services/api/src/tts.js"
+    %% @node MEM role=memory desc="Global Brain, server side" file="services/api/src/memory.js"
+    %% @node WRK role=async desc="Admin workers, watchdog, intent classifier" file="services/api/src/workers/index.js"
+
+    subgraph DB["Supabase"]
+        AUTH["Auth — anon guests + signed-in"]
+        BRAIN[("user_brain — RLS per user")]
+        MEMV[("memory_items — pgvector recall")]
+        AGMSG[("agent_messages — per-agent history")]
+        SUBS[("subscriptions — plan lookup")]
+    end
+    %% @node AUTH role=auth desc="Anonymous guests and signed-in users" file="supabase/migrations/0001_init.sql"
+    %% @node BRAIN role=db desc="Per-user memory table with RLS" file="supabase/migrations/0002_user_brain.sql"
+    %% @node MEMV role=db desc="Vector memory, match_memory_items RPC" file="supabase/migrations/0005_memory_items.sql"
+    %% @node AGMSG role=db desc="Specialist history per user+agent+chat" file="services/api/src/agentStore.js"
+    %% @node SUBS role=db desc="Plan tier for routing and quota caps" file="supabase/migrations/0001_init.sql"
+
+    subgraph Layers["Client-side layers (apps/web)"]
+        CTX["contextWindow — last 10 msgs"]
+        MEMSTORE["memory-store — 'pico-memory' persisted"]
+        FILT["memorySafety — secrets filter"]
+    end
+    %% @node CTX role=client-state desc="Last 10 thread messages" file="apps/web/utils/contextWindow.ts"
+    %% @node MEMSTORE role=client-state desc="Persisted local memory store" file="apps/web/store/memory-store.ts"
+    %% @node FILT role=safety desc="Filters secrets before sync" file="apps/web/utils/memorySafety.ts"
+
+    Web --> CTX --> SRV
+    SRV --> ORCH --> LLMC
+    SRV --> MEM --> BRAIN
+    SRV --> WRK
+    ORCH --> AGMSG
+    SRV --> MEMV
+    SRV --> SUBS
+    SRV --> TTS
+    Web --> MEMSTORE --> FILT
+    FILT -->|"GET/PUT /api/memory"| SRV
+    Web <--> AUTH
+    Mob -->|"WebView + JS bridge"| Web
+    Mob -.->|"beta: intents + app shield"| SRV
+    Adm --> SRV

@@ -49,7 +49,7 @@ const PomodoroTimer = () => {
   };
 
   return (
-    <div className='flex flex-col items-center gap-3 rounded-2xl border border-surface-line bg-white p-6 shadow-soft'>
+    <div className='flex flex-col items-center gap-3 rounded-2xl border border-surface-line bg-surface p-6 shadow-soft'>
       <span className='text-xs font-medium uppercase tracking-wide text-ink-muted'>
         {phase === 'focus' ? 'Focus' : 'Break'}
       </span>

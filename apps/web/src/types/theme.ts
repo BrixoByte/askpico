@@ -1,1 +1,2 @@
-export type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'system';
+export type FontStyle = 'sans' | 'serif' | 'mono';

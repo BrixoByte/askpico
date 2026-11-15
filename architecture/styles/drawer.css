@@ -1,0 +1,117 @@
+/* Pico Viewer - editor drawer, find bar, code editor
+   Imported by styles.css. Plain CSS, no build step. */
+/* ── Drawer (editor overlay) ─────────────────────────────── */
+.drawer {
+  position: fixed; z-index: 30;
+  top: 14px; left: 14px; bottom: calc(var(--status-h) + 14px);
+  width: var(--drawer-w); max-width: calc(100vw - 28px);
+  display: flex; flex-direction: column; overflow: hidden;
+  background: color-mix(in srgb, var(--surface-solid) 78%, transparent);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-3);
+  backdrop-filter: blur(var(--blur)) saturate(1.2); -webkit-backdrop-filter: blur(var(--blur)) saturate(1.2);
+  transform: translateX(calc(-100% - 36px)); opacity: 0; visibility: hidden;
+  transition: transform var(--dur) var(--ease-out), opacity var(--dur) var(--ease-out), visibility 0s linear var(--dur);
+}
+.drawer.open {
+  transform: translateX(0); opacity: 1; visibility: visible;
+  transition: transform var(--dur) var(--ease-out), opacity var(--dur) var(--ease-out), visibility 0s;
+}
+.drawer.dock-right { left: auto; right: 14px; transform: translateX(calc(100% + 36px)); }
+.drawer.dock-right.open { transform: translateX(0); }
+.drawer.dock-float { transition: opacity var(--dur) var(--ease-out), visibility 0s linear var(--dur), box-shadow var(--dur-fast); }
+.drawer.dock-float.open { transition: opacity var(--dur) var(--ease-out), visibility 0s; transform: none; }
+.drawer.dragging { transition: none !important; }
+.drawer.dock-float.dragging { box-shadow: var(--shadow-3), 0 0 0 1px var(--accent-soft); }
+.drawer-head {
+  display: flex; align-items: center; gap: 6px; padding: 10px 10px 10px 14px;
+  border-bottom: 1px solid var(--border); flex-shrink: 0; cursor: default;
+  color: var(--muted);
+}
+.drawer-head > svg:first-child { width: 15px; height: 15px; color: var(--accent); }
+.drawer-head.draggable { cursor: grab; }
+.drawer-head.draggable:active { cursor: grabbing; }
+.drawer-title { font-size: 12.5px; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.drawer-spacer { flex: 1; }
+.drawer .icon-btn svg { width: 15px; height: 15px; }
+.editor-bar {
+  display: flex; align-items: center; gap: 4px; padding: 6px 8px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+.editor-bar .icon-btn { width: 28px; height: 28px; }
+.findbar {
+  display: flex; flex-direction: column; gap: 6px; padding: 8px; flex-shrink: 0;
+  border-bottom: 1px solid var(--border); background: var(--surface-2);
+  animation: slideDown var(--dur-fast) var(--ease-out);
+}
+.find-row { display: flex; align-items: center; gap: 4px; }
+.find-row input {
+  flex: 1; min-width: 0; height: 28px; padding: 0 8px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--surface-solid); color: var(--text); font-size: 12.5px; outline: none;
+}
+.find-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.find-count { font-family: var(--font-code); font-size: 11px; color: var(--muted); min-width: 44px; text-align: center; }
+.find-row .chip-btn { height: 28px; }
+@keyframes slideDown { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+.editor {
+  position: relative; flex: 1; min-height: 0; overflow: hidden;
+  font-family: var(--font-code); font-size: var(--code-size); line-height: 1.6;
+  --pad-y: 12px; --pad-x: 14px;
+}
+.gutter {
+  position: absolute; top: 0; bottom: 0; left: 0; width: var(--gutter-w);
+  overflow: hidden; text-align: right; color: var(--faint); user-select: none;
+  border-right: 1px solid var(--border); background: var(--surface-2); z-index: 2;
+}
+.gutter-inner { padding: var(--pad-y) 10px; will-change: transform; }
+.gutter-line { position: relative; height: 1.6em; white-space: pre; }
+.gutter-line.err { color: var(--danger); font-weight: 700; }
+.gutter-line.err::before {
+  content: ""; position: absolute; left: -10px; top: 50%; width: 3px; height: 1.1em; transform: translateY(-50%);
+  border-radius: 2px; background: var(--danger);
+}
+.editor.wrap .gutter { display: none; }
+.hl, #code {
+  position: absolute; top: 0; right: 0; bottom: 0; left: var(--gutter-w);
+  margin: 0; padding: var(--pad-y) var(--pad-x); border: 0; outline: none;
+  font-family: var(--font-code); font-size: var(--code-size); line-height: 1.6;
+  letter-spacing: 0; tab-size: 2; white-space: pre; word-wrap: normal; overflow: auto;
+  -webkit-font-smoothing: antialiased; font-variant-ligatures: none;
+}
+.editor.wrap .hl, .editor.wrap #code { white-space: pre-wrap; word-break: break-word; left: 0; }
+.hl { pointer-events: none; overflow: hidden; color: var(--hl-text); background: transparent; z-index: 1; }
+.hl code { font: inherit; }
+#code {
+  background: transparent; color: transparent; caret-color: var(--caret); resize: none; z-index: 3;
+}
+#code::selection { background: var(--sel); color: transparent; }
+#code::placeholder { color: var(--faint); }
+.editor.wrap { --gutter-w: 0px; }
+.editor.wrap .gutter { display: none; }
+.editor.wrap #code, .editor.wrap .hl { left: 0; }
+.tok-c { color: var(--hl-comment); font-style: italic; }
+.tok-s { color: var(--hl-string); }
+.tok-k { color: var(--hl-keyword); font-weight: 600; }
+.tok-a { color: var(--hl-arrow); }
+.tok-n { color: var(--hl-number); }
+.tok-p { color: var(--hl-punct); }
+.tok-d { color: var(--accent); font-weight: 600; }
+.err-line {
+  text-decoration: underline wavy var(--danger); text-decoration-skip-ink: none;
+  text-underline-offset: 4px; background: var(--danger-soft);
+}
+.find-hit { background: var(--sel); border-radius: 2px; }
+
+.drawer-resize {
+  position: absolute; top: 0; bottom: 0; width: 8px; cursor: ew-resize; z-index: 5;
+}
+.drawer:not(.dock-right) .drawer-resize { right: -4px; }
+.drawer.dock-right .drawer-resize { left: -4px; }
+.drawer.dock-float .drawer-resize { right: -4px; }
+.drawer-resize::after {
+  content: ""; position: absolute; top: 50%; left: 50%; width: 3px; height: 40px; transform: translate(-50%, -50%);
+  border-radius: 3px; background: var(--border); opacity: 0; transition: opacity var(--dur-fast);
+}
+.drawer-resize:hover::after, .drawer-resize.active::after { opacity: 1; background: var(--accent); }
+

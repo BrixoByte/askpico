@@ -1,0 +1,33 @@
+/* Pico Viewer - mobile layout and reduced motion
+   Imported by styles.css. Plain CSS, no build step. */
+/* ── Responsive: mobile bottom sheet ─────────────────────── */
+@media (max-width: 720px) {
+  :root { --drawer-w: 100vw; }
+  .drawer, .drawer.dock-right, .drawer.dock-float {
+    left: 0; right: 0; top: auto; bottom: 0; width: 100%; max-width: 100%; height: 62vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0; border-bottom: 0;
+    transform: translateY(105%); opacity: 1;
+  }
+  .drawer.open, .drawer.dock-right.open, .drawer.dock-float.open { transform: translateY(0); }
+  .drawer-resize, .drawer .btn-dock, #btnDock, #btnPin { display: none; }
+  .drawer-head.draggable { cursor: default; }
+  .stage { left: 0 !important; right: 0 !important; }
+  .toolbar { top: 8px; gap: 0; padding: 3px 4px; }
+  .toolbar .sep, #btnFullscreen, .watch-badge, #tbZoomLabel, .zoom-group { display: none; }
+  .toolbar .icon-btn { width: 30px; height: 30px; }
+  .zoom-dock { right: 8px; bottom: 8px; }
+  .minimap { display: none; }
+  .statusbar { gap: 10px; font-size: 10.5px; }
+  .st-item:nth-child(2), #stChars { display: none; }
+  #tbFit { display: none; }
+  .drawer:not(.open) { pointer-events: none; }
+}
+
+/* ── Reduced motion & animation toggle ───────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+  .shimmer.on { animation: none; }
+}
+[data-motion="off"] *, [data-motion="off"] *::before, [data-motion="off"] *::after {
+  animation: none !important; transition: none !important;
+}

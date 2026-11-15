@@ -1,29 +1,22 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import useStore from '@store/store';
 import SunIcon from '@icon/SunIcon';
 import MoonIcon from '@icon/MoonIcon';
-import { Theme } from '@type/theme';
+import { resolveTheme } from '@utils/theme';
 
-const getOppositeTheme = (theme: Theme): Theme => {
-  if (theme === 'dark') {
-    return 'light';
-  } else {
-    return 'dark';
-  }
-};
 const ThemeSwitcher = () => {
   const { t } = useTranslation();
   const theme = useStore((state) => state.theme);
   const setTheme = useStore((state) => state.setTheme);
 
-  const switchTheme = () => {
-    setTheme(getOppositeTheme(theme!));
-  };
+  // Quick toggle flips between explicit light/dark (exits 'system' mode).
+  const resolved = resolveTheme(theme);
+  const opposite = resolved === 'dark' ? 'light' : 'dark';
 
-  useEffect(() => {
-    document.documentElement.className = theme;
-  }, [theme]);
+  const switchTheme = () => {
+    setTheme(opposite);
+  };
 
   return theme ? (
     <button
@@ -31,8 +24,8 @@ const ThemeSwitcher = () => {
       onClick={switchTheme}
       aria-label='toggle dark/light mode'
     >
-      {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-      {t(getOppositeTheme(theme) + 'Mode')}
+      {resolved === 'dark' ? <SunIcon /> : <MoonIcon />}
+      {t(opposite + 'Mode')}
     </button>
   ) : (
     <></>

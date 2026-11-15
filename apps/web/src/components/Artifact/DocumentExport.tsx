@@ -4,7 +4,7 @@ import { markdownToDocxBlob } from '@utils/docx';
 import { markdownToHtml, printHtmlAsPdf } from '@utils/printDocument';
 
 const buttonClass =
-  'flex items-center gap-1 rounded-lg border border-surface-line bg-white px-2 py-1 text-xs text-ink-soft hover:bg-surface-muted';
+  'flex items-center gap-1 rounded-lg border border-surface-line bg-surface px-2 py-1 text-xs text-ink-soft hover:bg-surface-muted';
 
 const DocumentExport = ({ title, content }: { title: string; content: string }) => {
   const baseName = title.replace(/\.[^.]+$/, '') || 'document';

@@ -89,8 +89,8 @@ const ProjectPage = () => {
   const isEmpty = webProjects.length === 0 && studioImages.length === 0;
 
   return (
-    <div className='flex h-full min-h-0 flex-1 flex-col bg-white text-ink'>
-      <header className='flex items-center justify-between gap-4 border-b border-surface-line px-6 py-4'>
+    <div className='flex h-full min-h-0 w-full flex-1 flex-col bg-surface text-ink'>
+      <header className='flex items-center justify-between gap-4 border-b border-surface-line px-8 py-4'>
         <div className='min-w-0'>
           <h1 className='text-base font-semibold text-ink'>Projects</h1>
           <p className='text-xs text-ink-muted'>Web apps you built in chat and images you generated in Studio</p>
@@ -98,7 +98,7 @@ const ProjectPage = () => {
         <button
           type='button'
           onClick={() => setProjectMode(false)}
-          className='inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-surface-line bg-white px-3 py-1.5 text-xs font-medium text-ink-soft shadow-card transition-colors hover:bg-surface-muted'
+          className='inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-surface-line bg-surface px-3 py-1.5 text-xs font-medium text-ink-soft shadow-card transition-colors hover:bg-surface-muted'
         >
           <ArrowLeftIcon className='h-3.5 w-3.5' />
           Back to chat
@@ -106,14 +106,14 @@ const ProjectPage = () => {
       </header>
 
       <div className='min-h-0 flex-1 overflow-y-auto bg-surface-muted/40'>
-        <div className='mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-8'>
+        <div className='mx-auto flex w-full max-w-7xl flex-col gap-10 px-8 py-8'>
           {isEmpty && (
-            <div className='flex flex-col items-center gap-3 rounded-2xl border border-dashed border-surface-line bg-white px-6 py-16 text-center'>
-              <span className='flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600'>
+            <div className='flex flex-col items-center gap-3 rounded-2xl border border-surface-line bg-surface px-6 py-16 text-center dark:border-zinc-800 dark:bg-zinc-900/40'>
+              <span className='flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-[#9EFF00]/10 dark:text-[#9EFF00]'>
                 <SparkleGlyph className='h-5 w-5' />
               </span>
-              <p className='text-sm font-semibold text-ink'>No projects yet</p>
-              <p className='max-w-sm text-xs text-ink-muted'>
+              <p className='text-sm font-semibold text-ink dark:text-zinc-100'>No projects yet</p>
+              <p className='max-w-sm text-xs text-ink-muted dark:text-zinc-400'>
                 Web apps you build in chat and images you generate in Studio will show up here.
               </p>
             </div>
@@ -128,7 +128,7 @@ const ProjectPage = () => {
                     key={chat.id}
                     type='button'
                     onClick={() => openWebProject(index, artifactList[0].id)}
-                    className='group flex flex-col gap-4 rounded-2xl border border-surface-line bg-white p-5 text-left shadow-card transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-soft'
+                    className='group flex flex-col gap-4 rounded-2xl border border-zinc-800 bg-surface p-5 text-left shadow-card transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:border-emerald-500/40 hover:shadow-soft'
                   >
                     <span className='flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600'>
                       <CodeIcon className='h-4 w-4' />
@@ -157,7 +157,7 @@ const ProjectPage = () => {
                     key={item.id}
                     type='button'
                     onClick={openStudio}
-                    className='group flex flex-col overflow-hidden rounded-2xl border border-surface-line bg-white text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-soft'
+                    className='group flex flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-surface text-left shadow-card transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:border-emerald-500/40 hover:shadow-soft'
                   >
                     <StudioThumb item={item} />
                     <div className='flex flex-col gap-1 p-3'>

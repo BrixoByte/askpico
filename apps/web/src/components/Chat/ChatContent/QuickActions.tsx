@@ -31,7 +31,7 @@ const QuickActions = () => {
       {actions.map((a) => (
         <button
           key={a.title}
-          className='group flex flex-col rounded-xl border border-surface-line bg-white p-2.5 text-left shadow-soft transition-all hover:border-brand-200 hover:shadow-card'
+          className='group flex flex-col rounded-xl border border-surface-line bg-surface p-2.5 text-left shadow-soft transition-all hover:border-brand-200 hover:shadow-card'
           onClick={() => setContent(a.prompt)}
         >
           <div className='mb-1.5 flex h-5 w-5 items-center justify-center rounded-md bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-100'>

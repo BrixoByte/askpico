@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PICO: Voice-first AI workspace for Urdu, Hindi &amp; Roman Urdu</title>
+  <meta name="description" content="PICO is a voice-first AI workspace where chat, canvas and live artifacts share one context. Speak Urdu, Hindi, Roman Urdu or English. Beta is free to start, priced in PKR." />
+  <meta name="theme-color" content="#0A0B09" />
+  <link rel="canonical" href="https://askpico.app/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="PICO" />
+  <meta property="og:title" content="PICO: Voice-first AI workspace for Urdu, Hindi &amp; Roman Urdu" />
+  <meta property="og:description" content="Chat, canvas and live artifacts in one workspace. Speak it your way." />
+  <meta property="og:url" content="https://askpico.app/" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Nastaliq+Urdu:wght@400;500;700&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/pico.css" />
+  <script src="js/pico.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ===== HEADER ===== -->
+  <header class="site-header" id="top">
+    <div class="site-header__inner">
+      <a class="brand" href="#top" aria-label="PICO home">
+        <svg class="brand__orb" viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4"/>
+          <circle cx="16" cy="16" r="8" fill="var(--lime)"/>
+        </svg>
+        <span class="brand__word">PICO</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+        <a class="site-nav__link" href="#top">Home</a>
+        <a class="site-nav__link" href="#features">Features</a>
+        <a class="site-nav__link" href="#pricing">Pricing</a>
+        <a class="site-nav__link" href="#referral">Referral</a>
+        <a class="site-nav__link" href="#about">About</a>
+      </nav>
+
+      <div class="site-header__actions">
+        <button class="lang-chip" type="button" data-lang-cycle aria-label="Change demo language">
+          <span class="lang-chip__label">EN</span>
+        </button>
+        <a class="btn btn--ghost btn--sm" href="#login">Sign in</a>
+        <a class="btn btn--lime btn--sm" href="#download">Download</a>
+        <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu" data-menu-toggle>
+          <span aria-hidden="true"></span><span aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Full-screen mobile menu -->
+  <div class="menu" id="menu" hidden>
+    <nav class="menu__nav" aria-label="Mobile">
+      <a href="#top">Home</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#referral">Referral</a>
+      <a href="#about">About</a>
+    </nav>
+    <div class="menu__foot">
+      <a class="btn btn--ghost" href="#login">Sign in</a>
+      <a class="btn btn--lime" href="#download">Download</a>
+    </div>
+  </div>
+
+  <main id="main">
+
+    <!-- ===== HERO: VOICE CONSOLE ===== -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <p class="eyebrow"><span class="dot" aria-hidden="true"></span>BETA IS LIVE · FREE TO START</p>
+          <h1 class="hero__title" id="hero-title">Speak. <span class="hero__accent">PICO builds.</span></h1>
+          <p class="hero__lede">A voice-first AI workspace for Urdu, Hindi and Roman Urdu speakers. Ask out loud or type, and get a finished answer, a canvas, or a live preview.</p>
+          <div class="hero__actions">
+            <a class="btn btn--lime btn--lg" href="#download">Get started free</a>
+            <a class="btn btn--outline btn--lg" href="#login">Sign in</a>
+          </div>
+          <ul class="chip-row" aria-label="Core modes">
+            <li class="chip">AGENT ROUTING</li>
+            <li class="chip">CANVAS &amp; TOOLS</li>
+            <li class="chip">LIVE PREVIEW</li>
+          </ul>
+        </div>
+
+        <div class="hero__visual">
+          <div class="console" aria-label="Voice console demo">
+            <div class="console__top">
+              <span class="mono">Voice console</span>
+              <span class="mono console__state" id="console-state">Idle</span>
+            </div>
+
+            <div class="console__stage">
+              <div class="console__ring" id="console-ring" aria-hidden="true"></div>
+              <button class="console__orb" type="button" id="orb" aria-pressed="false" aria-label="Start listening">
+                <span class="console__orb-core" aria-hidden="true"></span>
+              </button>
+            </div>
+
+            <p class="console__transcript" id="transcript" lang="en" dir="ltr"></p>
+
+            <div class="console__result">
+              <span class="mono">Result</span>
+              <span class="result-chip" id="result-chip">Live preview</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ticker" aria-label="Highlights">
+        <div class="ticker__track">
+          <ul class="ticker__group">
+            <li>Multi-provider routing</li><li>Character assistant</li><li>Chat, work-grade</li><li>Free to start</li><li>Beta is live</li>
+          </ul>
+          <ul class="ticker__group" aria-hidden="true">
+            <li>Multi-provider routing</li><li>Character assistant</li><li>Chat, work-grade</li><li>Free to start</li><li>Beta is live</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== WORKSPACE BENTO ===== -->
+    <section class="bento-section" id="features" aria-labelledby="bento-title">
+      <div class="container">
+        <header class="section-head">
+          <h2 class="section-title" id="bento-title"><em>More than chat.</em> One workspace.</h2>
+          <p class="section-lede">Your conversation, your canvas and your artifacts stay in the same room, so nothing slips between them.</p>
+        </header>
+
+        <div class="bento">
+          <article class="tile tile--chat reveal">
+            <p class="mono tile__label">01 · Chat</p>
+            <h3 class="tile__title">Conversations that keep the thread</h3>
+            <div class="msgs">
+              <p class="msg msg--user">Ek landing page banao for my bakery.</p>
+              <p class="msg msg--pico">Done. Hero, menu and a pickup form are ready. Want an Urdu version?</p>
+              <p class="msg msg--user" lang="ur" dir="rtl">ہاں، اور مینو کو کینوس میں دکھاؤ۔</p>
+              <p class="msg msg--pico">Menu is on the canvas now. Drag any block to reorder.</p>
+            </div>
+          </article>
+
+          <article class="tile tile--canvas reveal">
+            <p class="mono tile__label">02 · Canvas</p>
+            <h3 class="tile__title">Drag ideas into shape</h3>
+            <div class="canvas" id="canvas" aria-label="Draggable blocks demo">
+              <div class="block block--a" data-block>Hero</div>
+              <div class="block block--b" data-block>Menu</div>
+              <div class="block block--c" data-block>Pickup</div>
+            </div>
+          </article>
+
+          <article class="tile tile--artifact reveal">
+            <p class="mono tile__label">03 · Artifacts</p>
+            <h3 class="tile__title">Watch the page build itself</h3>
+            <div class="frame" aria-hidden="true">
+              <div class="frame__bar"><span></span><span></span><span></span></div>
+              <div class="frame__page">
+                <div class="frame__hero"></div>
+                <div class="frame__row"><span></span><span></span><span></span></div>
+                <div class="frame__text"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="tile tile--voice reveal">
+            <p class="mono tile__label">04 · Voice</p>
+            <h3 class="tile__title">Talk in your language</h3>
+            <div class="waves" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <ul class="chip-row chip-row--tight">
+              <li class="chip">Roman Urdu</li>
+              <li class="chip" lang="ur" dir="rtl">اردو</li>
+              <li class="chip" lang="hi">हिन्दी</li>
+            </ul>
+          </article>
+
+          <article class="tile tile--context reveal">
+            <p class="mono tile__label">05 · Context</p>
+            <h3 class="tile__title">Nothing gets lost</h3>
+            <div class="stack-cards" aria-hidden="true">
+              <span>Budget notes</span>
+              <span>Client brief</span>
+              <span>Reel ideas</span>
+            </div>
+          </article>
+        </div>
+
+        <p class="bento__more"><a class="link-lime" href="#routing">Explore how routing works →</a></p>
+      </div>
+    </section>
+
+    <!-- ===== ROUTING FLOW ===== -->
+    <section class="routing" id="routing" aria-labelledby="routing-title">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow">Agent routing</p>
+          <h2 class="section-title" id="routing-title">Every question finds <em>its</em> agent.</h2>
+          <p class="section-lede">PICO sends each question to the right agent and shows the result in the right form.</p>
+        </header>
+
+        <div class="flow" id="flow">
+          <svg class="flow__svg" viewBox="0 0 1000 420" role="img" aria-label="Your question goes to the router, which sends it to Writer, Coder, Researcher or Designer. Results appear as an answer, a canvas or a live preview.">
+            <path class="flow__path" data-agent="writer" d="M180 220 H275" />
+            <path class="flow__path" data-agent="coder" d="M180 220 H275" />
+            <path class="flow__path" data-agent="researcher" d="M180 220 H275" />
+            <path class="flow__path" data-agent="designer" d="M180 220 H275" />
+
+            <path class="flow__path flow__path--out" data-agent="writer" d="M385 200 C440 200 440 66 500 66" />
+            <path class="flow__path flow__path--out" data-agent="coder" d="M385 215 C440 215 440 166 500 166" />
+            <path class="flow__path flow__path--out" data-agent="researcher" d="M385 235 C440 235 440 266 500 266" />
+            <path class="flow__path flow__path--out" data-agent="designer" d="M385 250 C440 250 440 366 500 366" />
+
+            <path class="flow__path flow__path--res" data-agent="writer" d="M650 66 C720 66 720 116 790 116" />
+            <path class="flow__path flow__path--res" data-agent="researcher" d="M650 266 C720 266 720 116 790 116" />
+            <path class="flow__path flow__path--res" data-agent="coder" d="M650 166 C720 166 720 316 790 316" />
+            <path class="flow__path flow__path--res" data-agent="designer" d="M650 366 C720 366 720 216 790 216" />
+
+            <circle class="flow__dot" r="5"><animateMotion dur="3.2s" repeatCount="indefinite" path="M180 220 H275" /></circle>
+            <circle class="flow__dot" r="5"><animateMotion dur="3.2s" begin="-1.1s" repeatCount="indefinite" path="M385 200 C440 200 440 66 500 66 L650 66 C720 66 720 116 790 116" /></circle>
+            <circle class="flow__dot" r="5"><animateMotion dur="3.2s" begin="-2.2s" repeatCount="indefinite" path="M385 235 C440 235 440 266 500 266 L650 266 C720 266 720 116 790 116" /></circle>
+
+            <g class="flow__node flow__node--q">
+              <rect x="20" y="168" width="160" height="104" rx="20" />
+              <text x="100" y="212" text-anchor="middle">Your question</text>
+              <text x="100" y="236" text-anchor="middle" class="flow__sub">voice or text</text>
+            </g>
+
+            <g class="flow__node flow__node--router" id="router-node">
+              <circle class="flow__ring" cx="330" cy="220" r="62" />
+              <polygon points="330,160 385,190 385,250 330,280 275,250 275,190" />
+              <text x="330" y="226" text-anchor="middle">Router</text>
+            </g>
+
+            <g class="flow__node flow__agent" data-agent="writer" tabindex="0" data-tip="Draft a LinkedIn post in Roman Urdu">
+              <rect x="500" y="40" width="150" height="52" rx="14" />
+              <text x="575" y="72" text-anchor="middle">Writer</text>
+            </g>
+            <g class="flow__node flow__agent" data-agent="coder" tabindex="0" data-tip="Login page ka code do">
+              <rect x="500" y="140" width="150" height="52" rx="14" />
+              <text x="575" y="172" text-anchor="middle">Coder</text>
+            </g>
+            <g class="flow__node flow__agent" data-agent="researcher" tabindex="0" data-tip="Solar panel rates Pakistan mein compare karo">
+              <rect x="500" y="240" width="150" height="52" rx="14" />
+              <text x="575" y="272" text-anchor="middle">Researcher</text>
+            </g>
+            <g class="flow__node flow__agent" data-agent="designer" tabindex="0" data-tip="Logo ke 3 rang options dikhao">
+              <rect x="500" y="340" width="150" height="52" rx="14" />
+              <text x="575" y="372" text-anchor="middle">Designer</text>
+            </g>
+
+            <g class="flow__node flow__out"><rect x="790" y="90" width="190" height="52" rx="26" /><text x="885" y="122" text-anchor="middle">Answer</text></g>
+            <g class="flow__node flow__out"><rect x="790" y="190" width="190" height="52" rx="26" /><text x="885" y="222" text-anchor="middle">Canvas</text></g>
+            <g class="flow__node flow__out"><rect x="790" y="290" width="190" height="52" rx="26" /><text x="885" y="322" text-anchor="middle">Live preview</text></g>
+          </svg>
+          <p class="flow__tip" id="flow-tip" role="status" hidden></p>
+        </div>
+
+        <ol class="flow-steps" aria-label="Routing steps">
+          <li><strong>Your question</strong> arrives by voice or text.</li>
+          <li><strong>Router</strong> reads it and picks an agent.</li>
+          <li><strong>Agent</strong> works: Writer, Coder, Researcher or Designer.</li>
+          <li><strong>Result</strong> lands as an answer, canvas or live preview.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ===== REFERRAL: TIMELINE + CALCULATOR ===== -->
+    <section class="referral" id="referral" aria-labelledby="referral-title">
+      <div class="container referral__grid">
+        <div class="referral__timeline">
+          <p class="eyebrow">Referral milestones</p>
+          <h2 class="section-title" id="referral-title">Bring people, <em>earn</em> voice time.</h2>
+
+          <ol class="timeline">
+            <li class="timeline__item">
+              <span class="timeline__node" aria-hidden="true"></span>
+              <p class="mono timeline__when">When a friend joins</p>
+              <p class="timeline__value">+45 <small>voice minutes</small></p>
+            </li>
+            <li class="timeline__item">
+              <span class="timeline__node" aria-hidden="true"></span>
+              <p class="mono timeline__when">For each active day</p>
+              <p class="timeline__value">+1 <small>minute a day</small></p>
+            </li>
+            <li class="timeline__item">
+              <span class="timeline__node" aria-hidden="true"></span>
+              <p class="mono timeline__when">When a friend upgrades to Pro</p>
+              <p class="timeline__value">+15 <small>voice minutes</small></p>
+            </li>
+          </ol>
+        </div>
+
+        <div class="calc">
+          <h3 class="calc__title">Work out your reward</h3>
+
+          <div class="stepper" role="group" aria-labelledby="st-joins">
+            <span class="stepper__label" id="st-joins">Friends who joined</span>
+            <div class="stepper__ctrl">
+              <button class="stepper__btn" type="button" data-step="joins" data-delta="-1" aria-label="Fewer friends who joined">−</button>
+              <output class="stepper__val" id="val-joins" aria-live="polite">3</output>
+              <button class="stepper__btn" type="button" data-step="joins" data-delta="1" aria-label="More friends who joined">+</button>
+            </div>
+          </div>
+
+          <div class="stepper" role="group" aria-labelledby="st-days">
+            <span class="stepper__label" id="st-days">Active days</span>
+            <div class="stepper__ctrl">
+              <button class="stepper__btn" type="button" data-step="days" data-delta="-1" aria-label="Fewer active days">−</button>
+              <output class="stepper__val" id="val-days" aria-live="polite">10</output>
+              <button class="stepper__btn" type="button" data-step="days" data-delta="1" aria-label="More active days">+</button>
+            </div>
+          </div>
+
+          <div class="stepper" role="group" aria-labelledby="st-up">
+            <span class="stepper__label" id="st-up">Friends who upgraded to Pro</span>
+            <div class="stepper__ctrl">
+              <button class="stepper__btn" type="button" data-step="upgrades" data-delta="-1" aria-label="Fewer friends who upgraded">−</button>
+              <output class="stepper__val" id="val-upgrades" aria-live="polite">1</output>
+              <button class="stepper__btn" type="button" data-step="upgrades" data-delta="1" aria-label="More friends who upgraded">+</button>
+            </div>
+          </div>
+
+          <p class="calc__total" aria-live="polite">You'd earn <strong>+<span id="calc-total">160</span> voice minutes</strong></p>
+
+          <button class="btn btn--outline btn--block" type="button" data-copy-invite>Copy my invite link</button>
+          <p class="footnote">Free to start. Upgrade when you need more voice time and the full studio.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== LANGUAGE MARQUEES (two rows, opposite directions) ===== -->
+    <section class="langs" aria-label="Languages and modes">
+      <div class="marquee marquee--a">
+        <div class="marquee__track">
+          <ul class="marquee__group">
+            <li lang="ur" dir="rtl">اردو</li><li lang="hi">हिन्दी</li><li>Roman Urdu</li><li>English</li><li>Chat</li><li>Canvas</li><li>Artifacts</li>
+          </ul>
+          <ul class="marquee__group" aria-hidden="true">
+            <li lang="ur" dir="rtl">اردو</li><li lang="hi">हिन्दी</li><li>Roman Urdu</li><li>English</li><li>Chat</li><li>Canvas</li><li>Artifacts</li>
+          </ul>
+        </div>
+      </div>
+      <div class="marquee marquee--b">
+        <div class="marquee__track">
+          <ul class="marquee__group">
+            <li>Voice first</li><li>Beta</li><li>PKR pricing</li><li>Live preview</li><li>Your session, your choice</li>
+          </ul>
+          <ul class="marquee__group" aria-hidden="true">
+            <li>Voice first</li><li>Beta</li><li>PKR pricing</li><li>Live preview</li><li>Your session, your choice</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== METRICS BAND ===== -->
+    <section class="about" id="about" aria-labelledby="about-title">
+      <div class="container about__grid">
+        <div class="about__copy">
+          <p class="eyebrow">About PICO</p>
+          <h2 class="section-title" id="about-title">A workspace for how you <em>actually</em> speak.</h2>
+          <p class="section-lede">PICO is built for people who switch between Urdu, Hindi and Roman Urdu in one sentence. English works too, and every mode understands the mix.</p>
+        </div>
+
+        <ul class="stats">
+          <li class="stat">
+            <p class="stat__num"><span data-count="30">30</span><small>min</small></p>
+            <p class="stat__label mono">Free voice a day</p>
+            <span class="meter" aria-hidden="true"><span style="--w: 25%"></span></span>
+          </li>
+          <li class="stat">
+            <p class="stat__num"><span data-count="2">2</span><small>hrs</small></p>
+            <p class="stat__label mono">Pro voice a day</p>
+            <span class="meter" aria-hidden="true"><span style="--w: 100%"></span></span>
+          </li>
+          <li class="stat">
+            <p class="stat__num"><span data-count="6">6</span></p>
+            <p class="stat__label mono">Agent paths working together</p>
+            <span class="meter" aria-hidden="true"><span style="--w: 75%"></span></span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ===== PRICING ===== -->
+    <section class="pricing" id="pricing" aria-labelledby="pricing-title">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow">Pricing</p>
+          <h2 class="section-title" id="pricing-title">Simple plans, <em>no surprises.</em></h2>
+        </header>
+
+        <div class="voice-slider">
+          <div class="voice-slider__top">
+            <label class="voice-slider__q" for="talk">How long do you talk to PICO each day?</label>
+            <output class="voice-slider__out" id="talk-out" for="talk">30 min a day</output>
+          </div>
+          <input class="range" id="talk" type="range" min="10" max="180" step="5" value="30" aria-describedby="talk-note" />
+          <div class="voice-slider__scale mono" aria-hidden="true"><span>10 min</span><span>1 hr</span><span>3 hrs</span></div>
+          <p class="voice-slider__note" id="talk-note" aria-live="polite">Up to 30 minutes fits Starter. Billed in PKR.</p>
+        </div>
+
+        <div class="plans">
+          <article class="plan plan--starter" id="plan-starter">
+            <p class="plan__tag tag" hidden>Best fit</p>
+            <h3 class="plan__name">Starter <span class="mono">Beta</span></h3>
+            <p class="plan__price">PKR 0 <small>forever</small></p>
+            <ul class="checklist">
+              <li>Core chat</li>
+              <li>Basic agents</li>
+              <li>30 min voice a day</li>
+              <li>Community access</li>
+            </ul>
+            <a class="btn btn--outline btn--block" href="#download">Get started</a>
+          </article>
+
+          <article class="plan plan--pro" id="plan-pro">
+            <p class="plan__tag tag tag--lime" hidden>Best for heavy voice users</p>
+            <h3 class="plan__name">PICO Pro</h3>
+            <p class="plan__price">PKR 1,499 <small>/ month</small></p>
+            <ul class="checklist">
+              <li>Unlimited Canvas Studio</li>
+              <li>Full artifact and code access</li>
+              <li>Priority agent routing</li>
+              <li>2 hrs voice a day</li>
+            </ul>
+            <a class="btn btn--lime btn--block" href="#download">Upgrade</a>
+          </article>
+        </div>
+
+        <p class="pricing__where"><a class="link-lime" href="#faq" data-open-faq="pay">Where do I pay? →</a></p>
+
+        <details class="compare">
+          <summary>Compare plans</summary>
+          <div class="compare__body">
+            <table class="compare__table">
+              <thead>
+                <tr><th scope="col">Feature</th><th scope="col">Starter</th><th scope="col">Pro</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Core chat</th><td>Included</td><td>Included</td></tr>
+                <tr><th scope="row">Basic agents</th><td>Included</td><td>Included</td></tr>
+                <tr><th scope="row">Voice time</th><td>30 min/day</td><td>2 hrs/day</td></tr>
+                <tr><th scope="row">Canvas Studio</th><td>Not included</td><td>Unlimited</td></tr>
+                <tr><th scope="row">Artifact and code access</th><td>Not included</td><td>Full</td></tr>
+                <tr><th scope="row">Agent routing</th><td>Standard</td><td>Priority</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===== COMPANION: STICKY STACK ===== -->
+    <section class="companion" id="companion" aria-labelledby="companion-title">
+      <div class="container companion__grid">
+        <aside class="companion__rail">
+          <p class="eyebrow">Three parts, one companion</p>
+          <h2 class="section-title" id="companion-title">Built in <em>layers</em>.</h2>
+          <ol class="progress" id="progress">
+            <li class="progress__item is-active" data-target="0"><span class="mono">01</span> Agent Router Engine</li>
+            <li class="progress__item" data-target="1"><span class="mono">02</span> Character Assistant</li>
+            <li class="progress__item" data-target="2"><span class="mono">03</span> Real-time Artifact Preview</li>
+          </ol>
+        </aside>
+
+        <div class="cards">
+          <article class="card-stack card-stack--router" style="--i: 0;" data-index="0">
+            <p class="mono card-stack__num">01/03</p>
+            <h3 class="card-stack__title">Agent Router Engine</h3>
+            <p>Reads each question, picks the agent that fits, and decides whether the answer should be text, a canvas or a live preview.</p>
+            <div class="mini-router" aria-hidden="true">
+              <span>Q</span><i></i><b>R</b><i></i><span>W</span><span>C</span><span>D</span>
+            </div>
+          </article>
+
+          <article class="card-stack card-stack--character" style="--i: 1;" data-index="1">
+            <p class="mono card-stack__num">02/03</p>
+            <h3 class="card-stack__title">Character Assistant</h3>
+            <p>A personable companion with its own voice. It listens, reacts, and keeps things warm, quick and a little witty.</p>
+            <div class="mini-char" aria-hidden="true">
+              <div class="mini-char__face is-happy" id="char-face">
+                <span class="mini-char__eye"></span><span class="mini-char__eye"></span><span class="mini-char__mouth"></span>
+              </div>
+              <p class="mini-char__line" id="char-line">Ji, batayein. Kya banana hai?</p>
+            </div>
+          </article>
+
+          <article class="card-stack card-stack--preview" style="--i: 2;" data-index="2">
+            <p class="mono card-stack__num">03/03</p>
+            <h3 class="card-stack__title">Real-time Artifact Preview</h3>
+            <p>See the page build as PICO writes it. Flip to code whenever you want to edit by hand.</p>
+            <div class="mini-preview" aria-hidden="true">
+              <div class="mini-preview__bars"><span></span><span></span><span></span><span></span></div>
+              <div class="mini-preview__page"><i></i><i></i></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SOLUTIONS: PERSONA TABS ===== -->
+    <section class="personas" id="solutions" aria-labelledby="personas-title">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow">Solutions</p>
+          <h2 class="section-title" id="personas-title">Built for <em>how</em> you work.</h2>
+        </header>
+
+        <div class="tabs" role="tablist" aria-label="Who PICO is for">
+          <button class="tabs__tab is-active" type="button" role="tab" id="tab-everyday" aria-selected="true" aria-controls="persona-panel" tabindex="0">Everyday users</button>
+          <button class="tabs__tab" type="button" role="tab" id="tab-creators" aria-selected="false" aria-controls="persona-panel" tabindex="-1">Creators</button>
+          <button class="tabs__tab" type="button" role="tab" id="tab-builders" aria-selected="false" aria-controls="persona-panel" tabindex="-1">Builders</button>
+        </div>
+
+        <article class="persona" role="tabpanel" id="persona-panel" aria-labelledby="tab-everyday" tabindex="0">
+          <div class="persona__copy">
+            <h3 class="persona__title" id="persona-title">Everyday users</h3>
+            <ul class="checklist checklist--bare" id="persona-bullets"></ul>
+          </div>
+          <div class="persona__try">
+            <p class="mono">Try a prompt</p>
+            <div class="prompts" id="prompts"></div>
+            <div class="reply" aria-live="polite">
+              <span class="result-chip" id="reply-chip" hidden></span>
+              <p class="reply__text" id="reply-text">Pick a prompt to see PICO answer it.</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===== PRINCIPLES: EXPANDING PANELS ===== -->
+    <section class="principles" id="principles" aria-labelledby="principles-title">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow">Principles</p>
+          <h2 class="section-title" id="principles-title">Built for clarity and <em>privacy.</em></h2>
+        </header>
+
+        <div class="acc">
+          <article class="acc__panel is-open">
+            <button class="acc__btn" type="button" aria-expanded="true" aria-controls="acc-body-1" id="acc-1">
+              <span class="mono acc__num">01</span>
+              <span class="acc__title">Zero bloat</span>
+            </button>
+            <div class="acc__body" id="acc-body-1" role="region" aria-labelledby="acc-1">
+              <p>Only the tools you use are loaded. Nothing runs in the background just because it exists.</p>
+            </div>
+          </article>
+          <article class="acc__panel">
+            <button class="acc__btn" type="button" aria-expanded="false" aria-controls="acc-body-2" id="acc-2">
+              <span class="mono acc__num">02</span>
+              <span class="acc__title">Modular components</span>
+            </button>
+            <div class="acc__body" id="acc-body-2" role="region" aria-labelledby="acc-2" hidden>
+              <p>Tools, agents and interface parts stay separate, so one change never breaks the rest.</p>
+            </div>
+          </article>
+          <article class="acc__panel">
+            <button class="acc__btn" type="button" aria-expanded="false" aria-controls="acc-body-3" id="acc-3">
+              <span class="mono acc__num">03</span>
+              <span class="acc__title">Privacy-focused sessions</span>
+            </button>
+            <div class="acc__body" id="acc-body-3" role="region" aria-labelledby="acc-3" hidden>
+              <p>You decide what is stored. Sessions are kept while you need them, and you can clear them at any time.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section class="faq" id="faq" aria-labelledby="faq-title">
+      <div class="container faq__grid">
+        <aside class="faq__intro">
+          <h2 class="section-title" id="faq-title">Questions? <em>Answered.</em></h2>
+          <p class="section-lede">The things people ask us most, in short.</p>
+          <div class="help-card">
+            <p class="help-card__title">Still stuck?</p>
+            <p class="help-card__text">Write to a real person. We reply within one working day.</p>
+            <button class="btn btn--outline btn--sm" type="button" data-copy-email>Copy hello@askpico.app</button>
+          </div>
+        </aside>
+
+        <div class="faq__list">
+          <div class="faq__item">
+            <h3 class="faq__heading"><button class="faq__btn" type="button" aria-expanded="false" aria-controls="faq-a1" id="faq-q1">What exactly is PICO?</button></h3>
+            <div class="faq__panel" id="faq-a1" role="region" aria-labelledby="faq-q1" hidden><div class="faq__inner"><p>PICO is a voice-first AI workspace. Chat, canvas and live artifacts share one context, so the thread is never lost.</p></div></div>
+          </div>
+          <div class="faq__item">
+            <h3 class="faq__heading"><button class="faq__btn" type="button" aria-expanded="false" aria-controls="faq-a2" id="faq-q2">Can I try it without signing up?</button></h3>
+            <div class="faq__panel" id="faq-a2" role="region" aria-labelledby="faq-q2" hidden><div class="faq__inner"><p>Yes. Starter is free to start during beta, with 30 minutes of voice a day. Sign up when you want your work on every device.</p></div></div>
+          </div>
+          <div class="faq__item">
+            <h3 class="faq__heading"><button class="faq__btn" type="button" aria-expanded="false" aria-controls="faq-a3" id="faq-q3">How does voice time work?</button></h3>
+            <div class="faq__panel" id="faq-a3" role="region" aria-labelledby="faq-q3" hidden><div class="faq__inner"><p>Free includes 30 minutes of voice a day. Pro includes 2 hours a day. Use the voice slider in Pricing to see which fits you.</p></div></div>
+          </div>
+          <div class="faq__item">
+            <h3 class="faq__heading"><button class="faq__btn" type="button" aria-expanded="false" aria-controls="faq-a4" id="faq-q4">How do referral rewards work?</button></h3>
+            <div class="faq__panel" id="faq-a4" role="region" aria-labelledby="faq-q4" hidden><div class="faq__inner"><p>Each friend who joins adds 45 voice minutes. Each active day adds 1 minute. Each friend who upgrades to Pro adds 15 minutes.</p></div></div>
+          </div>
+          <div class="faq__item" id="faq-pay">
+            <h3 class="faq__heading"><button class="faq__btn" type="button" aria-expanded="false" aria-controls="faq-a5" id="faq-q5">Where do I pay for a plan?</button></h3>
+            <div class="faq__panel" id="faq-a5" role="region" aria-labelledby="faq-q5" hidden><div class="faq__inner"><p>Plans are priced in PKR. Starter is PKR 0 forever, and PICO Pro is PKR 1,499 a month. Pick a plan in Pricing and continue from there.</p></div></div>
+          </div>
+          <div class="faq__item">
+            <h3 class="faq__heading"><button class="faq__btn" type="button" aria-expanded="false" aria-controls="faq-a6" id="faq-q6">Which languages can I use?</button></h3>
+            <div class="faq__panel" id="faq-a6" role="region" aria-labelledby="faq-q6" hidden><div class="faq__inner"><p>Urdu, Hindi, Roman Urdu and English, including mixed sentences in one conversation.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FINAL CTA ===== -->
+    <section class="cta" id="download" aria-labelledby="cta-title">
+      <svg class="cta__rings" viewBox="0 0 600 600" aria-hidden="true">
+        <circle cx="300" cy="300" r="120" fill="none" stroke="currentColor" stroke-opacity=".25"/>
+        <circle cx="300" cy="300" r="190" fill="none" stroke="currentColor" stroke-opacity=".18"/>
+        <circle cx="300" cy="300" r="260" fill="none" stroke="currentColor" stroke-opacity=".12"/>
+      </svg>
+      <div class="container cta__inner">
+        <h2 class="cta__title" id="cta-title">Start talking. PICO takes it from here.</h2>
+        <p class="cta__text">Free to start. Upgrade when you need more voice time and the full studio.</p>
+        <div class="cta__actions">
+          <a class="btn btn--dark btn--lg" href="#login">Launch PICO</a>
+          <a class="btn btn--outline-dark btn--lg" href="#download-app">Download</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="container site-footer__grid">
+      <div class="site-footer__brand">
+        <a class="brand" href="#top" aria-label="PICO home">
+          <svg class="brand__orb" viewBox="0 0 32 32" aria-hidden="true">
+            <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".4"/>
+            <circle cx="16" cy="16" r="8" fill="var(--lime)"/>
+          </svg>
+          <span class="brand__word">PICO</span>
+        </a>
+        <p class="site-footer__tag">Talk to your work. Keep the thread.</p>
+        <button class="lang-chip" type="button" data-lang-cycle aria-label="Change demo language">
+          <span class="lang-chip__label">EN</span>
+        </button>
+      </div>
+
+      <nav class="site-footer__col" aria-label="Product">
+        <h2 class="mono">Product</h2>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#referral">Referral</a>
+        <a href="#solutions">Solutions</a>
+      </nav>
+
+      <nav class="site-footer__col" aria-label="Company">
+        <h2 class="mono">Company</h2>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+        <a href="#principles">Principles</a>
+      </nav>
+
+      <nav class="site-footer__col" aria-label="Support and legal">
+        <h2 class="mono">Support</h2>
+        <a href="#faq">FAQ</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+      </nav>
+    </div>
+
+    <div class="container site-footer__bottom">
+      <p>
+        <a href="mailto:hello@askpico.app">hello@askpico.app</a>
+        <span class="mono">· Location: [add city] <!-- replace with company location --></span>
+      </p>
+      <p class="mono">© <span data-year>2026</span> PICO</p>
+      <button class="back-to-top" type="button" data-back-to-top>Back to top ↑</button>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

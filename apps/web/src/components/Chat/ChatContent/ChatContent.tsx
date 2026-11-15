@@ -5,14 +5,17 @@ import useStore from '@store/store';
 import ScrollToBottomButton from './ScrollToBottomButton';
 import Message from './Message';
 import EmptyState from './EmptyState';
+import MobileHomeLayout from './MobileHomeLayout';
+import VoiceStatus from '@components/Voice/VoiceStatus';
+import AgentRouteBadge from './AgentRouteBadge';
+import QuotaBanner from './QuotaBanner';
+import VoiceVisualizer from '@components/Voice/VoiceVisualizer';
+import useVoiceStore from '@store/voice-store';
+import { isMobileDevice, isNativeMobileApp } from '@utils/device';
 
 import { shallow } from 'zustand/shallow';
 
-const ChatContent = ({
-  saveRef,
-}: {
-  saveRef: React.RefObject<HTMLDivElement>;
-}) => {
+const ChatContent = () => {
   const error = useStore((state) => state.error);
   const currentChatIndex = useStore((state) => state.currentChatIndex);
   const advancedMode = useStore((state) => state.advancedMode);
@@ -39,15 +42,42 @@ const ChatContent = ({
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const voiceHome = useVoiceStore((state) => state.voiceHome);
+  const voiceMode = useVoiceStore((state) => state.voiceMode);
+  const voiceThreadId = useVoiceStore((state) => state.voiceThreadId);
+  const activeChatId = chats ? chats[currentChatIndex]?.id ?? null : null;
+  const inVoiceHome =
+    voiceHome &&
+    (voiceMode || !hasMessages || (voiceThreadId !== null && voiceThreadId === activeChatId));
+
+  if (inVoiceHome) {
+    return (
+      <div className='flex h-full min-h-0 flex-1 flex-col overflow-y-auto'>
+        <div className='fade-in mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-4 py-2'>
+          <EmptyState showDivider={false} />
+          <VoiceVisualizer />
+        </div>
+        {error && (
+          <div className='mx-auto mb-2 max-w-3xl rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600'>
+            {error}
+          </div>
+        )}
+        <div className='mx-auto w-full max-w-3xl'>
+          <VoiceStatus />
+        </div>
+      </div>
+    );
+  }
+
   if (!hasMessages) {
     return (
       <div className='flex h-full min-h-0 flex-1 flex-col overflow-y-auto'>
         <div
-          ref={saveRef}
           className='fade-in mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-4 py-2'
         >
-          <EmptyState />
-          <div className='mt-6 w-full max-w-2xl'>
+          {isNativeMobileApp() ? <MobileHomeLayout /> : !isMobileDevice() && <EmptyState />}
+          <QuotaBanner />
+          <div className='sticky bottom-0 z-10 mt-6 w-full max-w-2xl'>
             <Message
               role='user'
               content=''
@@ -61,19 +91,22 @@ const ChatContent = ({
             {error}
           </div>
         )}
+        <div className='mx-auto w-full max-w-3xl'>
+          <VoiceStatus />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className='flex h-full min-h-0 flex-1 flex-col'>
+    <div className='mx-[10%] mb-4 mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-slate-200/60 backdrop-blur-md sm:mb-1 sm:mt-6 md:-mt-12 dark:bg-zinc-900/40 dark:backdrop-blur-xl'>
       <div className='relative flex-1 min-h-0 overflow-hidden'>
         <ScrollToBottom
           className='h-full w-full'
           followButtonClassName='hidden'
           initialScrollBehavior='auto'
         >
-          <div ref={saveRef} className='flex min-h-full w-full flex-col'>
+          <div className='flex min-h-full w-full flex-col'>
             <div className='fade-in mx-auto w-full max-w-3xl px-4 pt-4 pb-6'>
               {messages?.map((message, index) =>
                 !message.image && (advancedMode || index !== 0 || message.role !== 'system') ? (
@@ -96,12 +129,14 @@ const ChatContent = ({
                 ) : null
               )}
             </div>
+            <AgentRouteBadge />
           </div>
         </ScrollToBottom>
         <ScrollToBottomButton />
       </div>
 
-      <div className='relative z-10 px-4 pb-2 pt-2'>
+      <div className='relative z-10 px-4 pb-5 pt-2'>
+        <QuotaBanner />
         <div className='mx-auto w-full max-w-3xl'>
           <Message
             role='user'
@@ -115,6 +150,9 @@ const ChatContent = ({
             {error}
           </div>
         )}
+        <div className='mx-auto w-full max-w-3xl'>
+          <VoiceStatus />
+        </div>
         <div ref={messagesEndRef} />
       </div>
     </div>

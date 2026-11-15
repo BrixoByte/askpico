@@ -2,6 +2,7 @@ import React from 'react';
 import useStore from '@store/store';
 import { ImageMessageInterface } from '@type/chat';
 import { imageRequestKey, isImageGenerating, runImageGeneration } from '@utils/imageGeneration';
+import { gateSignedIn } from '@utils/authGate';
 import ImageGenerateCard, { ImageCardState } from './ImageGenerateCard';
 
 const ImageMessage = ({
@@ -30,11 +31,13 @@ const ImageMessage = ({
 
   const handleGenerate = () => {
     if (!chatId) return;
-    runImageGeneration(chatId, messageIndex, {
-      provider: image.provider,
-      prompt: image.prompt,
-      aspectRatio: image.aspectRatio,
-      imageId: image.imageId,
+    void gateSignedIn('Sign in to generate images.', () => {
+      runImageGeneration(chatId, messageIndex, {
+        provider: image.provider,
+        prompt: image.prompt,
+        aspectRatio: image.aspectRatio,
+        imageId: image.imageId,
+      });
     });
   };
 

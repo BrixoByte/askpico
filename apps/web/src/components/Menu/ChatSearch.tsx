@@ -45,7 +45,7 @@ const ChatSearch = ({
         onChange={handleChange}
       />
       <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5'>
-        <kbd className='rounded-md border border-surface-line bg-white px-1.5 py-0.5 text-[10px] font-medium text-ink-muted'>
+        <kbd className='rounded-md border border-surface-line bg-surface px-1.5 py-0.5 text-[10px] font-medium text-ink-muted'>
           ⌘K
         </kbd>
       </div>

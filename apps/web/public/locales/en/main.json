@@ -1,4 +1,4 @@
-{
+﻿{
   "save": "Save",
   "generate": "Generate",
   "cancel": "Cancel",
@@ -10,7 +10,6 @@
   "import": "Import",
   "export": "Export",
   "author": "Made by Jing Hua",
-  "about": "About & Sponsor",
   "api": "API",
   "personal": "Personal",
   "free": "Free",

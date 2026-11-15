@@ -48,7 +48,7 @@ const LiveCurrency = () => {
   if (!rates || !crypto) return <p className='text-sm text-ink-muted'>Loading rates...</p>;
 
   return (
-    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-white p-4 text-sm'>
+    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4 text-sm'>
       <div>
         <p className='mb-1 font-medium text-ink'>Currency (1 USD)</p>
         <ul className='flex flex-col gap-1 text-ink-soft'>

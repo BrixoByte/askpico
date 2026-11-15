@@ -12,7 +12,7 @@ const MarkdownToPdf = () => {
   };
 
   return (
-    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-white p-4 text-sm'>
+    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4 text-sm'>
       <div className='grid gap-3 md:grid-cols-2'>
         <textarea
           aria-label='markdown input'
@@ -22,7 +22,7 @@ const MarkdownToPdf = () => {
         />
         <div
           aria-label='markdown preview'
-          className='min-h-[220px] overflow-auto rounded-lg border border-surface-line bg-white p-3'
+          className='min-h-[220px] overflow-auto rounded-lg border border-surface-line bg-surface p-3'
           dangerouslySetInnerHTML={{ __html: html }}
         />
       </div>

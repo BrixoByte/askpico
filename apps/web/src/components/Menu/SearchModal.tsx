@@ -45,7 +45,7 @@ const SearchModal = ({
       onMouseDown={onClose}
     >
       <div
-        className='mx-4 w-full max-w-lg rounded-2xl border border-surface-line bg-white p-4 shadow-2xl'
+        className='mx-4 w-full max-w-lg rounded-2xl border border-surface-line bg-surface p-4 shadow-2xl'
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className='flex items-center gap-2 border-b border-surface-line pb-2'>
@@ -70,7 +70,7 @@ const SearchModal = ({
             results.map((result) => (
               <button
                 key={`${result.title}-${result.index}`}
-                className='flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-ink-soft hover:bg-black/5 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40'
+                className='flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-ink-soft hover:bg-ink/5 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40'
                 disabled={generating}
                 onClick={() => {
                   setCurrentChatIndex(result.index);

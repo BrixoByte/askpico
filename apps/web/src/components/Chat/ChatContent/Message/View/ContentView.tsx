@@ -11,7 +11,7 @@ import useStore from '@store/store';
 
 import { codeLanguageSubset } from '@constants/chat';
 
-import { isDocumentLanguage, MarkdownSegment, splitFences } from '@utils/artifactParser';
+import { isDocumentLanguage, MarkdownSegment, splitFences, stripInternalMarkers } from '@utils/artifactParser';
 import ArtifactCard from '@components/Artifact/ArtifactCard';
 import DocumentExport from '@components/Artifact/DocumentExport';
 
@@ -32,23 +32,29 @@ const ContentView = memo(
   }) => {
     const inlineLatex = useStore((state) => state.inlineLatex);
 
+    // Internal markers ([Verify Local Data]) must never reach the UI or the
+    // clipboard — strip them for both roles.
+    const cleanContent = stripInternalMarkers(content);
+
     const handleCopy = () => {
-      navigator.clipboard.writeText(content);
+      navigator.clipboard.writeText(cleanContent);
     };
 
     const segments: MarkdownSegment[] =
       role === 'assistant'
         ? splitFences(content)
-        : [{ type: 'text', value: content }];
+        : [{ type: 'text', value: cleanContent }];
+
+    const hasUrduScript = /[\u0600-\u06FF]/.test(content);
 
     return (
       <>
         <div
           className={`markdown prose break-words dark:prose-invert dark share-gpt-message ${
             role === 'user'
-              ? 'ml-auto w-fit max-w-[85%] rounded-2xl rounded-tr-sm bg-brand-50 px-4 py-2.5 text-ink md:max-w-[85%]'
+              ? 'ml-auto w-fit max-w-[85%] rounded-2xl rounded-tr-sm bg-brand-50 px-3.5 py-2 text-ink md:max-w-[85%]'
               : 'w-full md:max-w-full'
-          }`}
+          } ${hasUrduScript ? 'font-urdu' : ''}`}
         >
           {segments.map((segment, index) => {
             if (segment.type === 'code') {
@@ -95,7 +101,7 @@ const ContentView = memo(
             );
           })}
         </div>
-        <div className='flex justify-end gap-2 w-full mt-2'>
+        <div className='flex justify-end gap-2 w-full mt-1'>
           <CopyButton onClick={handleCopy} />
           {role === 'user' && <EditButton setIsEdit={setIsEdit} />}
         </div>

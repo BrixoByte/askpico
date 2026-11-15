@@ -1,3 +1,17 @@
 apps/web/public/bin/
 node_modules/
 services/api/data/
+
+# Logs / crash dumps
+debug.log
+hs_err_pid*.log
+replay_pid*.log
+
+# Vite temp config timestamps
+vite.config.ts.timestamp-*.mjs
+
+# Archives
+apps/mobile-project.zip
+
+# Testing scratch artifacts
+testing/

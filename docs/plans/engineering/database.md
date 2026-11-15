@@ -79,9 +79,17 @@ Not persisted (memory only): `generating`, `error`, `imageMode`, `projectMode`, 
 
 ### 2.8 Agent Chat History (`services/api/src/agentStore.js`)
 
-- SQLite through `node:sqlite`, file `services/api/data/agents.db` (git-ignored).
-- Table `agent_messages`: `id` (autoincrement), `anon_id`, `agent_id`, `role`, `content`, `created_at`.
+- Supabase table `agent_messages` (service role on the backend). The SQLite file `agents.db` has been removed.
+- Columns: `id`, `user_id`, `agent_id`, `chat_id`, `turn`, `role`, `content`, `created_at`.
 - Read only by backend specialists for routing context. The frontend never receives this data.
+- Authenticated with the Supabase bearer token (`requireUser` in `server.js`). The old `anonId` is removed.
+
+### 2.9 Guest Sessions
+
+- Guests get an anonymous Supabase session (`signInAnonymously`) with no sign-up. Client code: `apps/web/src/api/supabase.ts`.
+- Guest data (agent history, and later chats and settings) is kept while the guest is active.
+- Retention: `purge_inactive_guests()` (migration `supabase/migrations/0001_init.sql`) deletes anonymous users inactive for 7 days, and their rows cascade. Schedule it daily (pg_cron or a Supabase Scheduled Function).
+- When a guest signs up, link the anonymous account (`updateUser` with email or Google) so the data is kept.
 
 ## 3. Supabase Target Schema (Draft)
 
@@ -234,8 +242,6 @@ Any new feature or page that stores data must add an entry to this document:
 
 These features are planned, and their data is not yet saved. Add each one to the schema when it is built.
 
-- **Agent chat history:** backend SQLite (`agent_messages`, section 2.8). Migrates to `agent_messages` with `user_id` after sign-in is built.
-- **Anonymous browser ID:** `localStorage` key `pico-anon-id` (UUID). Sent with each agent request as `anonId`, so history stays separate per browser. Replaced by `user_id` after sign-in.
 - **Agent picker state (`selectedAgentId`):** no longer persisted. Old data was removed.
 - **Document Maker (Office agent):** table `documents` (`id`, `user_id`, `title`, `body`, `format`, `created_at`).
 - **Video compress and video trim (Studio agent):** temporary files only. Only metadata goes to `studio_items`.
@@ -243,6 +249,7 @@ These features are planned, and their data is not yet saved. Add each one to the
 - **Freelance rate and tax calculator:** calculation only. No data is saved.
 - **Pomodoro, scratchpad, and reminders (Lock In agent):** `scratchpad_items` (`id`, `user_id`, `title`, `body`, `tags text[]`, `created_at`); `reminders` (`id`, `user_id`, `text`, `remind_at`, `done`). Pomodoro sessions: `focus_sessions` (`user_id`, `started_at`, `minutes`).
 - **Voice quota (Feature 30):** `voice_usage` (`user_id`, `day`, `seconds_used`); `referrals` (`referrer_id`, `referred_id`, `created_at`). See [Authentication](authentication.md) for the full referral tables.
+- **Memory system:** `user_brain` (`user_id`, `profile jsonb`, `rules jsonb`, `updated_at`) for the always-injected Global Brain; `memory_items` (`id`, `user_id`, `chat_id`, `source` (`chat` | `voice` | `brain`), `content`, `embedding vector(1536)`, `created_at`) for pgvector long-term recall. Requires the `pgvector` extension. See [Memory system](../modules/memory-system.md).
 - **Document and PDF chat (Study agent):** `documents` and `document_chunks` (`id`, `document_id`, `position`, `text`, `embedding vector` if pgvector is used).
 - **Image Studio background remover and PDF tools:** client-side only. Output is downloaded, not stored.
 

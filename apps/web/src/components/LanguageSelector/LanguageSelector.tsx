@@ -13,7 +13,7 @@ const LanguageSelector = ({ iconOnly = false }: { iconOnly?: boolean }) => {
     <div className='prose dark:prose-invert relative'>
       {iconOnly ? (
         <button
-          className='flex h-10 w-10 items-center justify-center rounded-full border border-surface-line bg-white text-ink-muted transition-colors hover:text-ink'
+          className='flex h-10 w-10 items-center justify-center rounded-full border border-surface-line bg-surface text-ink-muted transition-colors hover:text-ink'
           type='button'
           onClick={() => setDropDown((prev) => !prev)}
           aria-label='language selector'
@@ -38,7 +38,7 @@ const LanguageSelector = ({ iconOnly = false }: { iconOnly?: boolean }) => {
           dropDown ? '' : 'hidden'
         } absolute ${
           iconOnly ? 'bottom-full right-0 mb-2' : 'top-100 bottom-100'
-        } z-10 bg-white rounded-lg shadow-xl border-b border-black/10 dark:border-gray-900/50 text-gray-800 dark:text-gray-100 group dark:bg-gray-800 opacity-90 w-36`}
+        } z-10 bg-white rounded-lg shadow-xl border-b border-gray-200 text-gray-800 dark:border-zinc-800 dark:text-gray-100 group dark:bg-zinc-900 w-36`}
       >
         <ul
           className='text-sm text-gray-700 dark:text-gray-200 p-0 m-0 max-h-72 overflow-auto'

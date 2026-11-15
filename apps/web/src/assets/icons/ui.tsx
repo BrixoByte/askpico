@@ -246,6 +246,36 @@ export const PanelLeftIcon = ({
   </span>
 );
 
+export const ChevronsLeftIcon = ({
+  className = 'h-4 w-4',
+}: {
+  className?: string;
+}) => (
+  <span className={`inline-flex ${className}`}>
+    {svg(
+      <>
+        <path d='m11 17-5-5 5-5' />
+        <path d='m18 17-5-5 5-5' />
+      </>
+    )}
+  </span>
+);
+
+export const ChevronsRightIcon = ({
+  className = 'h-4 w-4',
+}: {
+  className?: string;
+}) => (
+  <span className={`inline-flex ${className}`}>
+    {svg(
+      <>
+        <path d='m6 17 5-5-5-5' />
+        <path d='m13 17 5-5-5-5' />
+      </>
+    )}
+  </span>
+);
+
 export const DeepResearchIcon = ({
   className = 'h-4 w-4',
 }: {

@@ -10,6 +10,7 @@ import {
   setArtifactStateItem,
 } from '@utils/artifactState';
 import { logger } from '@utils/logger';
+import PreviewErrorCard from './PreviewErrorCard';
 
 const REACT_LANGUAGES = ['jsx', 'tsx'];
 const PAGE_DIRS = ['src/pages/', 'src/', ''];
@@ -138,9 +139,9 @@ const PreviewFrame = ({
 
   return (
     <div className='flex min-h-0 flex-1 flex-col bg-surface-muted'>
-      <div className='flex items-center justify-end gap-2 border-b border-surface-line bg-white px-3 py-2 text-xs'>
+      <div className='flex items-center justify-end gap-2 border-b border-surface-line bg-surface px-3 py-2 text-xs'>
         <button
-          className='flex items-center gap-1 rounded-lg border border-surface-line bg-white px-2 py-1 text-ink-soft hover:bg-surface-muted'
+          className='flex items-center gap-1 rounded-lg border border-surface-line bg-surface px-2 py-1 text-ink-soft hover:bg-surface-muted'
           onClick={() => setReloadKey((prev) => prev + 1)}
           aria-label='refresh preview'
         >
@@ -156,7 +157,7 @@ const PreviewFrame = ({
           Refresh
         </button>
         <button
-          className='flex items-center gap-1 rounded-lg border border-surface-line bg-white px-2 py-1 text-ink-soft hover:bg-surface-muted disabled:opacity-50'
+          className='flex items-center gap-1 rounded-lg border border-surface-line bg-surface px-2 py-1 text-ink-soft hover:bg-surface-muted disabled:opacity-50'
           onClick={openFullPage}
           disabled={!srcDoc}
           aria-label='open full page preview'
@@ -176,9 +177,11 @@ const PreviewFrame = ({
       </div>
       <div className='min-h-0 flex-1 p-3'>
         {error && (
-          <pre className='h-full overflow-auto whitespace-pre-wrap rounded-xl border border-red-200 bg-red-50 p-3 font-mono text-xs text-red-700'>
-            {error}
-          </pre>
+          <PreviewErrorCard
+            error={error}
+            title={artifact.title}
+            onRetry={() => setReloadKey((prev) => prev + 1)}
+          />
         )}
         {!error && isReact && generating && (
           <div className='flex h-full items-center justify-center text-sm text-ink-muted'>
@@ -197,7 +200,7 @@ const PreviewFrame = ({
             title={artifact.title}
             srcDoc={srcDoc}
             sandbox='allow-scripts'
-            className='h-full w-full rounded-xl border border-surface-line bg-white'
+            className='h-full w-full rounded-xl border border-surface-line bg-surface'
           />
         )}
       </div>

@@ -72,7 +72,7 @@ const TextDiff = () => {
         />
       </div>
       {(left || right) && (
-        <pre className='max-h-72 overflow-auto rounded-lg border border-surface-line bg-white p-3 font-mono text-xs'>
+        <pre className='max-h-72 overflow-auto rounded-lg border border-surface-line bg-surface p-3 font-mono text-xs'>
           {lines.map((line, index) => (
             <div key={index} className={rowClass[line.type]}>
               {rowPrefix[line.type]}

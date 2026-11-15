@@ -64,7 +64,7 @@ const Message = React.memo(
     return (
       <div className='group w-full text-ink transition-colors'>
         <div
-          className={`mx-auto flex w-full max-w-3xl gap-3 px-2 py-3 text-base ${
+          className={`mx-auto flex w-full max-w-3xl gap-3 px-2 py-1.5 text-base ${
             role === 'user' ? 'flex-row-reverse' : ''
           }`}
         >
@@ -90,7 +90,7 @@ const Message = React.memo(
                 {images.map((img) => (
                   <div
                     key={img.name}
-                    className='overflow-hidden rounded-xl border border-surface-line bg-white p-1 shadow-soft'
+                    className='overflow-hidden rounded-xl border border-surface-line bg-surface p-1 shadow-soft'
                   >
                     <img
                       src={img.url}

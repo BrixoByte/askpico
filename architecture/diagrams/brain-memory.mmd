@@ -1,0 +1,70 @@
+%% title: Pico Brain — memory layers
+%% description: Four memory layers injected into every reply: global brain, context window, thread facts, and vector recall.
+%% owner: Pico core
+%% updated: 2026-11-10
+
+flowchart TD
+    subgraph L1["Layer 1 — Global Brain (explicit user memory)"]
+        MSTORE["memory-store.ts — 'pico-memory' Zustand store"]
+        SAFETY["memorySafety.ts — secrets filter (client)"]
+        MAPI["GET/PUT /api/memory — signed-in only"]
+        MSAN["memory.js — validateMemoryItems + sanitize"]
+        UBRAIN[("user_brain table — RLS")]
+        WMEM["withMemory → [HARD CONSTRAINT] + facts block"]
+    end
+    %% @node MSTORE role=client-state desc="Max 30 items x 300 chars, persisted locally" file="apps/web/src/store/memory-store.ts"
+    %% @node SAFETY role=safety desc="Blocks passwords, keys, tokens, card numbers" file="apps/web/src/utils/memorySafety.ts"
+    %% @node MAPI role=api desc="Guests get 403 and stay local-only" file="services/api/src/server.js"
+    %% @node MSAN role=memory desc="Server-side mirror of the secrets filter" file="services/api/src/memory.js"
+    %% @node UBRAIN role=db desc="One row per user, items array" file="supabase/migrations/0002_user_brain.sql"
+    %% @node WMEM role=memory desc="Constraints override persona; facts personalize" file="services/api/src/memory.js"
+
+    subgraph L2["Layer 2 — Context window (per request)"]
+        CTXW["contextWindow.ts — last 10 messages"]
+        SUBMIT["useSubmit.ts — builds chat payload"]
+    end
+    %% @node CTXW role=client-state desc="Keeps system msg + last 10 thread messages" file="apps/web/src/utils/contextWindow.ts"
+    %% @node SUBMIT role=client-state desc="Sends messages, memories, focus to /api/chat" file="apps/web/src/hooks/useSubmit.ts"
+
+    subgraph L3["Layer 3 — Thread facts + recent (server-side)"]
+        FOCUS["threadContext.js — focus fact sheet"]
+        SUMM["summarizeThread — /api/thread/focus"]
+        GROUND["mergeGroundedFacts — rejects AI-invented figures"]
+        WTHREAD["withThread → [THREAD FACTS] + [RECENT MESSAGES]"]
+    end
+    %% @node FOCUS role=memory desc="goal, product, pricing_tiers, key_decisions JSON" file="services/api/src/threadContext.js"
+    %% @node SUMM role=agent desc="LLM extracts only user-stated facts" file="services/api/src/orchestrator.js"
+    %% @node GROUND role=safety desc="Drops numbers the user never stated" file="services/api/src/threadContext.js"
+    %% @node WTHREAD role=memory desc="Authoritative thread anchor + last 6 sanitized msgs" file="services/api/src/threadContext.js"
+
+    subgraph L4["Layer 4 — Vector recall (cross-thread)"]
+        CUES["RECALL_CUES — 'pehle', 'remember', 'other chat'..."]
+        RECALL["vectorSearch.js — recallContextSafe"]
+        EMBED["vectorWorker.js — embedText (text-embedding-3-small)"]
+        MEMITEMS[("memory_items — pgvector, hnsw")]
+        RETR["[RETRIEVED CONTEXT] block"]
+        INDEX["indexTurnMemorySafe — per turn, fire-and-forget"]
+    end
+    %% @node CUES role=memory desc="Only recall-triggering queries pay embedding cost" file="services/api/src/memory/vectorSearch.js"
+    %% @node RECALL role=memory desc="match_memory_items RPC, threshold 0.78, top 2" file="services/api/src/memory/vectorSearch.js"
+    %% @node EMBED role=llm desc="Embeddings via provider /embeddings endpoint" file="services/api/src/memory/vectorWorker.js"
+    %% @node MEMITEMS role=db desc="Per-turn embeddings, cosine similarity" file="supabase/migrations/0005_memory_items.sql"
+    %% @node RETR role=memory desc="Matched turns injected into system prompt" file="services/api/src/memory/vectorSearch.js"
+    %% @node INDEX role=async desc="Indexes user+assistant turn after each reply" file="services/api/src/memory/vectorWorker.js"
+
+    subgraph AGH["Per-agent history"]
+        AGST["agentStore.js — agent_messages"]
+    end
+    %% @node AGST role=db desc="Last 10 msgs per user+agent+chat, saved each turn" file="services/api/src/agentStore.js"
+
+    MSTORE --> SAFETY --> MAPI --> MSAN --> UBRAIN
+    MSAN --> WMEM
+    CTXW --> SUBMIT
+    SUMM --> GROUND --> FOCUS --> WTHREAD
+    CUES --> RECALL --> EMBED --> MEMITEMS --> RETR
+    INDEX --> MEMITEMS
+    WMEM --> PROMPT["System prompt — every reply"]
+    WTHREAD --> PROMPT
+    RETR --> PROMPT
+    AGST --> PROMPT
+    %% @node PROMPT role=llm desc="Final prompt assembled in runSpecialist / /api/chat" file="services/api/src/orchestrator.js"

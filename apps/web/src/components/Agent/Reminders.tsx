@@ -81,7 +81,7 @@ const Reminders = () => {
         {sorted.map((r) => (
           <li
             key={r.id}
-            className='flex items-center justify-between gap-2 rounded-xl border border-surface-line bg-white p-3 text-sm'
+            className='flex items-center justify-between gap-2 rounded-xl border border-surface-line bg-surface p-3 text-sm'
           >
             <span className={r.done ? 'text-ink-muted line-through' : 'text-ink'}>
               {r.text} <span className='text-xs text-ink-muted'>({new Date(r.remindAt).toLocaleString()})</span>

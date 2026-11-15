@@ -22,7 +22,7 @@ const FileChip = ({ name, ext }: { name: string; ext: string }) => {
   };
 
   return (
-    <div className='flex max-w-full items-center gap-3 rounded-xl border border-surface-line bg-white px-3 py-2 shadow-soft'>
+    <div className='flex max-w-full items-center gap-3 rounded-xl border border-surface-line bg-surface px-3 py-2 shadow-soft'>
       <span
         className={`flex h-10 min-w-[2.5rem] shrink-0 items-center justify-center rounded-md px-1 text-[10px] font-semibold text-white ${style.color}`}
       >

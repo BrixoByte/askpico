@@ -43,7 +43,7 @@ const Scratchpad = () => {
 
   return (
     <div className='flex flex-col gap-3'>
-      <div className='flex flex-col gap-2 rounded-2xl border border-surface-line bg-white p-4'>
+      <div className='flex flex-col gap-2 rounded-2xl border border-surface-line bg-surface p-4'>
         <input
           className='rounded-lg border border-surface-line px-3 py-2 text-sm'
           placeholder='Title'
@@ -76,7 +76,7 @@ const Scratchpad = () => {
 
       <ul className='flex flex-col gap-2'>
         {visible.map((item) => (
-          <li key={item.id} className='rounded-xl border border-surface-line bg-white p-3'>
+          <li key={item.id} className='rounded-xl border border-surface-line bg-surface p-3'>
             <div className='flex items-start justify-between gap-2'>
               <span className='font-medium text-ink'>{item.title}</span>
               <button

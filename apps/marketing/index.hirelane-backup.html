@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hirelane | AI hiring that moves at your pace</title>
+  <meta name="description" content="Hirelane is an AI recruitment platform for startup founders, HR leads, and agencies. Match, screen, and hire faster, with your team in one place." />
+  <meta name="theme-color" content="#123A2B" />
+  <link rel="canonical" href="https://askpico.app/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Hirelane" />
+  <meta property="og:title" content="Hirelane | AI hiring that moves at your pace" />
+  <meta property="og:description" content="Match, screen, and hire faster with an AI recruitment platform built for lean hiring teams." />
+  <meta property="og:url" content="https://askpico.app/" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/landing.css" />
+  <script src="js/landing.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ===== HEADER ===== -->
+  <header class="site-header" id="site-header">
+    <div class="site-header__inner">
+      <a class="brand" href="#top" aria-label="Hirelane home">
+        <svg class="brand__mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V4h6.5a6.5 6.5 0 0 1 0 13H9v3z" fill="currentColor"/><circle cx="18.5" cy="5.5" r="2.5" fill="#C9F23D"/></svg>
+        <span class="brand__word">Hirelane</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+        <ul class="site-nav__list" id="site-nav-list">
+          <li><a class="site-nav__link" href="#product">Product</a></li>
+          <li><a class="site-nav__link" href="#solutions">Solutions</a></li>
+          <li><a class="site-nav__link" href="#pricing">Pricing</a></li>
+          <li><a class="site-nav__link" href="#stories">Stories</a></li>
+          <li><a class="site-nav__link" href="#faq">FAQ</a></li>
+        </ul>
+        <span class="site-nav__indicator" aria-hidden="true"></span>
+      </nav>
+
+      <div class="site-header__actions">
+        <a class="link-quiet" href="#login">Log in</a>
+        <a class="btn btn--lime btn--sm" href="#signup">Start hiring free</a>
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu">
+          <span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Full-screen mobile menu -->
+  <div class="mobile-menu" id="mobile-menu" hidden>
+    <nav class="mobile-menu__nav" aria-label="Mobile">
+      <a href="#product">Product</a>
+      <a href="#solutions">Solutions</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#stories">Stories</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="mobile-menu__foot">
+      <a class="link-quiet" href="#login">Log in</a>
+      <a class="btn btn--lime" href="#signup">Start hiring free</a>
+    </div>
+  </div>
+
+  <main id="main">
+
+    <!-- ===== HERO ===== -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <p class="eyebrow">AI hiring, without the noise</p>
+          <h1 class="hero__title" id="hero-title">Hire the right people, <em>before</em> the role goes cold.</h1>
+          <p class="hero__lede">Hirelane reads every application, ranks candidates against the role, and puts your shortlist in front of your team the same day.</p>
+
+          <div class="hero__actions">
+            <a class="btn btn--lime btn--lg" href="#signup">Start hiring free</a>
+            <button class="btn btn--ghost btn--lg" type="button" data-open-demo>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+              Watch 2-min demo
+            </button>
+          </div>
+
+          <div class="hero__proof">
+            <p class="hero__rating"><span class="stars" aria-hidden="true">★★★★★</span> 4.9 from 1,200 hiring teams</p>
+            <div class="avatar-stack" aria-hidden="true">
+              <span class="avatar" style="--h:150">AK</span>
+              <span class="avatar" style="--h:20">SR</span>
+              <span class="avatar" style="--h:260">MN</span>
+              <span class="avatar" style="--h:320">LT</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero__visual">
+          <div class="match-card" id="match-card" aria-label="Candidate match preview">
+            <header class="match-card__head">
+              <span class="mono">Candidate match</span>
+              <span class="mono mono--dim">Role: Product Designer</span>
+            </header>
+
+            <ul class="match-list" role="listbox" aria-label="Candidates" id="match-list">
+              <li class="match-row is-active" role="option" aria-selected="true" tabindex="0" data-index="0" data-score="92" data-skills="Figma, Design systems, User research" data-name="Amara Khan">
+                <span class="avatar avatar--sm" style="--h:150">AK</span>
+                <span class="match-row__meta">
+                  <strong>Amara Khan</strong>
+                  <span class="mono mono--dim">Senior designer</span>
+                </span>
+                <span class="match-row__bar"><span class="match-row__fill" style="--w:92%"></span></span>
+                <span class="mono match-row__pct">92%</span>
+              </li>
+              <li class="match-row" role="option" aria-selected="false" tabindex="-1" data-index="1" data-score="84" data-skills="Prototyping, Motion, Accessibility" data-name="Sana Raza">
+                <span class="avatar avatar--sm" style="--h:20">SR</span>
+                <span class="match-row__meta">
+                  <strong>Sana Raza</strong>
+                  <span class="mono mono--dim">Product designer</span>
+                </span>
+                <span class="match-row__bar"><span class="match-row__fill" style="--w:84%"></span></span>
+                <span class="mono match-row__pct">84%</span>
+              </li>
+              <li class="match-row" role="option" aria-selected="false" tabindex="-1" data-index="2" data-score="71" data-skills="Brand, Illustration, Webflow" data-name="Tomas Lind">
+                <span class="avatar avatar--sm" style="--h:260">TL</span>
+                <span class="match-row__meta">
+                  <strong>Tomas Lind</strong>
+                  <span class="mono mono--dim">Brand designer</span>
+                </span>
+                <span class="match-row__bar"><span class="match-row__fill" style="--w:71%"></span></span>
+                <span class="mono match-row__pct">71%</span>
+              </li>
+            </ul>
+
+            <aside class="match-panel" aria-live="polite">
+              <div class="score-ring">
+                <svg viewBox="0 0 120 120" aria-hidden="true">
+                  <circle class="score-ring__track" cx="60" cy="60" r="50" />
+                  <circle class="score-ring__value" id="score-ring-value" cx="60" cy="60" r="50" pathLength="100" />
+                </svg>
+                <span class="score-ring__num" id="score-num">92</span>
+              </div>
+              <p class="match-panel__name" id="panel-name">Amara Khan</p>
+              <ul class="chips" id="panel-skills">
+                <li class="chip">Figma</li>
+                <li class="chip">Design systems</li>
+                <li class="chip">User research</li>
+              </ul>
+            </aside>
+          </div>
+
+          <div class="float-card float-card--a" aria-hidden="true">
+            <span class="float-card__dot"></span>
+            Interview booked
+            <span class="float-card__check">✓</span>
+          </div>
+          <div class="float-card float-card--b" aria-hidden="true">
+            <span class="mono">+12</span> new matches
+          </div>
+        </div>
+      </div>
+
+      <div class="marquee" aria-label="Trusted by fast-moving teams">
+        <p class="marquee__label mono">Trusted by fast-moving teams</p>
+        <div class="marquee__track">
+          <ul class="marquee__group">
+            <li>Northwind</li><li>Parallax</li><li>Quillbox</li><li>Orbitra</li><li>Fieldnote</li><li>Smallprint</li><li>Kestrel&amp;Co</li><li>Brightwell</li>
+          </ul>
+          <ul class="marquee__group" aria-hidden="true">
+            <li>Northwind</li><li>Parallax</li><li>Quillbox</li><li>Orbitra</li><li>Fieldnote</li><li>Smallprint</li><li>Kestrel&amp;Co</li><li>Brightwell</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PROBLEM TO FIX (forest band) ===== -->
+    <section class="steps" id="product" aria-labelledby="steps-title">
+      <div class="container">
+        <p class="eyebrow eyebrow--light">How the work gets lighter</p>
+        <h2 class="section-title section-title--light" id="steps-title">From a messy inbox to a <em>decision</em> in three moves.</h2>
+
+        <div class="steps__track">
+          <svg class="steps__line" viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true">
+            <path class="steps__path" d="M0 20 H1000" />
+          </svg>
+        <ol class="steps__list">
+
+          <li class="step reveal">
+            <span class="step__num mono">01</span>
+            <span class="step__node" aria-hidden="true"></span>
+            <svg class="step__art" viewBox="0 0 80 56" aria-hidden="true"><rect x="6" y="8" width="68" height="40" rx="8" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M16 22h30M16 30h44M16 38h22" stroke="#C9F23D" stroke-width="2" stroke-linecap="round"/></svg>
+            <h3 class="step__title">Source</h3>
+            <p class="step__text">Pull in applications from your job boards, inbox, and referrals into one clean list.</p>
+          </li>
+
+          <li class="step reveal">
+            <span class="step__num mono">02</span>
+            <span class="step__node" aria-hidden="true"></span>
+            <svg class="step__art" viewBox="0 0 80 56" aria-hidden="true"><circle cx="28" cy="28" r="16" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M40 40l16 10" stroke="currentColor" stroke-width="1.5"/><path d="M21 28l5 5 9-10" stroke="#C9F23D" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <h3 class="step__title">Screen</h3>
+            <p class="step__text">Every résumé is checked against your must-haves. You see why each person ranks where they do.</p>
+          </li>
+
+          <li class="step reveal">
+            <span class="step__num mono">03</span>
+            <span class="step__node" aria-hidden="true"></span>
+            <svg class="step__art" viewBox="0 0 80 56" aria-hidden="true"><circle cx="40" cy="28" r="18" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="40" cy="28" r="7" fill="#C9F23D"/></svg>
+            <h3 class="step__title">Decide</h3>
+            <p class="step__text">Scorecards and shared notes let the team agree on a hire in one short call, not five long threads.</p>
+          </li>
+        </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FEATURES BENTO ===== -->
+    <section class="features" id="features" aria-labelledby="features-title">
+      <div class="container">
+        <header class="section-head">
+          <p class="eyebrow">What's inside</p>
+          <h2 class="section-title" id="features-title">Everything a lean team needs, <em>nothing</em> it doesn't.</h2>
+        </header>
+
+        <div class="bento">
+          <article class="tile tile--paper2 tile--wide reveal">
+            <p class="mono tile__label">01 · Matching</p>
+            <h3 class="tile__title">AI matching</h3>
+            <p class="tile__text">Each candidate gets a score against your role, with the reasons spelled out in plain English.</p>
+            <div class="tile__viz bars" aria-hidden="true">
+              <div class="bar"><span style="--w:88%"></span><em>Skills</em></div>
+              <div class="bar"><span style="--w:74%"></span><em>Experience</em></div>
+              <div class="bar"><span style="--w:95%"></span><em>Domain</em></div>
+            </div>
+          </article>
+
+          <article class="tile tile--white tile--narrow reveal">
+            <p class="mono tile__label">02 · Screening</p>
+            <h3 class="tile__title">Smart screening</h3>
+            <p class="tile__text">Your must-haves become a checklist that fills itself in as each application arrives.</p>
+            <ul class="checklist" aria-hidden="true">
+              <li>Works remotely</li>
+              <li>Five years in product</li>
+              <li>Available within a month</li>
+            </ul>
+          </article>
+
+          <article class="tile tile--forest tile--narrow reveal">
+            <p class="mono tile__label">03 · Analytics</p>
+            <h3 class="tile__title">Pipeline analytics</h3>
+            <p class="tile__text">See where candidates stall, and which sources bring the people you hire.</p>
+            <svg class="tile__chart" viewBox="0 0 240 90" aria-hidden="true">
+              <path class="chart-line" d="M4 70 L40 60 L76 64 L112 40 L148 46 L184 22 L236 14" fill="none" stroke="#C9F23D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 84 H236" stroke="#9DB8A6" stroke-opacity=".4"/>
+            </svg>
+          </article>
+
+          <article class="tile tile--white tile--wide reveal">
+            <p class="mono tile__label">04 · Collaboration</p>
+            <h3 class="tile__title">Team scorecards</h3>
+            <p class="tile__text">Interviewers score on the same rubric. Disagreements show up before the offer, not after.</p>
+            <div class="scorecard" aria-hidden="true">
+              <div class="scorecard__people">
+                <span class="avatar avatar--sm" style="--h:150">AK</span>
+                <span class="avatar avatar--sm" style="--h:20">SR</span>
+                <span class="avatar avatar--sm" style="--h:260">MN</span>
+              </div>
+              <div class="stars-row"><span>★★★★</span><span class="stars-row__off">★</span></div>
+            </div>
+          </article>
+
+          <article class="tile tile--lime tile--narrow reveal">
+            <p class="mono tile__label">05 · Automation</p>
+            <h3 class="tile__title">Automations</h3>
+            <p class="tile__text">Send replies, book slots, and move candidates along when a rule is met.</p>
+            <svg class="tile__flow" viewBox="0 0 240 70" aria-hidden="true">
+              <path d="M40 35 H100 M140 35 H200" stroke="#0E1B15" stroke-width="1.5" stroke-dasharray="3 4"/>
+              <rect x="6" y="20" width="34" height="30" rx="8" fill="#0E1B15"/>
+              <rect x="100" y="20" width="40" height="30" rx="8" fill="#FFFFFF" stroke="#0E1B15"/>
+              <rect x="200" y="20" width="34" height="30" rx="8" fill="#0E1B15"/>
+            </svg>
+          </article>
+
+          <article class="tile tile--paper2 tile--wide reveal">
+            <p class="mono tile__label">06 · Connections</p>
+            <h3 class="tile__title">Integrations</h3>
+            <p class="tile__text">Works with the calendar, email, and chat tools your team already opens every day.</p>
+            <ul class="app-grid" aria-label="Connected apps">
+              <li class="app-tile" aria-label="Calendar"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></li>
+              <li class="app-tile" aria-label="Email"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 7l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></li>
+              <li class="app-tile" aria-label="Chat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H10l-4 3v-3H7a3 3 0 0 1-3-3z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></li>
+              <li class="app-tile" aria-label="Documents"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></li>
+              <li class="app-tile" aria-label="Storage"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="6" rx="8" ry="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></li>
+              <li class="app-tile" aria-label="Video"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="13" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M16 11l5-3v8l-5-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== METRICS ===== -->
+    <section class="metrics" aria-labelledby="metrics-title">
+      <div class="container">
+        <h2 class="visually-hidden" id="metrics-title">Hirelane in numbers</h2>
+        <dl class="metrics__row">
+          <div class="metric">
+            <dt class="mono metric__label">Candidates analyzed</dt>
+            <dd class="metric__value"><span data-count="2.4" data-decimals="1">2.4</span><span class="metric__unit">M</span></dd>
+          </div>
+          <div class="metric">
+            <dt class="mono metric__label">Faster shortlisting</dt>
+            <dd class="metric__value"><span data-count="63">63</span><span class="metric__unit">%</span></dd>
+          </div>
+          <div class="metric">
+            <dt class="mono metric__label">Hiring teams</dt>
+            <dd class="metric__value"><span data-count="11">11</span><span class="metric__unit">k+</span></dd>
+          </div>
+          <div class="metric">
+            <dt class="mono metric__label">Average rating</dt>
+            <dd class="metric__value"><span data-count="4.9" data-decimals="1">4.9</span><span class="metric__unit">/5</span></dd>
+          </div>
+        </dl>
+      </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS (sticky stepper) ===== -->
+    <section class="process" id="how" aria-labelledby="process-title">
+      <div class="container process__grid">
+        <div class="process__rail">
+          <p class="eyebrow">How it works</p>
+          <h2 class="section-title" id="process-title">Four steps from <em>first</em> login to first offer.</h2>
+
+          <ol class="process__list" id="process-list">
+            <li class="process__item is-active" data-step="0">
+              <span class="process__dot"></span>
+              <div>
+                <p class="mono">Step 01</p>
+                <h3>Connect</h3>
+                <p>Link your job board, inbox, and calendar in about five minutes.</p>
+              </div>
+            </li>
+            <li class="process__item" data-step="1">
+              <span class="process__dot"></span>
+              <div>
+                <p class="mono">Step 02</p>
+                <h3>Match</h3>
+                <p>Describe the role once. Hirelane scores every applicant against it.</p>
+              </div>
+            </li>
+            <li class="process__item" data-step="2">
+              <span class="process__dot"></span>
+              <div>
+                <p class="mono">Step 03</p>
+                <h3>Collaborate</h3>
+                <p>Invite the panel. Everyone scores on one rubric, from one page.</p>
+              </div>
+            </li>
+            <li class="process__item" data-step="3">
+              <span class="process__dot"></span>
+              <div>
+                <p class="mono">Step 04</p>
+                <h3>Hire</h3>
+                <p>Send the offer from the same screen the decision was made on.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+
+        <div class="process__stage" aria-hidden="true">
+          <div class="stage-panel is-active" data-panel="0">
+            <p class="mono mono--dim">Connected sources</p>
+            <ul class="source-list">
+              <li><span>Job board</span><span class="mono">142 new</span></li>
+              <li><span>Shared inbox</span><span class="mono">38 new</span></li>
+              <li><span>Referrals</span><span class="mono">9 new</span></li>
+            </ul>
+          </div>
+          <div class="stage-panel" data-panel="1">
+            <p class="mono mono--dim">Role: Product Designer</p>
+            <div class="bars bars--stage">
+              <div class="bar"><span style="--w:92%"></span><em>Match score</em></div>
+              <div class="bar"><span style="--w:81%"></span><em>Skills overlap</em></div>
+              <div class="bar"><span style="--w:67%"></span><em>Experience fit</em></div>
+            </div>
+          </div>
+          <div class="stage-panel" data-panel="2">
+            <p class="mono mono--dim">Scorecard · Amara Khan</p>
+            <ul class="score-rows">
+              <li><span>Craft</span><span class="stars-row"><span>★★★★★</span></span></li>
+              <li><span>Communication</span><span class="stars-row"><span>★★★★</span><span class="stars-row__off">★</span></span></li>
+              <li><span>Ownership</span><span class="stars-row"><span>★★★★</span><span class="stars-row__off">★</span></span></li>
+            </ul>
+          </div>
+          <div class="stage-panel" data-panel="3">
+            <p class="mono mono--dim">Offer ready</p>
+            <p class="stage-big">Amara Khan, <em>Senior Product Designer</em></p>
+            <span class="btn btn--lime btn--sm">Send offer</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SOLUTIONS (tabs) ===== -->
+    <section class="solutions" id="solutions" aria-labelledby="solutions-title">
+      <div class="container">
+        <header class="section-head section-head--center">
+          <p class="eyebrow">Built for your kind of hiring</p>
+          <h2 class="section-title" id="solutions-title">One platform, <em>four</em> very different teams.</h2>
+        </header>
+
+        <div class="tabs" role="tablist" aria-label="Solutions" id="solution-tabs">
+          <button class="tabs__tab" role="tab" type="button" id="tab-startups" aria-selected="true" aria-controls="panel-solutions" tabindex="0">Startups</button>
+          <button class="tabs__tab" role="tab" type="button" id="tab-agencies" aria-selected="false" aria-controls="panel-solutions" tabindex="-1">Agencies</button>
+          <button class="tabs__tab" role="tab" type="button" id="tab-enterprise" aria-selected="false" aria-controls="panel-solutions" tabindex="-1">Enterprise</button>
+          <button class="tabs__tab" role="tab" type="button" id="tab-talent" aria-selected="false" aria-controls="panel-solutions" tabindex="-1">Talent teams</button>
+        </div>
+
+        <div class="solution-card" role="tabpanel" id="panel-solutions" aria-labelledby="tab-startups" tabindex="0">
+          <div class="solution-card__copy">
+            <h3 class="solution-card__title" id="solution-title">Hire your first ten people without a recruiter.</h3>
+            <ul class="check-list" id="solution-list">
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Post to boards in one click</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Shortlist without reading every CV</li>
+              <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Share a scorecard with your co-founder</li>
+            </ul>
+            <a class="link-arrow" href="#how" id="solution-link">See how it works →</a>
+          </div>
+          <div class="solution-card__art" id="solution-art" aria-hidden="true">
+            <svg viewBox="0 0 320 260">
+              <rect x="20" y="30" width="280" height="200" rx="14" fill="#FFFFFF" stroke="#D9D3C2"/>
+              <circle class="sol-1" cx="90" cy="110" r="34" fill="#9DB8A6"/>
+              <circle class="sol-2" cx="160" cy="110" r="34" fill="#C9F23D"/>
+              <circle class="sol-3" cx="230" cy="110" r="34" fill="#E9B8A0"/>
+              <path d="M50 190h220" stroke="#D9D3C2" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== PRICING ===== -->
+    <section class="pricing" id="pricing" aria-labelledby="pricing-title">
+      <div class="container">
+        <header class="section-head section-head--center">
+          <p class="eyebrow">Pricing</p>
+          <h2 class="section-title" id="pricing-title">Pay for <em>hires</em>, not for seats.</h2>
+
+          <div class="billing-toggle" role="group" aria-label="Billing period">
+            <button class="billing-toggle__btn is-active" type="button" data-billing="monthly" aria-pressed="true">Monthly</button>
+            <button class="billing-toggle__btn" type="button" data-billing="yearly" aria-pressed="false">Yearly</button>
+            <span class="tag tag--clay">2 months free</span>
+          </div>
+        </header>
+
+        <div class="tiers">
+          <article class="tier tier--paper">
+            <h3 class="tier__name">Starter</h3>
+            <p class="tier__promise">For founders running their first hires.</p>
+            <p class="tier__price"><span data-price-monthly="0" data-price-yearly="0">$0</span><small>/ month</small></p>
+            <ul class="tier__list">
+              <li>Up to 2 open roles</li>
+              <li>AI matching on every applicant</li>
+              <li>Shared candidate pipeline</li>
+              <li>Email support</li>
+              <li>Basic screening checklists</li>
+              <li>1 team member</li>
+            </ul>
+            <a class="btn btn--ghost btn--block" href="#signup">Start free</a>
+          </article>
+
+          <article class="tier tier--forest tier--featured">
+            <span class="tag tag--lime">Most popular</span>
+            <h3 class="tier__name">Growth</h3>
+            <p class="tier__promise">For teams hiring every week.</p>
+            <p class="tier__price"><span data-price-monthly="79" data-price-yearly="66">$79</span><small>/ month</small></p>
+            <ul class="tier__list">
+              <li>Unlimited open roles</li>
+              <li>Automations and reply templates</li>
+              <li>Team scorecards with rubrics</li>
+              <li>Pipeline analytics</li>
+              <li>Calendar and email sync</li>
+              <li>Up to 10 team members</li>
+            </ul>
+            <a class="btn btn--lime btn--block" href="#signup">Start hiring free</a>
+          </article>
+
+          <article class="tier tier--paper">
+            <h3 class="tier__name">Scale</h3>
+            <p class="tier__promise">For agencies and multi-team companies.</p>
+            <p class="tier__price"><span data-price-monthly="custom" data-price-yearly="custom">Custom</span></p>
+            <ul class="tier__list">
+              <li>Everything in Growth</li>
+              <li>Client workspaces</li>
+              <li>SSO and audit logs</li>
+              <li>Custom data retention</li>
+              <li>Dedicated onboarding</li>
+              <li>Unlimited team members</li>
+            </ul>
+            <a class="btn btn--ghost btn--block" href="#contact">Talk to sales</a>
+          </article>
+        </div>
+
+        <details class="compare">
+          <summary class="compare__summary">Compare all features</summary>
+          <div class="compare__body">
+            <table class="compare__table">
+              <thead>
+                <tr><th scope="col">Feature</th><th scope="col">Starter</th><th scope="col">Growth</th><th scope="col">Scale</th></tr>
+              </thead>
+              <tbody>
+                <tr><th scope="row">Open roles</th><td>2</td><td>Unlimited</td><td>Unlimited</td></tr>
+                <tr><th scope="row">AI matching</th><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+                <tr><th scope="row">Automations</th><td>No</td><td>Yes</td><td>Yes</td></tr>
+                <tr><th scope="row">Scorecards</th><td>No</td><td>Yes</td><td>Yes</td></tr>
+                <tr><th scope="row">SSO and audit logs</th><td>No</td><td>No</td><td>Yes</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===== TESTIMONIALS ===== -->
+    <section class="stories" id="stories" aria-labelledby="stories-title">
+      <div class="container">
+        <h2 class="visually-hidden" id="stories-title">What hiring teams say</h2>
+        <div class="stories__grid">
+          <figure class="quote-featured" id="quote-featured" aria-live="polite">
+            <blockquote class="quote-featured__text">
+              <span id="quote-text">"We cut our shortlist time in half. The scoring made the first call feel obvious, </span>
+              <span id="quote-highlight" class="quote-highlight">like a teammate who never sleeps</span><span id="quote-tail">."</span>
+            </blockquote>
+            <figcaption class="quote-featured__who">
+              <span class="avatar" id="quote-avatar" style="--h:150">HZ</span>
+              <span>
+                <strong id="quote-name">Hana Zafar</strong>
+                <span class="mono mono--dim" id="quote-role">Head of People, Parallax</span>
+              </span>
+            </figcaption>
+            <div class="quote-progress" aria-hidden="true"><span id="quote-progress-fill"></span></div>
+          </figure>
+
+          <ul class="quote-list" id="quote-list">
+            <li><button class="quote-card is-active" type="button" data-quote="0" data-name="Hana Zafar" data-role="Head of People, Parallax" data-initials="HZ" data-hue="150" data-highlight="like a teammate who never sleeps" data-text="We cut our shortlist time in half. The scoring made the first call feel obvious, like a teammate who never sleeps.">
+                <strong>Hana Zafar</strong><span class="mono mono--dim">Parallax</span></button></li>
+            <li><button class="quote-card" type="button" data-quote="1" data-name="Owen Ferrell" data-role="Founder, Quillbox" data-initials="OF" data-hue="20" data-highlight="in one month" data-text="We hired our first designer, engineer, and ops lead in one month. The checklists kept us honest, even when we were rushed.">
+                <strong>Owen Ferrell</strong><span class="mono mono--dim">Quillbox</span></button></li>
+            <li><button class="quote-card" type="button" data-quote="2" data-name="Ruth Adeyemi" data-role="Partner, Kestrel & Co" data-initials="RA" data-hue="260" data-highlight="feel bigger than it is" data-text="Our clients get shortlists they can actually read. Client workspaces made our agency feel bigger than it is.">
+                <strong>Ruth Adeyemi</strong><span class="mono mono--dim">Kestrel &amp; Co</span></button></li>
+            <li><button class="quote-card" type="button" data-quote="3" data-name="Imran Shah" data-role="Talent lead, Orbitra" data-initials="IS" data-hue="320" data-highlight="about the evidence now" data-text="Scorecards stopped the usual debate after every interview. We argue about the evidence now, which is a much better argument.">
+                <strong>Imran Shah</strong><span class="mono mono--dim">Orbitra</span></button></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section class="faq" id="faq" aria-labelledby="faq-title">
+      <div class="container faq__grid">
+        <aside class="faq__help">
+          <h2 class="section-title" id="faq-title">Questions, <em>answered.</em></h2>
+          <p class="faq__intro">Short answers to what founders and HR leads ask us most.</p>
+          <div class="help-card">
+            <p class="help-card__title">Still stuck?</p>
+            <p class="help-card__text">Write to a real person. We reply within one working day.</p>
+            <a class="btn btn--ghost btn--sm" href="mailto:hello@hirelane.com">Email hello@hirelane.com</a>
+          </div>
+        </aside>
+
+        <div class="accordion" id="faq-list">
+          <div class="accordion__item">
+            <h3 class="accordion__heading">
+              <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-1">Does Hirelane replace our ATS?</button>
+            </h3>
+            <div class="accordion__panel" id="faq-1" role="region" hidden>
+              <p>It can. Hirelane stores candidates, roles, and stages, and imports from most common applicant trackers. Many teams run both for a month before switching.</p>
+            </div>
+          </div>
+          <div class="accordion__item">
+            <h3 class="accordion__heading">
+              <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-2">How does AI matching decide the score?</button>
+            </h3>
+            <div class="accordion__panel" id="faq-2" role="region" hidden>
+              <p>Each score compares the application with the must-haves and nice-to-haves you set for the role. Every point comes with a short reason you can read, change, or ignore.</p>
+            </div>
+          </div>
+          <div class="accordion__item">
+            <h3 class="accordion__heading">
+              <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-3">Who can see candidate data?</button>
+            </h3>
+            <div class="accordion__panel" id="faq-3" role="region" hidden>
+              <p>Only people you invite to a role. Data is encrypted in transit and at rest, and we never sell it or use it to train models for other customers.</p>
+            </div>
+          </div>
+          <div class="accordion__item">
+            <h3 class="accordion__heading">
+              <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-4">Can the whole panel work in one place?</button>
+            </h3>
+            <div class="accordion__panel" id="faq-4" role="region" hidden>
+              <p>Yes. Interviewers get a link to the scorecard, leave notes, and see the others' scores only after they submit their own. That keeps early opinions from shaping the room.</p>
+            </div>
+          </div>
+          <div class="accordion__item">
+            <h3 class="accordion__heading">
+              <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-5">Which tools connect to Hirelane?</button>
+            </h3>
+            <div class="accordion__panel" id="faq-5" role="region" hidden>
+              <p>Calendars, email, chat, and common document and video tools connect in a few clicks. If yours is missing, tell us and we will add it to the roadmap.</p>
+            </div>
+          </div>
+          <div class="accordion__item">
+            <h3 class="accordion__heading">
+              <button class="accordion__trigger" type="button" aria-expanded="false" aria-controls="faq-6">Can I cancel, and what happens to my data?</button>
+            </h3>
+            <div class="accordion__panel" id="faq-6" role="region" hidden>
+              <p>Cancel any time from billing settings. You keep read access for 30 days and can export everything before your data is deleted.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FINAL CTA ===== -->
+    <section class="final-cta" id="signup" aria-labelledby="cta-title">
+      <svg class="final-cta__pattern" aria-hidden="true" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.5" fill="#9DB8A6" /></pattern>
+        </defs>
+        <rect width="400" height="400" fill="url(#dots)" />
+        <path class="final-cta__line" d="M0 320 C120 220 240 380 400 240" fill="none" stroke="#C9F23D" stroke-opacity=".5" stroke-width="1.5" />
+      </svg>
+      <div class="container final-cta__inner">
+        <h2 class="final-cta__title" id="cta-title">Your next great hire is <em>already out there.</em></h2>
+        <p class="final-cta__text">Set up your first role in an afternoon and see your ranked shortlist the same day.</p>
+        <div class="final-cta__actions">
+          <a class="btn btn--lime btn--lg" href="#signup">Start hiring free</a>
+          <a class="btn btn--ghost-light btn--lg" href="#top">Watch 2-min demo</a>
+        </div>
+        <p class="final-cta__micro mono">No credit card · Cancel anytime</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="container site-footer__grid">
+      <div class="site-footer__brand">
+        <a class="brand brand--light" href="#top" aria-label="Hirelane home">
+          <svg class="brand__mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V4h6.5a6.5 6.5 0 0 1 0 13H9v3z" fill="currentColor"/><circle cx="18.5" cy="5.5" r="2.5" fill="#C9F23D"/></svg>
+          <span class="brand__word">Hirelane</span>
+        </a>
+        <p class="site-footer__tag">Hiring that feels calm, even on a busy week.</p>
+
+        <form class="newsletter" id="newsletter" novalidate>
+          <label class="newsletter__label" for="newsletter-email">Hiring notes, once a month</label>
+          <div class="newsletter__row">
+            <input class="newsletter__input" id="newsletter-email" name="email" type="email" autocomplete="email" placeholder="you@company.com" aria-describedby="newsletter-msg" required />
+            <button class="btn btn--lime btn--sm" type="submit">Subscribe</button>
+          </div>
+          <p class="newsletter__msg" id="newsletter-msg" role="status"></p>
+        </form>
+      </div>
+
+      <nav class="site-footer__col" aria-label="Product">
+        <h2 class="site-footer__head mono">Product</h2>
+        <a href="#features">Features</a>
+        <a href="#solutions">Solutions</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <nav class="site-footer__col" aria-label="Company">
+        <h2 class="site-footer__head mono">Company</h2>
+        <a href="about.html">About</a>
+        <a href="#stories">Stories</a>
+        <a href="contact.html">Contact</a>
+        <a href="referral.html">Referral</a>
+      </nav>
+
+      <nav class="site-footer__col" aria-label="Legal">
+        <h2 class="site-footer__head mono">Legal</h2>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+      </nav>
+    </div>
+
+    <div class="container site-footer__bottom">
+      <p class="mono">© <span data-year>2026</span> Hirelane</p>
+      <ul class="social" aria-label="Social">
+        <li><a href="#top" aria-label="X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l10 16h-4z M19 4L5 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></a></li>
+        <li><a href="#top" aria-label="LinkedIn"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 10v6M9 7.5v.5M13 16v-6M13 13c0-2 3-3 3 0v3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></a></li>
+        <li><a href="#top" aria-label="GitHub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0-3 17.5c.5.1.6-.2.6-.5v-2c-2.5.5-3-1.1-3-1.1-.4-1-1-1.3-1-1.3-.8-.6.1-.6.1-.6.9.1 1.4.9 1.4.9.8 1.4 2.1 1 2.6.8.1-.6.3-1 .6-1.2-2-.2-4-1-4-4.5 0-1 .4-1.8.9-2.4-.1-.2-.4-1.1.1-2.3 0 0 .7-.2 2.3.9a8 8 0 0 1 4.2 0c1.6-1.1 2.3-.9 2.3-.9.5 1.2.2 2.1.1 2.3.6.6.9 1.4.9 2.4 0 3.5-2.1 4.3-4 4.5.3.3.6.8.6 1.6v2.4c0 .3.2.6.6.5A9 9 0 0 0 12 3z" fill="currentColor"/></svg></a></li>
+      </ul>
+      <button class="back-to-top mono" type="button" data-back-to-top>Back to top ↑</button>
+    </div>
+  </footer>
+</body>
+</html>

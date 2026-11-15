@@ -38,7 +38,7 @@ const ScanToPdf = () => {
   };
 
   return (
-    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-white p-4 text-sm'>
+    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4 text-sm'>
       <input type='file' accept='image/png,image/jpeg' multiple onChange={(e) => addFiles(e.target.files)} />
       <p className='text-gray-500'>PNG aur JPG images, jis tarteeb se select karein usi tarteeb se PDF pages banenge.</p>
       <ul className='flex flex-col gap-1'>

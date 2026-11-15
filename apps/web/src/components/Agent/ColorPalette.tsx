@@ -69,7 +69,7 @@ const ColorPalette = () => {
             <button
               key={hex}
               onClick={() => copy(hex)}
-              className='flex flex-col items-center gap-1 rounded-lg border border-surface-line bg-white p-2'
+              className='flex flex-col items-center gap-1 rounded-lg border border-surface-line bg-surface p-2'
             >
               <span className='h-10 w-14 rounded' style={{ backgroundColor: hex }} />
               <span className='font-mono text-xs'>{copied === hex ? 'Copied' : hex}</span>

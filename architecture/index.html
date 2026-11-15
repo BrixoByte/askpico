@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>Pico — Mermaid Diagram Viewer</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="stage" class="stage" tabindex="-1">
+  <div id="grid" class="grid" aria-hidden="true"></div>
+  <div id="world" class="world">
+    <div id="diagram" class="diagram" role="img" aria-label="Rendered Mermaid diagram"></div>
+  </div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div id="shimmer" class="shimmer" aria-hidden="true"></div>
+
+  <div id="emptyState" class="empty-state" hidden>
+    <div class="empty-art" aria-hidden="true"></div>
+    <h2>Nothing to render yet</h2>
+    <p>Open a Mermaid file, drop one here, or start from a template.</p>
+    <div class="empty-actions">
+      <button class="btn" data-sample="flowchart">Flowchart</button>
+      <button class="btn" data-sample="sequence">Sequence</button>
+      <button class="btn" data-sample="class">Class</button>
+      <button class="btn" data-sample="er">ER</button>
+    </div>
+  </div>
+
+  <div id="errorCard" class="error-card" role="alert" hidden>
+    <div class="error-title"><span data-icon="alert"></span> Syntax error</div>
+    <pre id="errorText" class="error-text"></pre>
+    <div class="error-actions">
+      <button class="btn" id="errorGoto">Go to line</button>
+      <span class="error-hint">Showing last successful render</span>
+    </div>
+  </div>
+
+  <header class="toolbar" id="toolbar" role="toolbar" aria-label="Main toolbar">
+    <button class="icon-btn" id="btnEditor" data-tip="Toggle editor" data-shortcut="Ctrl+E" aria-label="Toggle editor" aria-expanded="false" aria-controls="drawer"><span data-icon="panel"></span></button>
+    <span class="sep"></span>
+    <button class="icon-btn" id="btnOpen" data-tip="Open file" data-shortcut="Ctrl+O" aria-label="Open file"><span data-icon="folder"></span></button>
+    <span id="watchBadge" class="watch-badge" hidden><span class="pulse"></span><span id="watchName"></span></span>
+    <span class="sep"></span>
+    <div class="menu-anchor">
+      <button class="icon-btn" id="btnTheme" data-tip="Theme" aria-label="Theme" aria-haspopup="menu" aria-expanded="false"><span data-icon="palette"></span></button>
+      <div class="popover" id="themeMenu" role="menu" hidden></div>
+    </div>
+    <span class="sep"></span>
+    <div class="zoom-group">
+      <button class="icon-btn" id="tbZoomOut" data-tip="Zoom out" data-shortcut="-" aria-label="Zoom out"><span data-icon="minus"></span></button>
+      <button class="zoom-readout" id="tbZoomLabel" data-tip="Reset to 100%" data-shortcut="1" aria-label="Zoom level">100%</button>
+      <button class="icon-btn" id="tbZoomIn" data-tip="Zoom in" data-shortcut="+" aria-label="Zoom in"><span data-icon="plus"></span></button>
+    </div>
+    <button class="icon-btn" id="tbFit" data-tip="Fit to screen" data-shortcut="0" aria-label="Fit to screen"><span data-icon="fit"></span></button>
+    <span class="sep"></span>
+    <div class="menu-anchor">
+      <button class="icon-btn" id="btnExport" data-tip="Export" aria-label="Export" aria-haspopup="menu" aria-expanded="false"><span data-icon="download"></span></button>
+      <div class="popover export-menu" id="exportMenu" role="menu" hidden>
+        <div class="menu-label">Export</div>
+        <button class="menu-item" role="menuitem" data-export="svg"><span data-icon="file"></span>SVG<kbd>.svg</kbd></button>
+        <button class="menu-item" role="menuitem" data-export="png1"><span data-icon="image"></span>PNG 1×<kbd>.png</kbd></button>
+        <button class="menu-item" role="menuitem" data-export="png2"><span data-icon="image"></span>PNG 2×<kbd>.png</kbd></button>
+        <button class="menu-item" role="menuitem" data-export="png4"><span data-icon="image"></span>PNG 4×<kbd>.png</kbd></button>
+        <button class="menu-item" role="menuitem" data-export="pdf"><span data-icon="printer"></span>PDF (print)</button>
+        <button class="menu-item" role="menuitem" data-export="html"><span data-icon="file"></span>Self-contained HTML<kbd>.html</kbd></button>
+        <label class="menu-check"><input type="checkbox" id="transparentBg"> Transparent background</label>
+        <div class="menu-sep"></div>
+        <button class="menu-item" role="menuitem" data-export="copy-svg"><span data-icon="copy"></span>Copy SVG</button>
+        <button class="menu-item" role="menuitem" data-export="copy-png"><span data-icon="copy"></span>Copy PNG</button>
+        <button class="menu-item" role="menuitem" data-export="copy-code"><span data-icon="code"></span>Copy Mermaid code</button>
+      </div>
+    </div>
+    <button class="icon-btn" id="btnFullscreen" data-tip="Fullscreen" data-shortcut="F" aria-label="Toggle fullscreen"><span data-icon="fullscreen"></span></button>
+    <button class="icon-btn" id="btnSettings" data-tip="Settings" aria-label="Settings" aria-haspopup="dialog"><span data-icon="settings"></span></button>
+  </header>
+
+  <div class="minimap" id="minimapWrap" aria-label="Minimap">
+    <canvas id="minimap" width="200" height="140"></canvas>
+    <div id="minimapVp" class="minimap-vp"></div>
+  </div>
+
+  <div class="zoom-dock" role="group" aria-label="Zoom controls">
+    <button class="icon-btn sm" id="zoomOut" data-tip="Zoom out" aria-label="Zoom out"><span data-icon="minus"></span></button>
+    <span class="zoom-pct" id="zoomPct">100%</span>
+    <button class="icon-btn sm" id="zoomIn" data-tip="Zoom in" aria-label="Zoom in"><span data-icon="plus"></span></button>
+    <span class="sep"></span>
+    <button class="icon-btn sm" id="zoomFit" data-tip="Fit to screen" aria-label="Fit to screen"><span data-icon="fit"></span></button>
+    <button class="zoom-readout" id="zoomActual" data-tip="Actual size (1:1)" aria-label="Actual size">1:1</button>
+  </div>
+</div>
+
+<aside id="drawer" class="drawer" aria-label="Mermaid editor">
+  <div class="drawer-head" id="drawerHead">
+    <span data-icon="file"></span>
+    <span class="drawer-title" id="docName">diagram.mmd</span>
+    <span class="drawer-spacer"></span>
+    <button class="icon-btn sm" id="btnPin" data-tip="Pin (shrink canvas)" aria-label="Pin editor" aria-pressed="false"><span data-icon="pin"></span></button>
+    <button class="icon-btn sm" id="btnDock" data-tip="Dock: left / right / float" aria-label="Change dock"><span data-icon="dock"></span></button>
+    <button class="icon-btn sm" id="btnDrawerClose" data-tip="Close editor" data-shortcut="Esc" aria-label="Close editor"><span data-icon="x"></span></button>
+  </div>
+
+  <div class="editor-bar">
+    <div class="menu-anchor">
+      <button class="chip-btn" id="btnTemplates" aria-haspopup="menu" aria-expanded="false"><span data-icon="layers"></span>Templates<span data-icon="chevron"></span></button>
+      <div class="popover template-menu" id="templateMenu" role="menu" hidden></div>
+    </div>
+    <span class="spacer"></span>
+    <button class="icon-btn sm" id="btnUndo" data-tip="Undo" data-shortcut="Ctrl+Z" aria-label="Undo"><span data-icon="undo"></span></button>
+    <button class="icon-btn sm" id="btnRedo" data-tip="Redo" data-shortcut="Ctrl+Shift+Z" aria-label="Redo"><span data-icon="redo"></span></button>
+    <button class="icon-btn sm" id="btnFind" data-tip="Find / replace" data-shortcut="Ctrl+F" aria-label="Find and replace"><span data-icon="search"></span></button>
+    <button class="icon-btn sm" id="btnFontDown" data-tip="Smaller text" data-shortcut="Ctrl+-" aria-label="Decrease font size"><span data-icon="fontDown"></span></button>
+    <button class="icon-btn sm" id="btnFontUp" data-tip="Larger text" data-shortcut="Ctrl+=" aria-label="Increase font size"><span data-icon="fontUp"></span></button>
+    <button class="icon-btn sm" id="btnWrap" data-tip="Word wrap" aria-label="Toggle word wrap" aria-pressed="false"><span data-icon="wrap"></span></button>
+  </div>
+
+  <div class="findbar" id="findbar" hidden>
+    <div class="find-row">
+      <input id="findInput" type="text" placeholder="Find" aria-label="Find" spellcheck="false">
+      <span class="find-count" id="findCount">0/0</span>
+      <button class="icon-btn sm" id="findPrev" data-tip="Previous (Shift+Enter)" aria-label="Previous match"><span data-icon="chevronUp"></span></button>
+      <button class="icon-btn sm" id="findNext" data-tip="Next (Enter)" aria-label="Next match"><span data-icon="chevron"></span></button>
+      <button class="icon-btn sm" id="findClose" data-tip="Close" aria-label="Close find"><span data-icon="x"></span></button>
+    </div>
+    <div class="find-row">
+      <input id="replaceInput" type="text" placeholder="Replace" aria-label="Replace" spellcheck="false">
+      <button class="chip-btn" id="replaceOne">Replace</button>
+      <button class="chip-btn" id="replaceAll">All</button>
+    </div>
+  </div>
+
+  <div class="editor" id="editor">
+    <div class="gutter" id="gutter" aria-hidden="true"><div id="gutterInner" class="gutter-inner"></div></div>
+    <pre class="hl" id="hl" aria-hidden="true"><code id="hlCode"></code></pre>
+    <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Mermaid source code"></textarea>
+  </div>
+
+  <div class="drawer-resize" id="resizeHandle" aria-hidden="true"></div>
+</aside>
+
+<footer class="statusbar" id="statusbar">
+  <span class="st-item" id="stRender" title="Render time">— ms</span>
+  <span class="st-item" id="stNodes" title="Node count">0 nodes</span>
+  <span class="st-item st-syntax" id="stSyntax"><span class="st-dot" id="stDot"></span><span id="stSyntaxText">Ready</span></span>
+  <span class="spacer"></span>
+  <span class="st-item" id="stCursor">Ln 1, Col 1</span>
+  <span class="st-item" id="stChars">0 chars</span>
+</footer>
+
+<div class="modal-backdrop" id="settingsModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-head">
+      <h2 id="settingsTitle">Settings</h2>
+      <button class="icon-btn sm" id="settingsClose" aria-label="Close settings"><span data-icon="x"></span></button>
+    </div>
+    <div class="modal-body">
+      <label class="field"><span>Canvas grid</span>
+        <select id="setGrid">
+          <option value="none">None</option>
+          <option value="dots">Dots</option>
+          <option value="lines">Lines</option>
+          <option value="cross">Cross</option>
+        </select>
+      </label>
+      <label class="field"><span>Theme</span>
+        <select id="setTheme">
+          <option value="auto">Auto (system)</option>
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+          <option value="midnight">Midnight</option>
+          <option value="forest">Forest</option>
+          <option value="neutral">Neutral</option>
+        </select>
+      </label>
+      <label class="field"><span>Editor font size <output id="setFontOut">13</output>px</span>
+        <input type="range" id="setFont" min="11" max="20" step="1">
+      </label>
+      <label class="field"><span>Render debounce <output id="setDebounceOut">350</output>ms</span>
+        <input type="range" id="setDebounce" min="150" max="1000" step="50">
+      </label>
+      <label class="field"><span>Tab size</span>
+        <select id="setTab">
+          <option value="2">2 spaces</option>
+          <option value="4">4 spaces</option>
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" id="setAutoFit"> Fit diagram after every successful render</label>
+      <label class="check"><input type="checkbox" id="setAnim"> Animations</label>
+      <label class="check"><input type="checkbox" id="setMinimap"> Show minimap</label>
+      <label class="check"><input type="checkbox" id="setAutoClose"> Auto-close brackets and quotes</label>
+    </div>
+    <div class="modal-foot">
+      <button class="chip-btn" id="settingsReset">Reset to defaults</button>
+      <button class="btn primary" id="settingsDone">Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+<div id="printRoot" aria-hidden="true"></div>
+<input type="file" id="filePicker" accept=".mmd,.md,.txt" hidden>
+
+<script src="mermaid.bundle.js"></script>
+<script src="js/core/state.js"></script>
+<script src="js/data/templates.js"></script>
+<script src="js/ui/icons.js"></script>
+<script src="js/editor/highlight.js"></script>
+<script src="js/canvas/geometry.js"></script>
+<script src="js/canvas/view.js"></script>
+<script src="js/canvas/input.js"></script>
+<script src="js/canvas/minimap.js"></script>
+<script src="js/export/export.js"></script>
+<script src="js/render/render.js"></script>
+<script src="js/render/select.js"></script>
+<script src="js/editor/editor.js"></script>
+<script src="js/editor/find.js"></script>
+<script src="js/ui/drawer.js"></script>
+<script src="js/files/files.js"></script>
+<script src="js/ui/menus.js"></script>
+<script src="js/ui/settings.js"></script>
+<script src="js/ui/keys.js"></script>
+<script src="js/ui/toast.js"></script>
+<script src="js/ui/toolbar.js"></script>
+<script src="js/meta.js"></script>
+<script src="js/style/palettes.js"></script>
+<script src="js/style/engine.js"></script>
+<script src="js/style/studio.js"></script>
+<script src="js/nav/graph.js"></script>
+<script src="js/nav/panel.js"></script>
+<script src="js/handoff/lint.js"></script>
+<script src="js/handoff/history.js"></script>
+<script src="js/handoff/panel.js"></script>
+<script src="js/live/live.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

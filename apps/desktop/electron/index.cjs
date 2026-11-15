@@ -253,6 +253,8 @@ const createServer = () => {
     '.gif': 'image/gif',
     '.svg': 'image/svg+xml',
     '.json': 'application/json',
+    '.ttf': 'font/ttf',
+    '.woff2': 'font/woff2',
   };
 
   // Create a http server

@@ -22,7 +22,7 @@ const ArtifactTabs = ({
             key={tab.value}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               activeTab === tab.value
-                ? 'bg-white text-ink shadow-soft'
+                ? 'bg-surface text-ink shadow-soft'
                 : 'text-ink-soft hover:text-ink'
             }`}
             onClick={() => onChange(tab.value)}

@@ -35,7 +35,7 @@ const JsonFormatter = () => {
       </div>
       {error && <p className='text-red-600'>{error}</p>}
       {output && (
-        <pre className='max-h-72 overflow-auto rounded-lg border border-surface-line bg-white p-3 font-mono text-xs'>
+        <pre className='max-h-72 overflow-auto rounded-lg border border-surface-line bg-surface p-3 font-mono text-xs'>
           {output}
         </pre>
       )}

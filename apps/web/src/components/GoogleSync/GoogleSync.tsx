@@ -86,7 +86,7 @@ const GoogleSync = ({ clientId }: { clientId: string }) => {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <div
-        className='flex py-2 px-2 items-center gap-3 rounded-md hover:bg-gray-500/10 transition-colors duration-200 text-white cursor-pointer text-sm'
+        className='flex py-2.5 px-3 items-center gap-3 rounded-lg hover:bg-gray-100/80 transition-colors text-ink cursor-pointer text-sm dark:hover:bg-neutral-800'
         onClick={() => {
           setIsModalOpen(true);
         }}

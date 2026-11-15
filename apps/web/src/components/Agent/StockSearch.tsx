@@ -41,7 +41,7 @@ const StockSearch = () => {
   };
 
   return (
-    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-white p-4 text-sm'>
+    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4 text-sm'>
       <form
         className='flex gap-2'
         onSubmit={(e) => {

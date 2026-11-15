@@ -1,10 +1,10 @@
 import React from 'react';
 import useStore from '@store/store';
 
-import AboutMenu from '@components/AboutMenu';
 import ImportExportChat from '@components/ImportExportChat';
 import SettingsMenu from '@components/SettingsMenu';
 import CollapseOptions from './CollapseOptions';
+import Logout from './Logout';
 import GoogleSync from '@components/GoogleSync';
 import { TotalTokenCostDisplay } from '@components/SettingsMenu/TotalTokenCost';
 
@@ -23,9 +23,9 @@ const MenuOptions = () => {
       >
         {countTotalTokens && <TotalTokenCostDisplay />}
         {googleClientId && <GoogleSync clientId={googleClientId} />}
-        <AboutMenu />
         <ImportExportChat />
         <SettingsMenu />
+        <Logout />
       </div>
     </>
   );

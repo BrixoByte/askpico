@@ -62,7 +62,7 @@ const CodeViewer = ({
                 className={`shrink-0 rounded-lg px-2.5 py-1 font-mono text-xs transition-colors ${
                   tab.id === artifact.id
                     ? 'bg-brand-50 text-brand-700'
-                    : 'text-ink-soft hover:bg-white'
+                    : 'text-ink-soft hover:bg-surface'
                 }`}
                 onClick={() => onSelect?.(tab.id)}
                 title={getArtifactLabel(tab)}
@@ -75,7 +75,7 @@ const CodeViewer = ({
           <span className='min-w-0 flex-1 truncate font-mono text-ink-soft'>{getArtifactLabel(artifact)}</span>
         )}
         <button
-          className='flex shrink-0 items-center gap-1 rounded-lg border border-surface-line bg-white px-2 py-1 text-ink-soft hover:bg-surface-muted'
+          className='flex shrink-0 items-center gap-1 rounded-lg border border-surface-line bg-surface px-2 py-1 text-ink-soft hover:bg-surface-muted'
           onClick={handleCopy}
           aria-label='copy code'
         >
@@ -83,7 +83,7 @@ const CodeViewer = ({
           {copied ? 'Copied!' : 'Copy'}
         </button>
         <button
-          className='flex items-center gap-1 rounded-lg border border-surface-line bg-white px-2 py-1 text-ink-soft hover:bg-surface-muted'
+          className='flex items-center gap-1 rounded-lg border border-surface-line bg-surface px-2 py-1 text-ink-soft hover:bg-surface-muted'
           onClick={handleDownload}
           aria-label='download code'
         >

@@ -24,7 +24,7 @@ const ExportChat = () => {
             folders: useStore.getState().folders,
             version: 1,
           };
-          downloadFile(fileData, getToday());
+          downloadFile(fileData, `${getToday()}.json`);
         }}
         aria-label={t('export') as string}
       >

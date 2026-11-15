@@ -2,10 +2,16 @@ import React, { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useStore from '@store/store';
 import useDraftStore from '@store/draft-store';
+import useVoiceStore from '@store/voice-store';
 
 import useSubmit from '@hooks/useSubmit';
 import { selectOrCreateChat } from '@hooks/useAddChat';
 import { extractAttachmentText } from '@api/api';
+import LockBadge from '@components/Auth/LockBadge';
+import VoiceWaveIcon from '@components/Voice/VoiceWaveIcon';
+import ModeSelector from '@components/Chat/ModeSelector';
+import { gateSignedIn, useIsSignedIn } from '@utils/authGate';
+import { tryDeviceIntent } from '@utils/agentIntents';
 import { attachmentBlockReason } from '@constants/attachments';
 import {
   convertImageFile,
@@ -13,25 +19,20 @@ import {
   parseConvertTarget,
 } from '@utils/imageConvert';
 
-import { ChatInterface, MessageAttachmentInterface } from '@type/chat';
+import { ChatInterface, MessageAttachmentInterface, ModelOptions } from '@type/chat';
 import {
   fileExtensionOf,
   registerAttachmentFile,
 } from '@utils/attachmentStore';
 
 import PopupModal from '@components/PopupModal';
-import CommandPrompt from '../CommandPrompt';
+import { speechRecognitionSupported } from '@utils/speech';
+import useSpeechRecognition from '@hooks/useSpeechRecognition';
+import { sttSupported } from '@voice/stt';
+import { isMobileDevice } from '@utils/device';
 
 import SendIcon from '@icon/SendIcon';
-import {
-  BookmarkIcon,
-  DeepResearchIcon,
-  GlobeIcon,
-  MicIcon,
-  PaperclipIcon,
-  SparkleIcon,
-} from '@icon/ui';
-import DownChevronArrow from '@icon/DownChevronArrow';
+import { SparkleIcon } from '@icon/ui';
 
 const ATTACH_MAX_BYTES = 10 * 1024 * 1024;
 const TEXT_EXTENSIONS = new Set([
@@ -88,19 +89,71 @@ const EditView = ({
 }) => {
   const setChats = useStore((state) => state.setChats);
   const currentChatIndex = useStore((state) => state.currentChatIndex);
-  const setImageMode = useStore((state) => state.setImageMode);
   const setError = useStore((state) => state.setError);
   const currentModel = useStore((state) => state.chats?.[state.currentChatIndex]?.config.model);
+  const defaultChatConfig = useStore((state) => state.defaultChatConfig);
+  const setDefaultChatConfig = useStore((state) => state.setDefaultChatConfig);
+  const activeModel = currentModel ?? defaultChatConfig?.model;
 
-  const [_content, _setContent] = useState<string>(content);
+  const handleModeChange = (model: ModelOptions) => {
+    const chats = useStore.getState().chats;
+    if (chats?.[currentChatIndex]) {
+      const updatedChats: ChatInterface[] = JSON.parse(JSON.stringify(chats));
+      updatedChats[currentChatIndex].config.model = model;
+      setChats(updatedChats);
+    } else if (defaultChatConfig) {
+      setDefaultChatConfig({ ...defaultChatConfig, model });
+    }
+  };
+
+  // Persist the composer draft per chat so a process kill / permission revoke
+  // does not lose what the user typed. Restored on next mount of this chat.
+  const draftKey = sticky
+    ? `pico_draft_${
+        currentChatIndex >= 0
+          ? (useStore.getState().chats?.[currentChatIndex]?.id ?? currentChatIndex)
+          : 'home'
+      }`
+    : null;
+  const [_content, _setContent] = useState<string>(() => {
+    if (content) return content;
+    if (sticky && draftKey) {
+      try {
+        return localStorage.getItem(draftKey) ?? '';
+      } catch {
+        return '';
+      }
+    }
+    return content;
+  });
+  useEffect(() => {
+    if (!sticky || !draftKey) return;
+    const t = setTimeout(() => {
+      try {
+        if (_content) localStorage.setItem(draftKey, _content);
+        else localStorage.removeItem(draftKey);
+      } catch {
+        /* storage full/blocked */
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [sticky, draftKey, _content]);
+  const isMobile = isMobileDevice();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [deepResearch, setDeepResearch] = useState<boolean>(false);
-  const [webSearch, setWebSearch] = useState<boolean>(false);
-  const [reasoning, setReasoning] = useState<boolean>(false);
-  const [promptsOpen, setPromptsOpen] = useState<boolean>(false);
   const textareaRef = React.createRef<HTMLTextAreaElement>();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
+  const [voiceSend, setVoiceSend] = useState(false);
+  const voiceMode = useVoiceStore((state) => state.voiceMode);
+  const voiceSupported = sttSupported();
+  const signedIn = useIsSignedIn();
+  const speech = useSpeechRecognition({
+    onFinal: (text) =>
+      _setContent((prev) => (prev.trim() === '' ? text : `${prev.trimEnd()} ${text}`)),
+    onError: (message) => setError(message),
+    onEnd: () => setVoiceSend(true),
+  });
   const outgoingContent = [
     _content.trim(),
     ...attachments
@@ -126,13 +179,50 @@ const EditView = ({
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
 
+  // Page-wide spacebar shortcut for voice typing: toggles without focusing
+  // the composer, but stays out of the way of real typing (inputs/textareas),
+  // focused buttons/links, and doesn't double-fire on the composer itself.
+  useEffect(() => {
+    if (!sticky || !speech.supported) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== ' ' || e.repeat) return;
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (
+        target.closest(
+          'input, textarea, select, [contenteditable="true"], button, a'
+        )
+      )
+        return;
+      if (_content.trim() !== '' && !speech.listening) return;
+      e.preventDefault();
+      speech.toggle();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [sticky, speech, _content]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const isMobile =
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|playbook|silk/i.test(
         navigator.userAgent
       );
 
+    // Space toggles voice typing: only when the box is empty (so normal
+    // spaces while typing still work) or while listening (to stop).
+    if (
+      e.key === ' ' &&
+      sticky &&
+      speech.supported &&
+      (_content.trim() === '' || speech.listening)
+    ) {
+      e.preventDefault();
+      speech.toggle();
+      return;
+    }
+
     if (e.key === 'Enter' && !isMobile && !e.shiftKey) {
+      e.preventDefault();
       if (sticky) {
         void sendSticky();
       } else {
@@ -213,7 +303,10 @@ const EditView = ({
   };
 
   const sendSticky = async () => {
-    if (sendBlocked()) return;
+    // While a reply is generating, a new user message would land AFTER the
+    // assistant placeholder and steal the streamed reply (it renders as a
+    // user bubble with the user icon).
+    if (useStore.getState().generating || sendBlocked()) return;
     ensureActiveChat();
     const { content, fileContext, images, files, attachments: documents, modelNote } =
       await prepareOutgoing();
@@ -234,6 +327,19 @@ const EditView = ({
     setAttachments([]);
     resetTextAreaHeight();
     setChats(updatedChats);
+    if (useVoiceStore.getState().voiceMode) useVoiceStore.getState().exitVoiceHome();
+    // Device intents (open app/link, call, timer…) are answered natively —
+    // no LLM round trip. Flag-gated; returns null on desktop / non-match.
+    const deviceReply = await tryDeviceIntent(content);
+    if (deviceReply !== null) {
+      const patched: ChatInterface[] = JSON.parse(JSON.stringify(useStore.getState().chats));
+      patched[useStore.getState().currentChatIndex].messages.push({
+        role: 'assistant',
+        content: deviceReply,
+      });
+      setChats(patched);
+      return;
+    }
     handleSubmit();
   };
 
@@ -247,6 +353,14 @@ const EditView = ({
       handleSubmit();
     }
   };
+
+  // Voice flow: transcript is inserted during listening, then sent once
+  // recognition ends (runs after the _content state has flushed).
+  useEffect(() => {
+    if (!voiceSend) return;
+    setVoiceSend(false);
+    if (_content.trim() !== '') handleGenerate();
+  }, [voiceSend]);
 
   const addAttachment = async (file: File) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -304,24 +418,17 @@ const EditView = ({
     if (sticky && textareaRef.current) textareaRef.current.focus();
   }, []);
 
-  const pillClass = (active: boolean) =>
-    `flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
-      active
-        ? 'border-brand-200 bg-brand-50 text-brand-700'
-        : 'border-surface-line bg-white text-ink-soft hover:bg-surface-muted'
-    }`;
-
   return (
     <>
       <div
         className={`${
           sticky
-            ? 'w-full'
+            ? 'w-full pb-[env(safe-area-inset-bottom)]'
             : 'w-full max-w-2xl'
         }`}
       >
         <div
-          className='flex flex-col overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-card transition-shadow focus-within:shadow-[0_2px_6px_rgba(17,12,46,0.06),0_16px_48px_rgba(80,60,140,0.12)]'
+          className='flex flex-col overflow-hidden rounded-2xl border border-gray-200/80 bg-surface shadow-[0_2px_10px_rgba(17,24,28,0.08),0_1px_3px_rgba(17,24,28,0.05)] transition-all duration-200 ease-in-out focus-within:shadow-[0_2px_6px_rgba(17,12,46,0.06),0_16px_48px_rgba(80,60,140,0.12)] dark:border-zinc-800/80 dark:bg-zinc-900/90 dark:shadow-2xl dark:backdrop-blur-xl'
         >
           <div className='p-4'>
             {attachments.length > 0 && (
@@ -349,62 +456,64 @@ const EditView = ({
                 ))}
               </div>
             )}
+            <div className='relative flex items-start gap-2'>
+            {sticky && (
+              <span className='pointer-events-none absolute left-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md border border-[#8AE000]/30 bg-[#8AE000]/10 text-[#8AE000] dark:border-[#9EFF00]/30 dark:bg-[#9EFF00]/10 dark:text-[#9EFF00]'>
+                <SparkleIcon className='h-5 w-5' />
+              </span>
+            )}
             <textarea
             ref={textareaRef}
-            className='m-0 max-h-[7.5rem] w-full resize-none overflow-y-auto border-0 bg-transparent p-1 px-2 text-sm leading-5 text-ink placeholder:text-ink-muted focus:outline-none focus:ring-0'
+            dir='auto'
+            className={`m-0 max-h-[7.5rem] min-w-0 flex-1 resize-none overflow-y-auto border-0 bg-transparent px-2 pb-1 pt-2 text-sm leading-5 text-zinc-900 placeholder:text-zinc-400 dark:text-ink dark:placeholder:text-ink-muted focus:outline-none focus:ring-0 ${sticky ? 'pl-11' : ''}`}
             style={{ minHeight: '40px' }}
             onChange={(e) => {
               _setContent(e.target.value);
             }}
             value={_content}
-            placeholder={t('submitPlaceholder') as string}
+            placeholder={sticky ? 'Ask PICO anything...' : (t('submitPlaceholder') as string)}
             onKeyDown={handleKeyDown}
             rows={1}
           />
+            {sticky && !isMobile && (
+              <span className='hidden h-7 shrink-0 select-none items-center self-center whitespace-nowrap rounded-md border border-gray-300 px-1.5 text-[10px] text-gray-500 dark:border-zinc-700 dark:text-zinc-400 sm:inline-flex'>
+                Ctrl + Enter ↵
+              </span>
+            )}
+          </div>
 
-          <div className='mt-1 flex items-center justify-between gap-2'>
-            <div className='flex flex-wrap items-center gap-1.5'>
+          <div className='mt-2 flex h-12 items-center justify-between gap-2 border-t border-gray-200/60 px-3 py-1.5 dark:border-zinc-800'>
+            <div className='flex flex-wrap items-center space-x-1'>
               {sticky && (
                 <button
-                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all ${
-                    deepResearch
-                      ? 'border-brand-300 bg-brand-50 text-brand-600'
-                      : 'border-surface-line bg-white text-ink-soft hover:bg-surface-muted'
-                  }`}
-                  onClick={() => setDeepResearch((p) => !p)}
-                  aria-label='deeper research'
+                  type='button'
+                  className="relative flex h-9 w-9 items-center justify-center rounded-full border border-transparent bg-zinc-100 text-zinc-600 transition-all duration-200 ease-in-out after:absolute after:-inset-1.5 after:content-[''] hover:border-emerald-500/30 hover:bg-zinc-200 dark:bg-zinc-900/50 dark:text-zinc-300 dark:hover:bg-zinc-800/60"
+                  onClick={() =>
+                    gateSignedIn('Sign in to attach files.', () => fileInputRef.current?.click())
+                  }
+                  aria-label='attach file'
                 >
-                  <SparkleIcon className='h-3.5 w-3.5 text-brand-500' />
-                  Deeper Research
+                  <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' className='h-4 w-4'>
+                    <path d='M12 5v14M5 12h14' />
+                  </svg>
+                  {!signedIn && <LockBadge />}
                 </button>
               )}
-              {sticky && (
+              {sticky && !isMobile && (
                 <button
-                  className={`icon-btn !h-8 !w-8 ${
-                    webSearch ? '!border-brand-200 !bg-brand-50 !text-brand-600' : ''
-                  }`}
-                  onClick={() => setWebSearch((p) => !p)}
-                  aria-label='web search'
+                  type='button'
+                  className="relative flex h-9 w-9 items-center justify-center rounded-full border border-transparent bg-zinc-100 text-zinc-600 transition-all duration-200 ease-in-out after:absolute after:-inset-1.5 after:content-[''] hover:border-emerald-500/30 hover:bg-zinc-200 dark:bg-zinc-900/50 dark:text-zinc-300 dark:hover:bg-zinc-800/60"
+                  onClick={() =>
+                    gateSignedIn('Sign in to attach images.', () => imageInputRef.current?.click())
+                  }
+                  aria-label='attach image'
                 >
-                  <GlobeIcon className='h-4 w-4' />
-                </button>
-              )}
-              {sticky && (
-                <button
-                  className={pillClass(reasoning)}
-                  onClick={() => setReasoning((p) => !p)}
-                  aria-label='reasoning mode'
-                >
-                  <DeepResearchIcon className='h-3.5 w-3.5' />
-                </button>
-              )}
-              {sticky && (
-                <button
-                  className={pillClass(false)}
-                  onClick={() => setImageMode(true)}
-                  aria-label='image mode'
-                >
-                  Image
+                  <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' className='h-4 w-4'>
+                    <rect x='3' y='3' width='18' height='18' rx='2' />
+                    <circle cx='8.5' cy='8.5' r='1.5' />
+                    <path d='M21 15l-5-5L5 21' />
+                  </svg>
+                  {!signedIn && <LockBadge />}
                 </button>
               )}
               <input
@@ -414,69 +523,92 @@ const EditView = ({
                 onChange={handleAttachFiles}
                 multiple
               />
+              <input
+                ref={imageInputRef}
+                type='file'
+                accept='image/*'
+                className='hidden'
+                onChange={handleAttachFiles}
+                multiple
+              />
             </div>
 
-            <div className='flex items-center gap-1'>
-              <button
-                className='flex h-9 w-9 items-center justify-center rounded-full bg-brand-500 text-white shadow-soft transition-all hover:bg-brand-600 disabled:opacity-50'
-                onClick={
-                  generating
-                    ? () => useStore.getState().setGenerating(false)
-                    : handleGenerate
-                }
-                aria-label={generating ? 'stop generating' : 'send message'}
-              >
-                {generating ? (
-                  <svg
-                    stroke='currentColor'
-                    fill='none'
-                    strokeWidth='1.5'
-                    viewBox='0 0 24 24'
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    className='h-3 w-3'
-                    height='1em'
-                    width='1em'
-                    xmlns='http://www.w3.org/2000/svg'
-                  >
-                    <rect x='3' y='3' width='18' height='18' rx='2' ry='2'></rect>
-                  </svg>
-                ) : _content.trim() === '' ? (
-                  <MicIcon className='h-4 w-4' />
-                ) : (
-                  <SendIcon />
-                )}
-              </button>
+            <div className='flex items-center space-x-1'>
+              {sticky && activeModel && (
+                <div className='flex h-12 w-[180px] [&>div]:h-full [&>div]:w-full [&_button]:h-full [&_button]:w-full [&_button]:justify-between [&_button]:border-zinc-200 dark:[&_button]:border-zinc-700 [&_button]:transition-all [&_button]:duration-200 [&_button]:hover:border-emerald-500/50 [&_button]:bg-white [&_button]:px-3 [&_button]:text-zinc-900 dark:[&_button]:bg-zinc-800 dark:[&_button]:text-zinc-200'>
+                  <ModeSelector currentMode={activeModel} onModeChange={handleModeChange} />
+                </div>
+              )}
+              {sticky && <span className='mx-2 my-auto h-5 w-[1px] bg-gray-200 dark:bg-zinc-800/80' />}
+              {sticky && voiceSupported && !generating && _content.trim() === '' && attachments.length === 0 ? (
+                <button
+                  type='button'
+                  className={`relative flex h-9 w-9 items-center justify-center rounded-full shadow-soft transition-all after:absolute after:-inset-1.5 after:content-[''] ${
+                    voiceMode
+                      ? 'bg-red-500 text-white hover:bg-red-600'
+                      : 'bg-brand-500 text-white hover:bg-brand-600 dark:bg-[#9EFF00] dark:text-black dark:hover:bg-[#86D900]'
+                  }`}
+                  onClick={() =>
+                    voiceMode
+                      ? useVoiceStore.getState().setVoiceMode(false)
+                      : gateSignedIn('Sign in to use voice mode.', () => {
+                          const state = useStore.getState();
+                          useVoiceStore
+                            .getState()
+                            .enterVoiceHome(state.chats?.[state.currentChatIndex]?.id ?? null);
+                        })
+                  }
+                  aria-label={voiceMode ? 'turn voice mode off' : 'turn voice mode on'}
+                  title='Voice to voice mode'
+                >
+                  <VoiceWaveIcon />
+                  {!signedIn && <LockBadge />}
+                </button>
+              ) : (
+                <button
+                  type='button'
+                  className={`relative flex h-9 w-9 items-center justify-center rounded-full shadow-soft transition-all after:absolute after:-inset-1.5 after:content-[''] ${
+                    generating
+                      ? 'bg-red-500 text-white hover:bg-red-600'
+                      : 'bg-brand-500 text-white hover:bg-brand-600 dark:bg-[#9EFF00] dark:text-black dark:hover:bg-[#86D900]'
+                  }`}
+                  onClick={
+                    generating
+                      ? () => useStore.getState().setGenerating(false)
+                      : handleGenerate
+                  }
+                  aria-label={generating ? 'stop generating' : 'send message'}
+                >
+                  {generating ? (
+                    <svg
+                      stroke='currentColor'
+                      fill='none'
+                      strokeWidth='1.5'
+                      viewBox='0 0 24 24'
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      className='h-3 w-3'
+                      height='1em'
+                      width='1em'
+                      xmlns='http://www.w3.org/2000/svg'
+                    >
+                      <rect x='3' y='3' width='18' height='18' rx='2' ry='2'></rect>
+                    </svg>
+                  ) : (
+                    <SendIcon />
+                  )}
+                </button>
+              )}
             </div>
           </div>
           </div>
-
-          {sticky && (
-            <div className='flex items-center justify-between border-t border-gray-100 bg-gray-50/80 px-4 py-2.5'>
-            <button
-              className='flex items-center gap-1.5 text-xs font-medium text-ink-soft transition-colors hover:text-ink'
-              onClick={() => setPromptsOpen((p) => !p)}
-            >
-              <BookmarkIcon className='h-3.5 w-3.5' />
-              Saved prompts
-              <DownChevronArrow />
-            </button>
-            <button
-              className='flex items-center gap-1.5 text-xs font-medium text-ink-soft transition-colors hover:text-ink'
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <PaperclipIcon className='h-3.5 w-3.5' />
-              Attach file
-            </button>
+          {sticky && !speech.supported && (
+            <div className='border-t border-surface-line px-4 py-1.5 text-[11px] text-ink-muted'>
+              Voice typing is not supported in this browser — type and send works fine.
             </div>
           )}
-        </div>
 
-        {sticky && promptsOpen && (
-          <div className='mt-2'>
-            <CommandPrompt _setContent={_setContent} expanded />
-          </div>
-        )}
+        </div>
       </div>
 
       {isModalOpen && (

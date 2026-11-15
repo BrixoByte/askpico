@@ -159,7 +159,7 @@ const ChatFolder = ({
       <div
         style={{ background: color || '' }}
         className={`${
-          color ? 'text-ink' : 'hover:bg-black/5 text-ink-soft hover:text-ink'
+          color ? 'text-ink' : 'hover:bg-ink/5 text-ink-soft hover:text-ink'
         } transition-colors flex py-2 pl-2 pr-1 items-center gap-3 relative rounded-xl break-all cursor-pointer parent-sibling`}
         onClick={toggleExpanded}
         ref={folderRef}
@@ -212,14 +212,14 @@ const ChatFolder = ({
           {isDelete || isEdit ? (
             <>
               <button
-                className='p-1 hover:text-brand-600'
+                className="relative p-1 after:absolute after:-inset-3 after:content-[''] hover:text-brand-600"
                 onClick={handleTick}
                 aria-label='confirm'
               >
                 <TickIcon />
               </button>
               <button
-                className='p-1 hover:text-ink'
+                className="relative p-1 after:absolute after:-inset-3 after:content-[''] hover:text-ink"
                 onClick={handleCross}
                 aria-label='cancel'
               >
@@ -233,7 +233,7 @@ const ChatFolder = ({
                 ref={paletteRef}
               >
                 <button
-                  className='p-1 hover:text-ink'
+                  className="relative p-1 after:absolute after:-inset-3 after:content-[''] hover:text-ink"
                   onClick={() => {
                     setShowPalette((prev) => !prev);
                   }}
@@ -242,7 +242,7 @@ const ChatFolder = ({
                   <ColorPaletteIcon />
                 </button>
                 {showPalette && (
-                  <div className='absolute left-0 bottom-0 translate-y-full p-2 z-20 bg-white rounded-lg border border-surface-line shadow-card flex flex-col gap-2 items-center'>
+                  <div className='absolute left-0 bottom-0 translate-y-full p-2 z-20 bg-white dark:bg-zinc-900 rounded-lg border border-surface-line shadow-card flex flex-col gap-2 items-center'>
                     <>
                       {folderColorOptions.map((c) => (
                         <button
@@ -269,21 +269,21 @@ const ChatFolder = ({
               </div>
 
               <button
-                className='p-1 hover:text-brand-600 md:hidden group-hover/folder:md:inline'
+                className="relative p-1 after:absolute after:-inset-3 after:content-[''] hover:text-brand-600 md:hidden group-hover/folder:md:inline"
                 onClick={() => setIsEdit(true)}
                 aria-label='edit folder title'
               >
                 <EditIcon />
               </button>
               <button
-                className='p-1 hover:text-red-500 md:hidden group-hover/folder:md:inline'
+                className="relative p-1 after:absolute after:-inset-3 after:content-[''] hover:text-red-500 md:hidden group-hover/folder:md:inline"
                 onClick={() => setIsDelete(true)}
                 aria-label='delete folder'
               >
                 <DeleteIcon />
               </button>
               <button
-                className='p-1 hover:text-ink'
+                className="relative p-1 after:absolute after:-inset-3 after:content-[''] hover:text-ink"
                 onClick={toggleExpanded}
                 aria-label='expand folder'
               >

@@ -8,15 +8,25 @@ import {
   getChatCompletionStream,
   RouteResult,
   routeToAgent,
+  summarizeThreadFocus,
+  ThreadContext,
+  verifyReplyText,
   truncateAgentHistory,
+  SignInRequiredError,
 } from '@api/api';
+import useAuthGateStore from '@store/auth-gate-store';
 import { getAttachmentFile } from '@utils/attachmentStore';
 import { convertPdfPages, pdfPageCount } from '@utils/pdfToPng';
 import { parseEventSource } from '@api/helper';
 import { limitMessageTokens, updateTotalTokenUsed } from '@utils/messageUtils';
+import { selectContextWindow } from '@utils/contextWindow';
+import useMemoryStore from '@store/memory-store';
+import useUsageStore, { FREE_DEEP_LIMIT } from '@store/usage-store';
+import useVoiceStore from '@store/voice-store';
 import { _defaultChatConfig } from '@constants/chat';
 import { extractArtifacts } from '@utils/artifactParser';
 import { logger } from '@utils/logger';
+import { consumeRouteBypass } from '@utils/routeBypass';
 
 const syncArtifacts = (
   chatId: string,
@@ -110,6 +120,23 @@ const describeNow = (locationTimeZone?: string): string => {
   return `Current time on the user's device (${deviceZone}): ${deviceTime}${locationPart}`;
 };
 
+// Structured fact anchor refreshes every ~2 turns (4 messages) so decisions
+// like budgets and goals land in the anchor before the raw text drops away.
+const FOCUS_REFRESH_BATCH = 4;
+const COMPLETION_TOKENS_DEFAULT = 2048;
+const COMPLETION_TOKENS_MAX = 4096;
+
+const threadRecentMessages = (messages: MessageInterface[]) =>
+  messages
+    .filter((m) => (m.role === 'user' || m.role === 'assistant') && !m.image && m.content.trim() !== '')
+    .slice(-6)
+    .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+
+const activeMemories = (): string[] => {
+  const { memoryEnabled, items } = useMemoryStore.getState();
+  return memoryEnabled ? items.map((item) => item.text) : [];
+};
+
 const toModelMessage = (message: MessageInterface): MessageInterface => ({
   role: message.role,
   content: [message.content, message.fileContext, message.modelNote].filter(Boolean).join('\n\n'),
@@ -135,10 +162,45 @@ const useSubmit = () => {
     return data.choices[0].message.content;
   };
 
+  const patchChat = (index: number, patch: Partial<ChatInterface>) => {
+    const next: ChatInterface[] = JSON.parse(JSON.stringify(useStore.getState().chats));
+    Object.assign(next[index], patch);
+    setChats(next);
+  };
+
   const handleSubmit = async () => {
     const chats = useStore.getState().chats;
-    if (generating || !chats) return;
+    // Read generating fresh: voice barge-in can flip it false microseconds
+    // before this runs, and the hook value may lag a render behind.
+    if (useStore.getState().generating || !chats) return;
     const currentChatIndex = useStore.getState().currentChatIndex;
+    const requestType =
+      useVoiceStore.getState().pendingVoiceTurn
+        ? 'voice'
+        : 'text';
+    useVoiceStore.getState().setPendingVoiceTurn(false);
+
+    // Deep mode is capped per day on the free plan.
+    if (
+      chats[currentChatIndex].config.model === 'deep' &&
+      !useUsageStore.getState().consumeDeep()
+    ) {
+      // Inline banner, not a centered modal — the composer must stay reachable.
+      const usage = useUsageStore.getState();
+      usage.setQuotaKind('cap');
+      let dismissedRecently = false;
+      try {
+        const at = Number(localStorage.getItem('pico_quota_modal_dismissed_at') ?? 0);
+        dismissedRecently = Date.now() - at < 7 * 24 * 60 * 60 * 1000;
+      } catch {
+        dismissedRecently = false;
+      }
+      if (!dismissedRecently) usage.setQuotaOpen(true);
+      setError(
+        `Daily limit reached: Deep mode allows ${FREE_DEEP_LIMIT} messages per day on the free plan.`
+      );
+      return;
+    }
 
     const updatedChats: ChatInterface[] = JSON.parse(JSON.stringify(chats));
 
@@ -156,24 +218,60 @@ const useSubmit = () => {
       if (chats[currentChatIndex].messages.length === 0)
         throw new Error('No messages submitted!');
 
+      const threadMessages = chats[currentChatIndex].messages
+        .filter((message) => !message.image)
+        .map(toModelMessage);
+      const windowedMessages = selectContextWindow(threadMessages);
       const messages = limitMessageTokens(
-        chats[currentChatIndex].messages
-          .filter((message) => !message.image)
-          .map(toModelMessage),
+        windowedMessages,
         chats[currentChatIndex].config.max_tokens,
         chats[currentChatIndex].config.model
       );
       if (messages.length === 0) throw new Error('Message exceed max token!');
 
-      const model = chats[currentChatIndex].config.model;
+      const selectedMode = chats[currentChatIndex].config.model;
       const lastUserMessage = [...chats[currentChatIndex].messages]
         .reverse()
         .find((m) => m.role === 'user');
       const lastUserText = lastUserMessage?.content;
+      const memories = activeMemories();
+      const droppedByWindow = threadMessages.length - windowedMessages.length;
+      trace(`0. memory: ${memories.length} saved memories attached`, memories);
+      trace(`0. context: thread=${threadMessages.length} sent=${messages.length}`, {
+        droppedByWindow,
+        droppedByTokens: windowedMessages.length - messages.length,
+      });
+      if (
+        typeof lastUserText === 'string' &&
+        /pehle|pichli|dusri|doosri|other chat|previous|earlier|before|yaad|remember/i.test(lastUserText)
+      ) {
+        trace('0. memory: cross-thread cue detected, server will run vector recall');
+      }
+
+      const storedChat = chats[currentChatIndex];
+      const focus = storedChat.focus ?? '';
+      const focusUpTo = storedChat.focusUpTo ?? 0;
+      const pendingFocus =
+        droppedByWindow - focusUpTo >= FOCUS_REFRESH_BATCH
+          ? threadMessages.slice(focusUpTo, droppedByWindow)
+          : null;
+      const threadContext: ThreadContext = {
+        focus,
+        recent: threadRecentMessages(chats[currentChatIndex].messages.slice(0, -1)),
+        stickyAgentId: chats[currentChatIndex].lastAgentId ?? null,
+      };
       let agentReply: string | null = null;
       let toolHandled = false;
+      // Live tool payload + injected current time — also fed to the reply
+      // verifier so tool figures and "now" statements count as grounded
+      // context instead of being flagged unverified.
+      let liveToolData = '';
+      let liveNowInfo = '';
       const fileExtensions = [...new Set((lastUserMessage?.attachments ?? []).map((a) => a.ext))];
-      if (typeof lastUserText === 'string' && lastUserText.trim() !== '') {
+      // Voice turns go straight to the core chat stream: the routing round-trip
+      // (and history cleanup) would add seconds before the first spoken word.
+      const bypassRouting = consumeRouteBypass();
+      if (requestType !== 'voice' && !bypassRouting && typeof lastUserText === 'string' && lastUserText.trim() !== '') {
         const { setHandoff } = useStore.getState();
         const chatId = chats[currentChatIndex].id;
         const userTurn = chats[currentChatIndex].messages.map((m) => m.role).lastIndexOf('user');
@@ -181,12 +279,16 @@ const useSubmit = () => {
           trace('0. history: cleanup failed', (err as Error).message)
         );
         setHandoff({ agentId: null, stage: 'routing' });
-        trace('1. routing: POST /api/agent/route', { chars: lastUserText.length, model });
+        trace('1. routing: POST /api/agent/route', { chars: lastUserText.length });
         let route: RouteResult | null = null;
         try {
-          route = await routeToAgent(lastUserText, model, fileExtensions);
+          route = await routeToAgent(lastUserText, fileExtensions, threadContext);
         } catch (err) {
-          if (fileExtensions.length === 0) {
+          if (err instanceof SignInRequiredError) {
+            toolHandled = true;
+            useAuthGateStore.getState().open(err.message);
+            replaceLastAssistant(currentChatIndex, { content: '' });
+          } else if (fileExtensions.length === 0) {
             trace('1. routing: request threw, using core', (err as Error).message);
           } else {
             toolHandled = true;
@@ -194,6 +296,7 @@ const useSubmit = () => {
           }
         }
         const agentId = route?.agentId ?? null;
+        if (agentId) patchChat(currentChatIndex, { lastAgentId: agentId });
         if (route?.toolError) {
           toolHandled = true;
           trace(`2. routing: live tool "${route.toolId}" failed`, route.toolError);
@@ -212,12 +315,17 @@ const useSubmit = () => {
             });
           } else {
             const locationZone = (route.data as { timezone?: string }).timezone;
+            liveToolData = JSON.stringify(route.data);
+            liveNowInfo = describeNow(locationZone);
             agentReply = await askSpecialistAgent(
               agentId,
-              `${lastUserText}\n\n${describeNow(locationZone)}\nLive data from the ${route.toolId} tool (answer only from this data, do not guess). The data's own datetime is the last observation time and may be older than the current time above; state it as the observation time and use the current time for "now":\n${JSON.stringify(route.data)}`,
+              `${lastUserText}\n\n${liveNowInfo}\nLive data from the ${route.toolId} tool (answer only from this data, do not guess). Present the values as the current conditions for the current time shown above — do NOT mention any observation time, reading time, or that the data may be outdated. Sunrise and sunset fields are for the current local date — if they have already passed, do not call them "tomorrow":\n${liveToolData}`,
               chatId,
               userTurn,
-              model
+              selectedMode,
+              requestType,
+              memories,
+              threadContext
             );
           }
         } else if (route?.location === 'browser' && route.toolId) {
@@ -230,7 +338,7 @@ const useSubmit = () => {
           await wait(700);
           setHandoff({ agentId, stage: 'working' });
           const started = performance.now();
-          agentReply = await askSpecialistAgent(agentId, lastUserText, chatId, userTurn, model);
+          agentReply = await askSpecialistAgent(agentId, lastUserText, chatId, userTurn, selectedMode, requestType, memories, threadContext);
           trace(`3. specialist "${agentId}" replied`, {
             ms: Math.round(performance.now() - started),
             chars: agentReply.length,
@@ -248,11 +356,31 @@ const useSubmit = () => {
         repliedMessages[repliedMessages.length - 1].content = agentReply;
         setChats(repliedChats);
       } else if (!toolHandled) {
-        trace('3. core: POST /api/chat (streaming)', { model, messages: messages.length });
-        stream = await getChatCompletionStream(messages, model);
+        trace('3. core: POST /api/chat (streaming)', { messages: messages.length });
+        const result = await getChatCompletionStream(
+          messages,
+          selectedMode,
+          memories,
+          focus,
+          chats[currentChatIndex].completionTokens,
+          chats[currentChatIndex].id,
+          requestType
+        );
+        stream = result.stream;
+        // Server quota enforcement: the user asked for Deep but the backend
+        // granted a lower tier (daily limit or global cap exhausted).
+        if (selectedMode === 'deep' && result.grantedMode && result.grantedMode !== 'deep') {
+          trace('3. core: requested deep but server granted', result.grantedMode);
+          const usage = useUsageStore.getState();
+          usage.setQuotaKind('cap');
+          usage.setQuotaOpen(true);
+          setError(
+            `Your daily Deep limit is used up, so this reply was served by ${result.grantedMode} mode.`
+          );
+        }
       }
 
-      if (stream) {
+      for (let attempt = 0; stream && attempt < 2; attempt++) {
         if (stream.locked)
           throw new Error(
             'Oops, the stream is locked right now. Please try again'
@@ -260,6 +388,7 @@ const useSubmit = () => {
         const reader = stream.getReader();
         let reading = true;
         let partial = '';
+        let finishReason: string | null = null;
         while (reading && useStore.getState().generating) {
           const { done, value } = await reader.read();
           const result = parseEventSource(
@@ -274,7 +403,9 @@ const useSubmit = () => {
               if (typeof curr === 'string') {
                 partial += curr;
               } else {
-                const content = curr.choices[0]?.delta?.content ?? null;
+                const choice = curr.choices?.[0];
+                const content = choice?.delta?.content ?? null;
+                if (choice?.finish_reason) finishReason = choice.finish_reason;
                 if (content) output += content;
               }
               return output;
@@ -294,6 +425,7 @@ const useSubmit = () => {
             );
           }
         }
+        if (finishReason) trace(`3. core: stream finished (finish_reason=${finishReason}), attempt ${attempt + 1}`);
         if (useStore.getState().generating) {
           reader.cancel('Cancelled by user').catch(() => undefined);
         } else {
@@ -301,7 +433,34 @@ const useSubmit = () => {
         }
         reader.releaseLock();
         stream.cancel().catch(() => undefined);
+        const currentBudget = useStore.getState().chats?.[currentChatIndex]?.completionTokens ?? COMPLETION_TOKENS_DEFAULT;
+        if (finishReason === 'length' && attempt === 0 && currentBudget < COMPLETION_TOKENS_MAX && useStore.getState().generating) {
+          const raised = Math.min(currentBudget * 2, COMPLETION_TOKENS_MAX);
+          trace(`3. core: reply truncated at the token limit, regenerating with budget ${raised}`);
+          const regenerated: ChatInterface[] = JSON.parse(JSON.stringify(useStore.getState().chats));
+          const regeneratedMessages = regenerated[currentChatIndex].messages;
+          regeneratedMessages[regeneratedMessages.length - 1].content = '';
+          regenerated[currentChatIndex].completionTokens = raised;
+          setChats(regenerated);
+          stream = (
+            await getChatCompletionStream(messages, selectedMode, memories, focus, raised, chats[currentChatIndex].id, requestType)
+          ).stream;
+          continue;
+        }
+        if (finishReason === 'length') trace('3. core: reply still truncated at the maximum budget');
+        break;
       }
+
+      // A stream that finished cleanly with no text is an empty reply, not a lost connection.
+      const emptyCheck = useStore.getState().chats?.[currentChatIndex]?.messages;
+      if (useStore.getState().generating && emptyCheck && (emptyCheck[emptyCheck.length - 1]?.content ?? '').trim() === '') {
+        trace('3. core: stream finished with an empty reply');
+        setError('The model returned an empty answer. Please try again.');
+      }
+
+      // Voice replies are spoken from the stream, so the end of the stream is signalled
+      // before any post-reply work (titles, checks) that would otherwise hold the last sentence.
+      if (requestType === 'voice') useVoiceStore.getState().markReplyStreamDone();
 
       // finalize artifacts for the reply; the tab is only switched on completion
       const finishedNaturally = useStore.getState().generating;
@@ -315,6 +474,54 @@ const useSubmit = () => {
           chat.messages[messageIndex].content,
           finishedNaturally
         );
+      }
+
+      if (pendingFocus) {
+        summarizeThreadFocus(
+          focus,
+          pendingFocus.map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }))
+        )
+          .then((updated) => {
+            patchChat(currentChatIndex, { focus: updated, focusUpTo: droppedByWindow });
+            trace('0. focus: thread facts updated after reply', updated);
+          })
+          .catch((err: unknown) => trace('0. focus: summary failed, keeping previous facts', (err as Error).message));
+      }
+
+      const finalMessages = useStore.getState().chats?.[currentChatIndex]?.messages ?? [];
+      const finalReply = finalMessages[finalMessages.length - 1]?.content ?? '';
+      if (
+        finalReply !== '' &&
+        !finalReply.includes('```') &&
+        /[\d%$]|PKR|Rs\b|price|cost|budget|authorit|regulat|supplier|law|percent/i.test(finalReply)
+      ) {
+        const userStated = [
+          threadMessages
+            .filter((m) => m.role === 'user')
+            .map((m) => m.content)
+            .join('\n'),
+          liveToolData ? `Live tool data fetched this turn:\n${liveToolData}` : '',
+          liveNowInfo ? `Current time provided to the assistant this turn:\n${liveNowInfo}` : '',
+        ]
+          .filter(Boolean)
+          .join('\n\n');
+        verifyReplyText(finalReply, focus, userStated)
+          .then((checked) => {
+            if (checked.flagged === 0 || checked.corrected === finalReply) {
+              trace('4. verify: reply grounded');
+              return;
+            }
+            const next: ChatInterface[] = JSON.parse(JSON.stringify(useStore.getState().chats));
+            const msgs = next[currentChatIndex].messages;
+            if (msgs[msgs.length - 1].content === finalReply) {
+              msgs[msgs.length - 1].content = checked.corrected;
+              setChats(next);
+              trace(`4. verify: ${checked.flagged} unverified span(s) marked [Verify Local Data]`);
+            }
+          })
+          .catch((err: unknown) =>
+            trace('4. verify: check failed, keeping reply', (err as Error).message)
+          );
       }
 
       // update tokens used in chatting
@@ -348,34 +555,65 @@ const useSubmit = () => {
           content: `Generate a title in less than 6 words for the following message (language: ${i18n.language}):\n"""\nUser: ${user_message}\nAssistant: ${assistant_message}\n"""`,
         };
 
-        let title = (await generateTitle([message])).trim();
-        if (title.startsWith('"') && title.endsWith('"')) {
-          title = title.slice(1, -1);
-        }
-        const updatedChats: ChatInterface[] = JSON.parse(
-          JSON.stringify(useStore.getState().chats)
-        );
-        updatedChats[currentChatIndex].title = title;
-        updatedChats[currentChatIndex].titleSet = true;
-        setChats(updatedChats);
+        // Not awaited: the title is a separate LLM call and must not delay the end of the reply.
+        void generateTitle([message])
+          .then((generated) => {
+            let title = generated.trim();
+            if (title.startsWith('"') && title.endsWith('"')) {
+              title = title.slice(1, -1);
+            }
+            const updatedChats: ChatInterface[] = JSON.parse(
+              JSON.stringify(useStore.getState().chats)
+            );
+            updatedChats[currentChatIndex].title = title;
+            updatedChats[currentChatIndex].titleSet = true;
+            setChats(updatedChats);
 
-        // update tokens used for generating title
-        if (countTotalTokens) {
-          const model = _defaultChatConfig.model;
-          updateTotalTokenUsed(model, [message], {
-            role: 'assistant',
-            content: title,
-          });
-        }
+            // update tokens used for generating title
+            if (countTotalTokens) {
+              const model = _defaultChatConfig.model;
+              updateTotalTokenUsed(model, [message], {
+                role: 'assistant',
+                content: title,
+              });
+            }
+          })
+          .catch((err: unknown) => trace('title: generation failed, keeping default title', (err as Error).message));
       }
     } catch (e: unknown) {
       const err = (e as Error).message;
       if ((e as Error).name === 'AbortError') {
         logger.debug('generation aborted');
       } else {
-        if (e instanceof TypeError) logger.warn('network error:', err);
-        else logger.error('chat submit failed:', err);
-        setError(err);
+        if (e instanceof TypeError) {
+          logger.warn('network error:', err);
+          setError('Connection to Pico was lost while generating. Check your network and try again.');
+        } else {
+          logger.error('chat submit failed:', err);
+          if (err.includes('QUOTA_EXHAUSTED') || err.includes('Rate limited!')) {
+            let dismissedRecently = false;
+            try {
+              const at = Number(localStorage.getItem('pico_quota_modal_dismissed_at') ?? 0);
+              dismissedRecently = Date.now() - at < 7 * 24 * 60 * 60 * 1000;
+            } catch {
+              dismissedRecently = false;
+            }
+            const usage = useUsageStore.getState();
+            const kind = err.includes('Rate limited') ? 'busy' : 'cap';
+            usage.setQuotaKind(kind);
+            if (!dismissedRecently) {
+              usage.setQuotaOpen(true);
+            } else {
+              setError(
+                kind === 'busy'
+                  ? 'Service is busy right now — try again in a moment.'
+                  : 'Daily usage limit reached. It resets tomorrow — invite friends from Settings to earn more.'
+              );
+            }
+          } else {
+            setError(err);
+          }
+        }
       }
     }
     useStore.getState().setHandoff(null);

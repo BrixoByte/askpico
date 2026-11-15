@@ -1,6 +1,4 @@
-import { fetchWithRetry } from './api';
-
-const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+import { backendUrl, fetchWithRetry } from './api';
 
 export const askAgent = async (
   agentId: string,

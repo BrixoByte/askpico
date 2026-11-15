@@ -62,7 +62,7 @@ const ImageDropdown = <T extends string>({
         <ul
           role='listbox'
           aria-label={ariaLabel}
-          className='absolute bottom-full left-0 z-20 mb-2 min-w-full overflow-hidden rounded-xl border border-surface-line bg-white p-1 shadow-card'
+          className='absolute bottom-full left-0 z-20 mb-2 min-w-full overflow-hidden rounded-xl border border-surface-line bg-white dark:bg-zinc-900 p-1 shadow-card'
         >
           {options.map((item) => {
             const selected = item.value === value;

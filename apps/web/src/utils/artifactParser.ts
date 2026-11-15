@@ -15,11 +15,17 @@ const getArtifactType = (language: string): ArtifactType =>
 const UNFENCED_HEADER =
   /^(jsx|tsx|js|ts|css|html|json)[ \t]+([\w./-]+\.(?:jsx|tsx|js|ts|css|html|json))[ \t]*$/i;
 
+// Internal fact-check markers — never user-visible (chat, artifacts, exports).
+const INTERNAL_MARKERS = /\[Verify Local Data[^\]]*\]/gi;
+
+export const stripInternalMarkers = (text: string): string =>
+  text.replace(INTERNAL_MARKERS, '').replace(/[ \t]{2,}/g, ' ');
+
 export const fenceUnfencedBlocks = (markdown: string): string => {
   const out: string[] = [];
   let inFence = false;
   let openedUnfenced = false;
-  for (const line of markdown.split('\n')) {
+  for (const line of stripInternalMarkers(markdown).split('\n')) {
     if (line.trimStart().startsWith('```')) {
       if (openedUnfenced) {
         out.push('```');

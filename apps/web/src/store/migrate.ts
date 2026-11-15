@@ -112,3 +112,16 @@ export const migrateV8 = (persistedState: LocalStorageInterfaceV8ToV9) => {
     chat.messages = chat.messages.filter((m) => m.role !== 'system');
   });
 };
+
+const LEGACY_PROVIDER_MODELS = ['openai/gpt-oss-20b', 'openai/gpt-oss-120b'];
+
+export const migrateV9 = (persistedState: LocalStorageInterfaceV8ToV9) => {
+  const isLegacy = (model: string) => LEGACY_PROVIDER_MODELS.includes(model);
+  persistedState.chats.forEach((chat) => {
+    if (isLegacy(chat.config.model)) chat.config = { ...chat.config, model: defaultModel };
+  });
+  const stored = persistedState as unknown as { defaultChatConfig?: { model: string } };
+  if (stored.defaultChatConfig && isLegacy(stored.defaultChatConfig.model)) {
+    stored.defaultChatConfig.model = defaultModel;
+  }
+};

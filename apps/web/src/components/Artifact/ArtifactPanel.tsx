@@ -71,7 +71,7 @@ const ArtifactPanel = () => {
     : [];
 
   return (
-    <aside className='fixed inset-0 z-30 flex min-h-0 flex-col overflow-hidden border-surface-line bg-white transition-all duration-300 ease-in-out md:relative md:inset-auto md:z-auto md:w-[70%] md:min-w-0 md:flex-1 md:rounded-2xl md:border md:shadow-card'>
+    <aside className='fixed inset-0 z-30 flex min-h-0 flex-col overflow-hidden border-surface-line bg-surface transition-all duration-300 ease-in-out md:relative md:inset-auto md:z-auto md:w-[70%] md:min-w-0 md:flex-1 md:rounded-2xl md:border md:shadow-card'>
       <div className='flex items-center justify-between gap-2 border-b border-surface-line px-4 py-3'>
         <ArtifactTabs activeTab={activeArtifactTab} onChange={setActiveArtifactTab} />
         {activeArtifact?.type === 'document' && (

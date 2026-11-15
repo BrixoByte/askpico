@@ -16,8 +16,9 @@ const tokenCostToCost = (
   tokenCost: TotalTokenUsed[ModelOptions],
   model: ModelOptions
 ) => {
-  if (!tokenCost) return 0;
-  const { prompt, completion } = modelCost[model as keyof typeof modelCost];
+  const pricing = modelCost[model as keyof typeof modelCost];
+  if (!tokenCost || !pricing) return 0;
+  const { prompt, completion } = pricing;
   const completionCost =
     (completion.price / completion.unit) * tokenCost.completionTokens;
   const promptCost = (prompt.price / prompt.unit) * tokenCost.promptTokens;
@@ -61,13 +62,13 @@ const TotalTokenCost = () => {
             {costMapping.map(({ model, cost }) => (
               <tr
                 key={model}
-                className='bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                className='bg-surface border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
               >
                 <td className='px-4 py-2'>{model}</td>
                 <td className='px-4 py-2'>{cost.toPrecision(3)}</td>
               </tr>
             ))}
-            <tr className='bg-white border-b dark:bg-gray-800 dark:border-gray-700 font-bold'>
+            <tr className='bg-surface border-b dark:bg-gray-800 dark:border-gray-700 font-bold'>
               <td className='px-4 py-2'>{t('total', { ns: 'main' })}</td>
               <td className='px-4 py-2'>
                 {costMapping
@@ -126,7 +127,7 @@ export const TotalTokenCostDisplay = () => {
   }, [totalTokenUsed]);
 
   return (
-    <a className='flex py-2 px-2 items-center gap-3 rounded-md hover:bg-gray-500/10 transition-colors duration-200 text-white text-sm'>
+    <a className='flex py-2.5 px-3 items-center gap-3 rounded-lg hover:bg-gray-100/80 transition-colors text-ink text-sm dark:hover:bg-neutral-800'>
       <CalculatorIcon />
       {`USD ${totalCost.toPrecision(3)}`}
     </a>

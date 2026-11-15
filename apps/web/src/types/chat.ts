@@ -66,6 +66,10 @@ export interface ChatInterface {
   titleSet: boolean;
   createdAt?: number;
   updatedAt?: number;
+  focus?: string;
+  focusUpTo?: number;
+  lastAgentId?: string | null;
+  completionTokens?: number;
 }
 
 export interface ConfigInterface {
@@ -83,6 +87,7 @@ export interface ChatHistoryInterface {
   id: string;
   createdAt?: number;
   updatedAt?: number;
+  lastAgentId?: string | null;
 }
 
 export interface ChatHistoryFolderInterface {
@@ -101,7 +106,7 @@ export interface Folder {
   color?: string;
 }
 
-export type ModelOptions = 'openai/gpt-oss-20b' | 'openai/gpt-oss-120b';
+export type ModelOptions = 'auto' | 'quick' | 'smart' | 'deep';
 // | 'gpt-3.5-turbo-0301';
 // | 'gpt-4-0314'
 // | 'gpt-4-32k-0314'

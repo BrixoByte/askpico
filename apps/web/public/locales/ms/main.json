@@ -1,4 +1,4 @@
-{
+﻿{
   "save": "Simpan",
   "generate": "Hasilkan",
   "cancel": "Batal",
@@ -10,7 +10,6 @@
   "import": "Import",
   "export": "Eksport",
   "author": "Dibuat oleh Jing Hua",
-  "about": "Mengenai & Penaja",
   "api": "API",
   "personal": "Peribadi",
   "free": "Percuma",

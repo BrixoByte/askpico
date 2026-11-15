@@ -58,7 +58,7 @@ const StudyLookup = ({ mode }: { mode: Mode }) => {
       </div>
       {error && <p className='text-red-600'>{error}</p>}
       {wiki && (
-        <div className='rounded-xl border border-surface-line bg-white p-3'>
+        <div className='rounded-xl border border-surface-line bg-surface p-3'>
           <p className='font-medium'>{wiki.title}</p>
           <p className='mt-1 text-ink-soft'>{wiki.extract}</p>
           {wiki.url && (
@@ -69,7 +69,7 @@ const StudyLookup = ({ mode }: { mode: Mode }) => {
         </div>
       )}
       {chem && (
-        <div className='rounded-xl border border-surface-line bg-white p-3'>
+        <div className='rounded-xl border border-surface-line bg-surface p-3'>
           <p className='font-medium'>{chem.iupacName}</p>
           <p className='text-ink-soft'>Formula: {chem.formula}</p>
           <p className='text-ink-soft'>Molecular weight: {chem.molecularWeight} g/mol</p>

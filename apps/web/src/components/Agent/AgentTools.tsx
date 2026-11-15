@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { agents, AgentToolId } from '@constants/agents';
+import { agents, AgentToolId, AgentId } from '@constants/agents';
 import PomodoroTimer from './PomodoroTimer';
 import Scratchpad from './Scratchpad';
 import Reminders from './Reminders';
@@ -126,11 +126,12 @@ const toolLabels: Record<AgentToolId, string> = {
   markdown_pdf: 'Markdown to PDF',
 };
 
-const AgentTools = () => {
+const AgentTools = ({ agentId }: { agentId?: AgentId }) => {
   const [activeTool, setActiveTool] = useState<AgentToolId | null>(null);
   const [query, setQuery] = useState<string>('');
 
-  const allTools = [...new Set(agents.flatMap((a) => a.tools))];
+  const scopedAgents = agentId ? agents.filter((a) => a.id === agentId) : agents;
+  const allTools = [...new Set(scopedAgents.flatMap((a) => a.tools))];
   const current = activeTool ?? allTools[0];
   const owner = current ? agents.find((a) => a.tools.includes(current)) : undefined;
   const matches = routeToolQuery(query, allTools);
@@ -141,13 +142,23 @@ const AgentTools = () => {
     setQuery('');
   };
 
+  if (agentId && allTools.length === 0) {
+    const agent = agents.find((a) => a.id === agentId);
+    return (
+      <div className='flex flex-col items-center gap-2 px-4 py-10 text-center'>
+        <div className='text-sm font-semibold text-ink'>{agent?.name ?? 'Agent'} is coming soon</div>
+        <div className='text-xs text-ink-muted'>Tools for this agent are still being built.</div>
+      </div>
+    );
+  }
+
   if (!current || !owner) return null;
 
   return (
     <div className='flex max-h-[45%] flex-col gap-2 overflow-y-auto border-b border-surface-line bg-surface-muted px-4 py-3'>
       <input
         aria-label='tool search'
-        className='rounded-lg border border-surface-line bg-white px-3 py-1.5 text-sm'
+        className='rounded-lg border border-surface-line bg-surface px-3 py-1.5 text-sm'
         placeholder='Tool dhoondein (e.g. pdf merge, qr, sql)'
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -157,7 +168,7 @@ const AgentTools = () => {
           {matches.slice(0, 6).map((tool) => (
             <button
               key={tool}
-              className='rounded-full bg-white px-3 py-1 text-xs shadow-soft'
+              className='flex min-h-[48px] items-center rounded-full bg-surface px-4 text-sm shadow-soft'
               onClick={() => openTool(tool)}
             >
               {toolLabels[tool]}
@@ -170,8 +181,8 @@ const AgentTools = () => {
         {allTools.map((tool) => (
           <button
             key={tool}
-            className={`rounded-full px-3 py-1 text-xs font-medium ${
-              tool === current ? 'bg-white text-ink shadow-soft' : 'text-ink-soft hover:text-ink'
+            className={`flex min-h-[48px] items-center rounded-full px-4 text-sm font-medium ${
+              tool === current ? 'bg-surface text-ink shadow-soft' : 'text-ink-soft hover:text-ink'
             }`}
             onClick={() => setActiveTool(tool)}
           >

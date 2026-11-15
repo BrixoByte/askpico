@@ -13,10 +13,10 @@ const NewChat = ({ folder }: { folder?: string }) => {
 
   return (
     <button
-      className={`flex w-full items-center justify-center gap-2 rounded-xl bg-ink px-3 py-2 text-sm font-medium text-white transition-all hover:bg-ink-soft ${
+      className={`flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-surface shadow-none transition-all hover:bg-ink-soft dark:bg-[#9EFF00] dark:text-black dark:hover:bg-[#86D900] max-md:py-3 max-md:text-base ${
         generating
           ? 'cursor-not-allowed opacity-40'
-          : 'cursor-pointer shadow-soft'
+          : 'cursor-pointer'
       }`}
       onClick={() => {
         if (!generating) addChat(folder);

@@ -35,7 +35,7 @@ const PhotoGallery = ({ photos }: { photos: StockPhoto[] }) => (
     {photos.map((photo) => (
       <div
         key={photo.id}
-        className='group relative aspect-square overflow-hidden rounded-xl border border-surface-line bg-white shadow-soft'
+        className='group relative aspect-square overflow-hidden rounded-xl border border-surface-line bg-surface shadow-soft'
       >
         <img
           src={photo.thumbnail}

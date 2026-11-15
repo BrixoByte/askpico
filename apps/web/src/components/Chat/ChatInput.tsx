@@ -4,7 +4,7 @@ import SendIcon from '@icon/SendIcon';
 
 const ChatInput = () => {
   return (
-    <div className='w-full border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-white dark:bg-gray-800 md:!bg-transparent dark:md:bg-vert-dark-gradient'>
+    <div className='w-full border-t md:border-t-0 dark:border-white/20 md:border-transparent md:dark:border-transparent md:bg-vert-light-gradient bg-surface dark:bg-gray-800 md:!bg-transparent dark:md:bg-vert-dark-gradient'>
       <form className='stretch mx-2 flex flex-row gap-3 pt-2 last:mb-2 md:last:mb-6 lg:mx-auto lg:max-w-3xl lg:pt-6'>
         <div className='relative flex h-full flex-1 md:flex-col'>
           <TextField />
@@ -16,9 +16,10 @@ const ChatInput = () => {
 
 const TextField = () => {
   return (
-    <div className='flex flex-col w-full py-2 flex-grow md:py-3 md:pl-4 relative border border-black/10 bg-white dark:border-gray-900/50 dark:text-white dark:bg-gray-700 rounded-md shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:shadow-[0_0_15px_rgba(0,0,0,0.10)]'>
+    <div className='flex flex-col w-full py-2 flex-grow md:py-3 md:pl-4 relative border border-ink/10 bg-surface dark:border-gray-900/50 dark:text-white dark:bg-gray-700 rounded-md shadow-[0_0_10px_rgba(0,0,0,0.10)] dark:shadow-[0_0_15px_rgba(0,0,0,0.10)]'>
       <textarea
         tabIndex={0}
+        dir='auto'
         data-id='2557e994-6f98-4656-a955-7808084f8b8c'
         rows={1}
         className='m-0 w-full resize-none border-0 bg-transparent p-0 pl-2 pr-7 focus:ring-0 focus-visible:ring-0 dark:bg-transparent md:pl-0'

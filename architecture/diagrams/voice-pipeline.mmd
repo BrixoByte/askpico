@@ -1,0 +1,58 @@
+%% title: Voice pipeline — call flow
+%% description: Mic to reply path: STT, session controls, voice chat request, sentence chunking, TTS playback, and daily quota.
+%% owner: Pico core
+%% updated: 2026-11-10
+
+flowchart LR
+    subgraph CLIENT["Client — apps/web/src/voice"]
+        MIC["Mic — getUserMedia + micPermission"]
+        STT["stt.ts — speech recognition"]
+        SESS["session.ts — turn loop + hold/mute"]
+        CHUNK["sentenceChunker.ts — split reply"]
+        TTS["tts.ts — speaker queue + prefetch"]
+        REC["callRecorder.ts — save call"]
+    end
+    %% @node MIC role=client desc="Mic stream and permission handling" file="apps/web/src/voice/micPermission.ts"
+    %% @node STT role=client desc="Browser speech recognition to text" file="apps/web/src/voice/stt.ts"
+    %% @node SESS role=client desc="held = ignore speech except resume; aiMuted = text-only replies" file="apps/web/src/voice/session.ts"
+    %% @node CHUNK role=client desc="Breaks streamed reply into speakable sentences" file="apps/web/src/voice/sentenceChunker.ts"
+    %% @node TTS role=voice desc="Fetches audio per sentence, plays in order" file="apps/web/src/voice/tts.ts"
+    %% @node REC role=client desc="Optional call recording toggle" file="apps/web/src/voice/callRecorder.ts"
+
+    subgraph STORE["voice-store.ts — call state"]
+        VST["phase, interim, held, aiMuted, recording"]
+    end
+    %% @node VST role=client-state desc="Zustand store; resets on voice-mode enter/exit" file="apps/web/src/store/voice-store.ts"
+
+    subgraph API["Backend — services/api"]
+        VSTART["/api/voice/session-start — pre-check"]
+        VBEAT["/api/voice/heartbeat — every HEARTBEAT_SECONDS"]
+        VDONE["/api/voice/session-complete — referral credit"]
+        CHAT["/api/chat — requestType=voice"]
+        TTSEP["/api/tts — synthesize per sentence"]
+    end
+    %% @node VSTART role=api desc="Blocks session when daily seconds exhausted" file="services/api/src/server.js"
+    %% @node VBEAT role=api desc="Debits interval seconds from daily quota" file="services/api/src/voiceQuota.js"
+    %% @node VDONE role=api desc="Marks qualifying voice activity once per session" file="services/api/src/server.js"
+    %% @node CHAT role=api desc="Same chat pipeline; mode capped at smart; voiceRule prompt" file="services/api/src/server.js"
+    %% @node TTSEP role=voice desc="Provider chain, signed-in + per-user limit" file="services/api/src/tts.js"
+
+    subgraph QUOTA["Quota + prompt rules"]
+        VQP["voiceQuotaPolicy — dailyVoiceLimitSeconds per plan"]
+        VRULE["voiceRule — Roman Urdu, 1-3 spoken sentences, no markdown"]
+    end
+    %% @node VQP role=safety desc="Plan-based daily voice cap" file="services/api/src/voiceQuotaPolicy.js"
+    %% @node VRULE role=agent desc="Appended to system prompt in voice turns" file="services/api/src/orchestrator.js"
+
+    MIC --> STT --> SESS
+    SESS --> VST
+    SESS -->|"user text"| CHAT
+    VSTART --> VQP
+    VBEAT --> VQP
+    SESS -.->|"start/heartbeat/complete"| VSTART
+    SESS -.-> VBEAT
+    SESS -.-> VDONE
+    CHAT --> VRULE
+    CHAT -->|"streamed reply"| CHUNK --> TTS -->|"sentence"| TTSEP -->|"audio"| TTS
+    TTS --> VST
+    REC --> VST

@@ -35,7 +35,7 @@ const LiveTime = () => {
     }).format(now);
 
   return (
-    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-white p-4'>
+    <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4'>
       <div className='flex items-center justify-between gap-2'>
         <span className='text-sm font-medium text-ink'>Local: {format(zone)}</span>
         <select

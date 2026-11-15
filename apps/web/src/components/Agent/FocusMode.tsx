@@ -41,7 +41,7 @@ const FocusMode = () => {
   }, [active]);
 
   return (
-    <div className='flex flex-col items-start gap-3 rounded-2xl border border-surface-line bg-white p-4'>
+    <div className='flex flex-col items-start gap-3 rounded-2xl border border-surface-line bg-surface p-4'>
       <p className='text-xs text-ink-muted'>
         Focus mode sirf Pico ke andar kaam karta hai. Sidebar aur artifact panel chhup jate hain.
       </p>

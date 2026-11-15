@@ -1,0 +1,11 @@
+Diagram rules for this folder (architecture/):
+
+- Architecture diagrams live in diagrams/*.mmd. Read diagrams/AGENTS.md before editing any of them.
+- Every file starts with %% title, %% description, %% owner, and %% updated lines.
+- Each node has a %% @node <ID> role=<role> desc="..." file="..." line below its block. file must be a real repo path.
+- Use only facts from the README, existing diagrams, or code you have read. Mark unknowns with %% TODO: confirm.
+- Do not rename existing node IDs. Do not add classDef or style lines; the viewer does styling.
+- Never open, read, search, or edit mermaid.bundle.js.
+- Keep every JavaScript file under 400 lines, with a top comment that lists purpose, exports, and dependencies.
+- Use the PicoViewer.* global namespace. No npm packages, build steps, or CDNs.
+- Only change files inside architecture/.
