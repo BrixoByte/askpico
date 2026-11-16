@@ -6,7 +6,6 @@ import {
   sanitizeCompletion,
   sanitizeSseStream,
 } from './llmClient.js';
-import { logLlmCall, startProviderSync } from './aiUsage.js';
 import { modelsForMode, publicMode } from './routing.js';
 import { resolveRoutingMode } from './routingService.js';
 import { logger } from './logger.js';
@@ -267,7 +266,6 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
   res.on('close', () => controller.abort());
 
   try {
-    const llmStartedAt = Date.now();
     const result = await fetchWithFallback(
       models,
       { messages: outgoingMessages, stream, max_tokens: clampCompletionTokens(maxTokens) },
@@ -277,17 +275,9 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     const feature = requestType === 'voice' ? 'voice' : 'text';
     if (!result.upstream) {
       logger.error(`[${requestId}] all models unavailable (status ${result.status}) after ${elapsed()}`);
-      // Failed calls still go on the ledger — cost is 0 but they exist.
-      logLlmCall({
-        feature,
-        userId: user.id,
-        latencyMs: Date.now() - llmStartedAt,
-        success: false,
-        errorCode: `upstream_${result.status}`,
-      });
       return res.status(result.status === 429 ? 429 : 503).json({ error: 'Service is busy. Please try again.', code: 'UPSTREAM_BUSY' });
     }
-    const { upstream, model: servedModel } = result;
+    const { upstream } = result;
     logger.debug(`[${requestId}] response from tier "${mode}" after ${elapsed()}`);
 
     const intentTag = classifyIntent(typeof lastUserText === 'string' ? lastUserText : null);
@@ -307,15 +297,6 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
         const promptTokens = realUsage ? streamUsage.prompt_tokens : promptEstimate();
         const completionTokens = realUsage ? streamUsage.completion_tokens : estimateTokens(fullText);
         recordRequest({ userId: user.id, mode, feature, intentTag, promptTokens, completionTokens });
-        logLlmCall({
-          model: servedModel,
-          feature,
-          userId: user.id,
-          promptTokens,
-          completionTokens,
-          latencyMs: Date.now() - llmStartedAt,
-          estimated: !realUsage,
-        });
       });
       body.on('error', (err) => {
         logger.warn(`[${requestId}] upstream stream failed mid-reply: ${err.message}`);
@@ -334,15 +315,6 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
       ? usage.completion_tokens
       : estimateTokens(data?.choices?.[0]?.message?.content);
     recordRequest({ userId: user.id, mode, feature, intentTag, promptTokens, completionTokens });
-    logLlmCall({
-      model: servedModel,
-      feature,
-      userId: user.id,
-      promptTokens,
-      completionTokens,
-      latencyMs: Date.now() - llmStartedAt,
-      estimated: !(realPrompt && realCompletion),
-    });
     indexTurnMemorySafe({
       userId: user.id,
       chatId: memoryChatId,
@@ -722,7 +694,7 @@ app.post('/api/voice/session-complete', async (req, res) => {
 const handleGuestVoice = async (res, user, claimed, label, reason, ipHash) => {
   try {
     const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed, touch: true, ipHash });
-    logger.info(
+    console.log(
       `[voice-trial] ${label} user=${user.id.slice(-8)} claimed=${claimed} charged=${trial.chargedSeconds} ` +
         `used=${trial.usedSeconds} remaining=${trial.remainingSeconds} reason=${reason ?? 'n/a'}`,
     );
@@ -745,7 +717,7 @@ const blockVoiceTurnOverQuota = async (res, user, requestId, label, req) => {
         debitGuestVoice({ client: supabase, userId, claimed, touch: true, ipHash: hashGuestIp(clientIp(req)) }),
       debitDaily: debitVoiceQuota,
     });
-    logger.info(
+    console.log(
       `[voice-turn] ${label} user=${user.id.slice(-8)} anon=${user.is_anonymous === true} ` +
         `charged=${result.chargedSeconds ?? 0} blocked=${result.blocked}`,
     );
@@ -1292,5 +1264,4 @@ startAdminWorkers();
 
 app.listen(serverConfig.port, () => {
   logger.info(`Backend running on http://localhost:${serverConfig.port}`);
-  startProviderSync();
 });
