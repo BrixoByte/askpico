@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.askpico.pico",
+      "sha256_cert_fingerprints": [
+        "AC:D8:EC:49:92:C7:E3:1F:EA:71:1D:12:11:18:85:B9:1B:9E:43:4A:23:A9:AA:14:51:4C:29:60:4D:44:DB:5B"
+      ]
+    }
+  }
+]
