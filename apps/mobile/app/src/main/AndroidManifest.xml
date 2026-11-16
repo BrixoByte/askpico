@@ -61,7 +61,6 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="askpico.app" />
                 <data android:scheme="https" android:host="go.askpico.app" />
                 <data android:scheme="https" android:host="auth.askpico.app" />
             </intent-filter>
