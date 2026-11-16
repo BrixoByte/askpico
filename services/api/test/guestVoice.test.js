@@ -10,23 +10,52 @@ import {
   usesGuestVoiceTrial,
 } from '../src/voiceQuotaPolicy.js';
 
+// Minimal PostgREST-style fake for guest_trial_grants queries.
+export const fakeGrants = (rows = []) => ({
+  rows,
+  client: {
+    from: () => {
+      const filters = [];
+      const match = (r) =>
+        filters.every((f) =>
+          f.op === 'eq' ? r[f.col] === f.val : new Date(r[f.col]).getTime() >= new Date(f.val).getTime(),
+        );
+      const builder = {
+        select: () => builder,
+        eq: (col, val) => (filters.push({ op: 'eq', col, val }), builder),
+        gte: (col, val) => (filters.push({ op: 'gte', col, val }), builder),
+        maybeSingle: async () => ({ data: rows.filter(match)[0] ?? null, error: null }),
+        insert: async (row) => {
+          if (rows.some((r) => r.user_id === row.user_id)) return { error: { message: 'duplicate key' } };
+          rows.push(row);
+          return { error: null };
+        },
+        then: (resolve) => resolve({ data: null, count: rows.filter(match).length, error: null }),
+      };
+      return builder;
+    },
+  },
+});
+
 // Fake guest_voice_debit RPC implementing the Round 25 watermark semantics from
 // migration 0013: last_touch_at is a "billed through" point that advances only by
 // the charged seconds, so unbilled time stays claimable for later calls.
-const fakeClient = (usedSeconds = 0) => {
+const fakeClient = (usedSeconds = 0, grants) => {
   // A row that already has billed seconds has an established watermark (at t=0 here).
   const state = { used: usedSeconds, watermark: usedSeconds > 0 ? 0 : null, now: 0, calls: [] };
+  const grantsFake = grants ?? fakeGrants();
   state.advance = (seconds) => {
     state.now += seconds;
   };
   state.client = {
+    from: grantsFake.client.from,
     rpc: async (name, args) => {
       state.calls.push({ name, args });
-      const remaining = GUEST_VOICE_LIMIT_SECONDS - state.used;
+      const remaining = args.p_limit_seconds - state.used;
       if (!args.p_touch && args.p_claimed <= 0) {
         return { data: { status: 'ok', used: state.used, remaining, charged: 0 }, error: null };
       }
-      if (state.used >= GUEST_VOICE_LIMIT_SECONDS) {
+      if (state.used >= args.p_limit_seconds) {
         return { data: { status: 'exhausted', used: state.used, remaining: 0, charged: 0 }, error: null };
       }
       const anchor = state.watermark ?? state.now;
@@ -34,11 +63,12 @@ const fakeClient = (usedSeconds = 0) => {
         claimed: args.p_claimed,
         elapsedSeconds: state.now - anchor,
         usedSeconds: state.used,
+        limitSeconds: args.p_limit_seconds,
         maxStep: args.p_max_step,
       }).charged;
       state.used += step;
       if (args.p_touch) state.watermark = anchor + step;
-      return { data: { status: 'ok', used: state.used, remaining: GUEST_VOICE_LIMIT_SECONDS - state.used, charged: step }, error: null };
+      return { data: { status: 'ok', used: state.used, remaining: args.p_limit_seconds - state.used, charged: step }, error: null };
     },
   };
   return state;
@@ -71,7 +101,8 @@ test('a read-only balance check never charges', async () => {
 });
 
 test('an RPC error surfaces instead of allowing voice', async () => {
-  const client = { rpc: async () => ({ data: null, error: { message: 'boom' } }) };
+  const grants = fakeGrants();
+  const client = { from: grants.client.from, rpc: async () => ({ data: null, error: { message: 'boom' } }) };
   await assert.rejects(debitGuestVoice({ userId: 'g1', claimed: 0, touch: true, client }), /guest voice check failed: boom/);
 });
 

@@ -1,5 +1,5 @@
 import express from 'express';
-import { createHmac, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { completionTokenLimits, guestLimits, llmConfig, replyLanguageRule, serverConfig, systemPrompt } from './config.js';
 import {
   fetchWithFallback,
@@ -36,7 +36,6 @@ import { getUserBrain, getUserFromToken, getUserPlan, getUserTheme, saveUserBrai
 import { debitVoiceQuota } from './voiceQuota.js';
 import { debitGuestVoice } from './guestVoice.js';
 import {
-  GUEST_VOICE_LIMIT_SECONDS,
   HEARTBEAT_SECONDS,
   dailyVoiceLimitSeconds,
   guestClaimSeconds,
@@ -45,6 +44,7 @@ import {
   voicePlan,
 } from './voiceQuotaPolicy.js';
 import { voiceTurnQuotaCheck } from './voiceTurnGate.js';
+import { clientIp, hashGuestIp, hashSignal } from './guestTrialIp.js';
 import { dailyTokenLimit, isDailyTokenCapReached } from './tokenQuotaPolicy.js';
 import { adminRouter, getSystemFlag, getUserLimitState } from './admin/routes.js';
 import { startAdminWorkers } from './workers/index.js';
@@ -161,7 +161,7 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
   }
 
-  if (requestType === 'voice' && (await blockVoiceTurnOverQuota(res, user, requestId, 'chat'))) return;
+  if (requestType === 'voice' && (await blockVoiceTurnOverQuota(res, user, requestId, 'chat', req))) return;
 
   // Admin kill switch + per-user enforcement (ban / throttle cap).
   try {
@@ -543,12 +543,7 @@ app.post('/api/coupons/redeem', async (req, res) => {
 
 const REFERRAL_CODE_PATTERN = /^[\w-]{3,64}$/;
 const DEVICE_ID_PATTERN = /^[\w-]{8,64}$/;
-
-// Fraud signals are stored as keyed hashes, never as raw IPs or device IDs.
-const hashSignal = (value) =>
-  createHmac('sha256', process.env.REFERRAL_HASH_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || '')
-    .update(value)
-    .digest('hex');
+// hashSignal moved to guestTrialIp.js so the guest-trial cap shares the same keyed hash.
 
 // Links the caller to the referrer who shared the ?ref= code.
 // Self and repeat referrals return their own status so the client can
@@ -724,15 +719,15 @@ app.post('/api/voice/session-complete', async (req, res) => {
 // Voice quota: the server is the only authority. Clients never report their own timers as truth.
 // Guest voice trial: lifetime allowance, charged from the client's claimed active seconds.
 // Every debit is logged with its reason so Railway logs can reconstruct a session's billing.
-const handleGuestVoice = async (res, user, claimed, label, reason) => {
+const handleGuestVoice = async (res, user, claimed, label, reason, ipHash) => {
   try {
-    const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed, touch: true });
+    const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed, touch: true, ipHash });
     logger.info(
       `[voice-trial] ${label} user=${user.id.slice(-8)} claimed=${claimed} charged=${trial.chargedSeconds} ` +
         `used=${trial.usedSeconds} remaining=${trial.remainingSeconds} reason=${reason ?? 'n/a'}`,
     );
     if (trial.exhausted) return res.status(403).json(guestVoiceLimitBody());
-    res.json({ remainingSeconds: trial.remainingSeconds, limitSeconds: GUEST_VOICE_LIMIT_SECONDS });
+    res.json({ remainingSeconds: trial.remainingSeconds, limitSeconds: trial.limitSeconds });
   } catch (err) {
     logger.warn(`${label} failed: ${err.message}`);
     res.status(502).json({ error: 'Voice trial could not be checked. Please try again.' });
@@ -741,12 +736,13 @@ const handleGuestVoice = async (res, user, claimed, label, reason) => {
 
 // Voice turns (chat + agent chat) share one quota gate: guests are charged against the
 // lifetime trial, signed-in users get the daily-quota read-only check. Both are logged.
-const blockVoiceTurnOverQuota = async (res, user, requestId, label) => {
+const blockVoiceTurnOverQuota = async (res, user, requestId, label, req) => {
   try {
     const result = await voiceTurnQuotaCheck({
       user,
       plan: usesGuestVoiceTrial(user) ? null : voicePlan(user, await getUserPlan(user.id)),
-      debitGuest: ({ userId, claimed }) => debitGuestVoice({ client: supabase, userId, claimed, touch: true }),
+      debitGuest: ({ userId, claimed }) =>
+        debitGuestVoice({ client: supabase, userId, claimed, touch: true, ipHash: hashGuestIp(clientIp(req)) }),
       debitDaily: debitVoiceQuota,
     });
     logger.info(
@@ -775,7 +771,14 @@ const handleVoiceQuota = (increment, label) => async (req, res) => {
   if (!user) return;
   if (rejectIfLimited(userLimits.voice, user.id, res)) return;
   if (usesGuestVoiceTrial(user)) {
-    return handleGuestVoice(res, user, guestClaimSeconds(increment, req.body), label, heartbeatReason(req.body));
+    return handleGuestVoice(
+      res,
+      user,
+      guestClaimSeconds(increment, req.body),
+      label,
+      heartbeatReason(req.body),
+      hashGuestIp(clientIp(req)),
+    );
   }
   try {
     const quota = await debitVoiceQuota({
@@ -812,7 +815,7 @@ app.get('/api/voice/trial', async (req, res) => {
   if (!usesGuestVoiceTrial(user)) return res.json({ guest: false });
   try {
     const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed: 0, touch: false });
-    res.json({ guest: true, limitSeconds: GUEST_VOICE_LIMIT_SECONDS, remainingSeconds: trial.remainingSeconds });
+    res.json({ guest: true, limitSeconds: trial.limitSeconds, remainingSeconds: trial.remainingSeconds });
   } catch (err) {
     logger.warn(`voice trial read failed: ${err.message}`);
     res.status(502).json({ error: 'Voice trial could not be loaded. Please try again.' });
@@ -1003,7 +1006,7 @@ app.post('/api/agent/chat', async (req, res) => {
   if (rejectIfLimited(userLimits.agent, user.id, res)) return;
   const { agentId, chatId, turn, message, mode: requestedMode, requestType, replyLanguage, memories, focus, recent } = req.body ?? {};
 
-  if (requestType === 'voice' && (await blockVoiceTurnOverQuota(res, user, requestId, 'agent'))) return;
+  if (requestType === 'voice' && (await blockVoiceTurnOverQuota(res, user, requestId, 'agent', req))) return;
 
   if (typeof chatId !== 'string' || !CHAT_ID_PATTERN.test(chatId)) {
     return res.status(400).json({ error: 'chatId is required' });
