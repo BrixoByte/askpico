@@ -97,6 +97,26 @@ class MainActivity : AppCompatActivity() {
         callback?.invoke(granted)
     }
 
+    // WebView <input type=file> support: WebChromeClient.onShowFileChooser hands the
+    // pick to the system DocumentsUI; the result Uris go back to the page.
+    private var filePathCallback: android.webkit.ValueCallback<Array<Uri>>? = null
+    private var pendingFileChooserSingle = false
+
+    private val fileChooserLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenMultipleDocuments()
+    ) { uris ->
+        val callback = filePathCallback
+        filePathCallback = null
+        val single = pendingFileChooserSingle
+        pendingFileChooserSingle = false
+        if (uris.isNullOrEmpty()) {
+            callback?.onReceiveValue(null)
+        } else {
+            val picked = if (single) arrayOf(uris.first()) else uris.toTypedArray()
+            callback?.onReceiveValue(picked)
+        }
+    }
+
     val vault by lazy { VaultStore(this) }
     private val actionExecutor by lazy { ActionExecutor(this, vault) }
     private val downloader by lazy { PicoDownloader(this) }
@@ -252,6 +272,27 @@ class MainActivity : AppCompatActivity() {
             override fun onPermissionRequestCanceled(request: PermissionRequest) {
                 pendingCaptureRequests.remove(request)
             }
+
+            override fun onShowFileChooser(
+                view: WebView,
+                filePathCallback: android.webkit.ValueCallback<Array<Uri>>,
+                params: FileChooserParams
+            ): Boolean {
+                this@MainActivity.filePathCallback?.onReceiveValue(null)
+                this@MainActivity.filePathCallback = filePathCallback
+                this@MainActivity.pendingFileChooserSingle =
+                    params.mode != WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE
+                val accepted = params.acceptTypes.filter { it.contains('/') }
+                val mimes = if (accepted.isEmpty()) arrayOf("*/*") else accepted.toTypedArray()
+                return try {
+                    fileChooserLauncher.launch(mimes)
+                    true
+                } catch (e: android.content.ActivityNotFoundException) {
+                    this@MainActivity.filePathCallback = null
+                    filePathCallback.onReceiveValue(null)
+                    false
+                }
+            }
         }
         val token = UUID.randomUUID().toString()
         bridgeToken = if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) token else null
@@ -353,9 +394,23 @@ $wrappers
         runOnUiThread {
             val permission = Capabilities.runtimePermission(feature)
             when {
-                permission != null -> requestPermission(permission) { granted ->
-                    val permanent = !granted && !shouldShowRequestPermissionRationale(permission)
-                    emitCapability(feature, granted, permanent)
+                permission != null -> {
+                    // Android stops showing the system dialog after a denial with "Don't ask again"
+                    // and returns no result. Report that as permanent so the web shows the settings screen.
+                    val asked = getSharedPreferences("pico_permissions", MODE_PRIVATE)
+                        .getBoolean("asked_" + permission, false)
+                    if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED &&
+                        asked && !shouldShowRequestPermissionRationale(permission)
+                    ) {
+                        emitCapability(feature, false, true)
+                    } else {
+                        getSharedPreferences("pico_permissions", MODE_PRIVATE).edit()
+                            .putBoolean("asked_" + permission, true).apply()
+                        requestPermission(permission) { granted ->
+                            val permanent = !granted && !shouldShowRequestPermissionRationale(permission)
+                            emitCapability(feature, granted, permanent)
+                        }
+                    }
                 }
                 feature == "overlay" -> startActivity(
                     Intent(

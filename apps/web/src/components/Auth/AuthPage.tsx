@@ -4,16 +4,12 @@ import AuthModal, { type AuthMode } from './AuthModal';
 import { supabase } from '@api/supabase';
 import useStore from '@store/store';
 import { resolveTheme } from '@utils/theme';
+import { chatOrigin } from '@utils/authRoutes';
 import TechWaveBackground from '@components/Background/TechWaveBackground';
 
 // Standalone auth page, shown on the auth.* subdomain (and /auth in dev) per
 // the beta plan. Successful sign-in redirects to the chat app on the sibling
 // chat.* host, or the site root when running locally.
-const chatOrigin = () => {
-  const { protocol, hostname, port } = window.location;
-  const host = hostname.startsWith('auth.') ? `chat.${hostname.slice(5)}` : hostname;
-  return `${protocol}//${host}${port ? `:${port}` : ''}`;
-};
 
 // Supabase sessions live in per-origin localStorage, so a sign-in on auth.*
 // cannot be read by chat.*. The session is handed over in the URL hash instead —
@@ -44,6 +40,7 @@ const marketingOrigin = () => {
 const AuthPage = () => {
   const [ready, setReady] = useState(false);
   const [guestError, setGuestError] = useState<string | null>(null);
+  const [sessionExpired] = useState<boolean>(() => new URLSearchParams(window.location.search).get('reason') === 'expired');
   const [mode, setMode] = useState<AuthMode>('signin');
   const [theme, setTheme] = useState<'light' | 'dark'>(() =>
     resolveTheme(useStore.getState().theme)
@@ -63,7 +60,8 @@ const AuthPage = () => {
     const guard = async () => {
       const session = supabase ? (await supabase.auth.getSession()).data.session : null;
       if (cancelled) return;
-      if (session) return goToChat(session);
+      // Guests stay on this screen (sign-in or "Continue as guest"); only signed-in accounts move on.
+      if (session && !session.user.is_anonymous) return goToChat(session);
       setReady(true);
     };
     void guard();
@@ -139,7 +137,14 @@ const AuthPage = () => {
           {!ready ? (
             <div className='h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white' aria-label='Loading' />
           ) : (
-            <AuthModal embedded mode={mode} onModeChange={setMode} onSignedIn={goToChat} />
+            <div className='flex w-full flex-col'>
+              {sessionExpired && (
+                <p role='alert' className='mb-3 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300'>
+                  Session expired, please sign in.
+                </p>
+              )}
+              <AuthModal embedded mode={mode} onModeChange={setMode} onSignedIn={goToChat} />
+            </div>
           )}
         </div>
 
@@ -150,7 +155,7 @@ const AuthPage = () => {
             <button
               type='button'
               onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-              className='font-semibold text-zinc-900 hover:underline dark:text-white'
+              className='inline-flex min-h-[48px] items-center px-1 font-semibold text-zinc-900 hover:underline dark:text-white'
             >
               {mode === 'signin' ? 'Sign Up' : 'Sign In'}
             </button>
@@ -161,17 +166,17 @@ const AuthPage = () => {
               setGuestError(null);
               continueAsGuest();
             }}
-            className='mt-4 text-sm font-medium text-zinc-700 underline-offset-4 transition-colors hover:text-zinc-900 hover:underline dark:text-zinc-300 dark:hover:text-white'
+            className='mt-2 inline-flex min-h-[48px] items-center px-3 text-sm font-medium text-zinc-700 underline-offset-4 transition-colors hover:text-zinc-900 hover:underline dark:text-zinc-300 dark:hover:text-white'
           >
             Continue as guest
           </button>
           <p className='mt-6 text-center text-xs leading-relaxed text-zinc-600 dark:text-zinc-400'>
             By continuing you agree to the{' '}
-            <a className='underline hover:text-zinc-700 dark:hover:text-zinc-300' href={`${marketingOrigin()}/privacy.html`}>
+            <a className='inline-flex min-h-[48px] items-center underline hover:text-zinc-700 dark:hover:text-zinc-300' href={`${marketingOrigin()}/privacy.html`}>
               Privacy Policy
             </a>{' '}
             and{' '}
-            <a className='underline hover:text-zinc-700 dark:hover:text-zinc-300' href={`${marketingOrigin()}/terms.html`}>
+            <a className='inline-flex min-h-[48px] items-center underline hover:text-zinc-700 dark:hover:text-zinc-300' href={`${marketingOrigin()}/terms.html`}>
               Terms
             </a>
             .

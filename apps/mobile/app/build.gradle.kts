@@ -15,7 +15,7 @@ android {
         versionName = "1.0.0-beta.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "WEB_URL", "\"https://chat.askpico.app\"")
+        buildConfigField("String", "WEB_URL", "\"https://go.askpico.app\"")
         buildConfigField("String", "ALLOWED_HOST_SUFFIX", "\"askpico.app\"")
         buildConfigField("boolean", "BUNDLED_WEB", "false")
     }
@@ -24,7 +24,9 @@ android {
         debug {
             // Physical device: `adb reverse tcp:5173 tcp:5173` forwards localhost to the PC's Vite server.
             // For an emulator, switch back to http://10.0.2.2:5173.
-            buildConfigField("String", "WEB_URL", "\"http://localhost:5173\"")
+            // Override with -PWEB_URL=https://go.askpico.app to test the deployed site instead.
+            val webUrl = (project.findProperty("WEB_URL") as String?) ?: "http://localhost:5173"
+            buildConfigField("String", "WEB_URL", "\"$webUrl\"")
         }
         release {
             isMinifyEnabled = false

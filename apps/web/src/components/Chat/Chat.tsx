@@ -8,8 +8,6 @@ import ArtifactPanel from '@components/Artifact/ArtifactPanel';
 import ImageStudio from '@components/Image/ImageStudio';
 import ProjectPage from '@components/Project/ProjectPage';
 import TechWaveBackground from '@components/Background/TechWaveBackground';
-import AgentPanel from '@components/Agent/AgentPanel';
-import AgentPicker from '@components/Agent/AgentPicker';
 import { useLandscapeNativeApp } from '@utils/device';
 
 const Chat = () => {
@@ -66,8 +64,6 @@ const Chat = () => {
         </div>
         {artifactPanelOpen && <ArtifactPanel />}
       </main>
-      <AgentPanel />
-      <AgentPicker />
     </div>
   );
 };

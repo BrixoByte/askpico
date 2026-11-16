@@ -1,17 +1,17 @@
-﻿{
+{
   "save": "Speichern",
   "generate": "Generieren",
   "cancel": "Abbrechen",
-  "confirm": "BestÃ¤tigen",
+  "confirm": "Bestätigen",
   "warning": "Achtung",
-  "clearMessageWarning": "Bitte beachte, dass durch das Einreichen dieser neuen Nachricht alle nachfolgenden Nachrichten gelÃ¶scht werden!",
-  "clearConversationWarning": "Bitte beachte, dass bei BestÃ¤tigung dieser Aktion alle Nachrichten gelÃ¶scht werden!",
-  "clearConversation": "Chat-Verlauf lÃ¶schen.",
+  "clearMessageWarning": "Bitte beachte, dass durch das Einreichen dieser neuen Nachricht alle nachfolgenden Nachrichten gelöscht werden!",
+  "clearConversationWarning": "Bitte beachte, dass bei Bestätigung dieser Aktion alle Nachrichten gelöscht werden!",
+  "clearConversation": "Chat-Verlauf löschen.",
   "import": "Importieren",
   "export": "Exportieren",
   "author": "Made by Jing Hua",
   "api": "API",
-  "personal": "PersÃ¶nlich",
+  "personal": "Persönlich",
   "free": "Kostenlos",
   "downloadChat": "Chat downloaden",
   "user": "Nutzer",
@@ -30,17 +30,17 @@
   "name": "Name",
   "search": "Suche",
   "total": "Gesamt",
-  "resetCost": "Kosten zurÃ¼cksetzen",
+  "resetCost": "Kosten zurücksetzen",
   "countTotalTokens": "Gesamte Tokens zusammenrechnen",
   "morePrompts": "Du findest mehr Prompts hier: ",
-  "clearPrompts": "Prompts lÃ¶schen",
+  "clearPrompts": "Prompts löschen",
   "postOnShareGPT": {
     "title": "Auf ShareGPT teilen",
-    "warning": "Bitte beachte, dass durch das Posten deiner Konversation auf ShareGPT diese Ã¶ffentlich zugÃ¤nglich und fÃ¼r jeden einsehbar wird. Einmal verÃ¶ffentlicht, kann die Konversation nicht mehr versteckt oder gelÃ¶scht werden und kann mÃ¶glicherweise von anderen archiviert oder geteilt werden. Wir raten dir daher, sorgfÃ¤ltig zu drÃ¼ber nachzudenken ob du die Konversation teilst. Vermeide grundsÃ¤tzlich sensible oder private Informationen auf dieser Plattform zu teilen."
+    "warning": "Bitte beachte, dass durch das Posten deiner Konversation auf ShareGPT diese öffentlich zugänglich und für jeden einsehbar wird. Einmal veröffentlicht, kann die Konversation nicht mehr versteckt oder gelöscht werden und kann möglicherweise von anderen archiviert oder geteilt werden. Wir raten dir daher, sorgfältig zu drüber nachzudenken ob du die Konversation teilst. Vermeide grundsätzlich sensible oder private Informationen auf dieser Plattform zu teilen."
   },
   "newFolder": "Neuer Ordner",
   "cloneChat": "Chat klonen",
   "cloned": "Klonen erfolgreich",
-  "enterToSubmit": "DrÃ¼cke Enter zum absenden",
-  "submitPlaceholder": "Verfasse eine Nachricht oder klicke auf [/] fÃ¼r gespeicherte Prompts..."
+  "enterToSubmit": "Drücke Enter zum absenden",
+  "submitPlaceholder": "Verfasse eine Nachricht oder klicke auf [/] für gespeicherte Prompts..."
 }

@@ -23,8 +23,10 @@ import { defaultModel, modelOptions } from '@constants/chat';
 import Toast from '@components/Toast';
 import UpgradePlanModal from '@components/UpgradeModal/UpgradePlanModal';
 import AuthGateModal from '@components/Auth/AuthGateModal';
+import ResetPasswordModal from '@components/Auth/ResetPasswordModal';
 import PermissionPrompt from '@components/Permissions/PermissionPrompt';
 import VoiceController from '@components/Voice/VoiceController';
+import OfflineBanner from '@components/Chat/OfflineBanner';
 import useUsageStore from '@store/usage-store';
 import useProfileStore from '@store/profile-store';
 
@@ -40,6 +42,7 @@ function App() {
   const setApiKey = useStore((state) => state.setApiKey);
   const setCurrentChatIndex = useStore((state) => state.setCurrentChatIndex);
   const [splashOpen, setSplashOpen] = useState(isMobileDevice);
+  const [recoveryOpen, setRecoveryOpen] = useState(false);
   const finishSplash = useCallback(async () => {
     if (await enterChat()) setSplashOpen(false);
   }, []);
@@ -80,7 +83,8 @@ function App() {
   useEffect(() => {
     captureReferralCode();
     void claimStoredReferral();
-    const subscription = supabase?.auth.onAuthStateChange((_event, session) => {
+    const subscription = supabase?.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') setRecoveryOpen(true);
       if (session && !session.user.is_anonymous) {
         const { email, user_metadata: meta } = session.user;
         useProfileStore.getState().setProfile({
@@ -208,6 +212,8 @@ function App() {
       {upgradeOpen && <UpgradePlanModal onClose={() => setUpgradeOpen(false)} />}
       {quotaOpen && null /* quota UI is the inline QuotaBanner above the composer */}
       <AuthGateModal />
+      <OfflineBanner />
+      {recoveryOpen && <ResetPasswordModal onClose={() => setRecoveryOpen(false)} />}
       <PermissionPrompt />
     </div>
   );

@@ -39,7 +39,7 @@ The web and mobile apps have different page sets. Both are built from the same R
 |---|---|---|---|
 | **Landing** | `askpico.app` | Explain the product and drive sign-up | Hero, feature highlights, voice and persona preview, plan summary, sign-in and "Try as guest" buttons |
 | **Auth** | `auth.askpico.app` | Sign in or create an account | Email and password sign-up and sign-in form, guest continuation, legal links (privacy policy, terms) |
-| **Chat** | `chat.askpico.app` | Main product screen | Sidebar (new chat, history, agents), greeting and orb, composer with mic, account card |
+| **Chat** | `go.askpico.app` | Main product screen (no separate chat host; `chat.askpico.app` has no DNS) | Sidebar (new chat, history, agents), greeting and orb, composer with mic, account card |
 
 ### 3.2 Mobile (3 pages)
 
@@ -60,7 +60,7 @@ The Android app is a Kotlin WebView shell. Full build plan: [Android app](../eng
 
 ### 3.4 Marketing site (`askpico.app`)
 
-A separate static site (HTML, CSS, and JS). It has no app logic and no login. Its CTAs link to `auth.askpico.app` and `chat.askpico.app`.
+A separate static site (HTML, CSS, and JS). It has no app logic and no login. Its CTAs link to `go.askpico.app`.
 
 | Page | File | Purpose | Key elements |
 |---|---|---|---|
@@ -316,7 +316,7 @@ Finish and test each item fully before moving to the next. The chat pipeline is 
 - **Branches:** beta work is merged into `release` after review. Only `release` is deployed to beta. See [Branching strategy](../engineering/branching-strategy.md).
 - **Deployments:** the web side has two deployments, both built from this repository.
   - **Marketing site** at `askpico.app`: home, features, pricing, and other marketing content. Static HTML/CSS/JS (or an SSG such as Astro), deployed separately so marketing changes carry no risk to the app.
-  - **App** at `chat.askpico.app` and `auth.askpico.app`: one deployment of `apps/web`; the page is chosen by `window.location.hostname` (chat → app, auth → login/signup). A session cookie with `Domain=.askpico.app` is shared across the subdomains.
+  - **App** at `go.askpico.app` (the only app host; `chat.askpico.app` has no DNS): one deployment of `apps/web`; the page is chosen by path and `window.location.hostname` (`/auth` → login/signup, `/verify` → email link, otherwise app). A session cookie with `Domain=.askpico.app` is shared across the subdomains.
   - **Backend** at `api.askpico.app` (or the backend host's domain): hosted separately; CORS allows only the three web origins.
 - **Android:** Google Play internal testing track for beta testers, then closed testing before public release. A new personal developer account must run a closed test with at least 12 opted-in testers for 14 days before production is unlocked.
 - **Rollback:** Redeploy the previous `release` commit. Revert the backend environment flag first when the cause is a feature flag, such as Edge TTS.
@@ -329,14 +329,14 @@ Local development mirrors the production subdomain layout so hostname-based rout
 |---|---|---|
 | `chat.localhost:5173` | Chat app (`apps/web`) | Working — page is chosen by hostname check |
 | `auth.localhost:5173` | Auth page (same `apps/web` dev server) | Working |
-| `chama.localhost:5174` | Admin (`apps/admin`) | Needs `host: true` in the admin `vite.config.ts` so Vite accepts the subdomain host |
+| `chama.localhost:5174` | Admin (`apps/admin`) | Needs `host: true` in the admin `vite.config.ts` so Vite accepts the subdomain host. Dev-only alias — the production admin host is `admin.askpico.app` (`chama.askpico.app` does not resolve) |
 | `api.localhost:3001` | Backend (`services/api`) | Works automatically; CORS must allow all `*.localhost` dev origins |
 | `localhost:5173` (apex) | Marketing site | `marketingOnApex` middleware in the web `vite.config.ts` serves `apps/marketing` files on the apex host — mirrors `askpico.app` in production |
 
 **Rules**
 
-- **CORS:** the backend allowlist includes the three web origins (`chat.`, `auth.`, `chama.` on `localhost`) in development, matching the production rule of allowing only the app origins.
-- **Session sharing:** Supabase stores its session in `localStorage`, which is per-origin, so `auth.localhost` and `chat.localhost` do not share a session. On the auth → chat redirect the session tokens are passed in the URL hash; `detectSessionInUrl` (already enabled in the Supabase client) picks them up and persists the session on the chat origin. The same pattern applies to `auth.askpico.app` → `chat.askpico.app` if the shared `.askpico.app` session cookie is not used.
+- **CORS:** the backend allowlist includes the three web origins (`chat.`, `auth.`, `chama.` on `localhost`) in development, matching the production rule of allowing only the app origins. In production the admin origin is `https://admin.askpico.app`; the `chama.` name survives only as the localhost dev alias in `apps/web/vite.config.ts` and `services/api/src/security.js` (code rename pending, out of scope).
+- **Session sharing:** Supabase stores its session in `localStorage`, which is per-origin, so `auth.localhost` and `chat.localhost` do not share a session. On the auth → chat redirect the session tokens are passed in the URL hash; `detectSessionInUrl` (already enabled in the Supabase client) picks them up and persists the session on the chat origin. The same pattern applies to `auth.askpico.app` → `go.askpico.app` if the shared `.askpico.app` session cookie is not used.
 - **Marketing:** served on the apex host (`localhost:5173`) by the `marketingOnApex` middleware in `apps/web/vite.config.ts`, which reads files from `apps/marketing`. It carries no app logic; app paths on the apex host (for example `/auth` and Vite internals) still fall through to the normal dev server. The standalone `apps/marketing/server.mjs` remains available on port 5175 if needed.
 
 **Google Play requirements (mandatory for launch)**

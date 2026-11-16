@@ -2,19 +2,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import SearchModal from './SearchModal';
-import SidebarNav from './SidebarNav';
 import ChatHistory from './ChatHistory';
+import ChatFolder from './ChatFolder';
 import NewChat from './NewChat';
 
 import { SearchIcon } from '@icon/ui';
 
-import { ChatHistoryInterface, ChatInterface } from '@type/chat';
+import { ChatHistoryInterface, ChatInterface, Folder } from '@type/chat';
 
 import useStore from '@store/store';
-import { useAgentSelection } from '@store/agentSelection';
 import { useIsSignedIn } from '@utils/authGate';
 
-const MAX_RECENT_CHATS = 6;
 
 const getRecency = (chat: { updatedAt?: number; createdAt?: number }) =>
   chat.updatedAt ?? chat.createdAt ?? 0;
@@ -26,7 +24,8 @@ const ChatHistoryList = ({ fillHeight = true }: { fillHeight?: boolean }) => {
   );
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const signedIn = useIsSignedIn();
-  const activeAgentId = useAgentSelection((s) => s.activeAgentId);
+  const chats = useStore((state) => state.chats);
+  const folders = useStore((state) => state.folders);
 
   const updateFolders = useRef(() => {
     const _noFolders: ChatHistoryInterface[] = [];
@@ -46,7 +45,7 @@ const ChatHistoryList = ({ fillHeight = true }: { fillHeight?: boolean }) => {
     }
 
     _noFolders.sort((a, b) => getRecency(b) - getRecency(a));
-    setNoChatFolders(_noFolders.slice(0, MAX_RECENT_CHATS));
+    setNoChatFolders(_noFolders.filter((c) => !chats?.[c.index]?.folder));
   }).current;
 
   useEffect(() => {
@@ -95,20 +94,52 @@ const ChatHistoryList = ({ fillHeight = true }: { fillHeight?: boolean }) => {
         onClose={() => setIsSearchOpen(false)}
       />
       <div className={`flex flex-col ${fillHeight ? 'min-h-0 flex-1 overflow-y-auto' : ''} [scrollbar-width:none] [&::-webkit-scrollbar]:hidden`}>
-        <SidebarNav />
+        {signedIn && folders && Object.keys(folders).length > 0 && (
+          <FolderSection folders={folders} chats={chats ?? []} />
+        )}
         {signedIn && (
           <div id='chat-history-scroll' className='pt-0.5'>
             <ChatSectionList
-              chats={
-                activeAgentId
-                  ? noChatFolders.filter((c) => c.lastAgentId === activeAgentId)
-                  : noChatFolders
-              }
+              chats={noChatFolders}
               onSeeAll={() => setIsSearchOpen(true)}
             />
           </div>
         )}
       </div>
+    </div>
+  );
+};
+
+const FolderSection = ({
+  folders,
+  chats,
+}: {
+  folders: Record<string, Folder>;
+  chats: ChatInterface[];
+}) => {
+  const sorted = Object.values(folders).sort((a, b) => a.order - b.order);
+  return (
+    <div className='mb-2'>
+      {sorted.map((folder) => {
+        const folderChats: ChatHistoryInterface[] = chats
+          .map((chat, index) => ({
+            title: chat.title,
+            index,
+            id: chat.id,
+            createdAt: chat.createdAt,
+            updatedAt: chat.updatedAt,
+            lastAgentId: chat.lastAgentId ?? null,
+          }))
+          .filter((c) => chats[c.index]?.folder === folder.id)
+          .sort((a, b) => getRecency(b) - getRecency(a));
+        return (
+          <ChatFolder
+            key={folder.id}
+            folderId={folder.id}
+            folderChats={folderChats}
+          />
+        );
+      })}
     </div>
   );
 };

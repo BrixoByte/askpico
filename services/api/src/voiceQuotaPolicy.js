@@ -33,3 +33,33 @@ export const quotaFromRpc = (row) => {
     usedSeconds: row.used,
   };
 };
+
+// Guest voice trial (Round 24): a lifetime allowance, not a daily one. Enforced in the
+// guest_voice_debit() SQL function, keyed by the anonymous user id.
+export const GUEST_VOICE_LIMIT_SECONDS = 2 * MINUTE;
+// One request may never charge more than one heartbeat interval.
+export const GUEST_VOICE_MAX_STEP_SECONDS = HEARTBEAT_SECONDS;
+
+// Client-claimed seconds for a heartbeat. Session starts claim nothing.
+export const guestClaimSeconds = (increment, body) => {
+  if (increment === 0) return 0;
+  const seconds = Math.floor(Number(body?.seconds));
+  if (!Number.isFinite(seconds)) return 0;
+  return Math.min(Math.max(seconds, 0), GUEST_VOICE_MAX_STEP_SECONDS);
+};
+
+// Maps the guest_voice_debit() JSON result. Any status other than ok means the trial is used up.
+export const guestQuotaFromRpc = (row) =>
+  row?.status === 'ok'
+    ? { exhausted: false, remainingSeconds: Number(row.remaining ?? 0), usedSeconds: Number(row.used ?? 0) }
+    : { exhausted: true, remainingSeconds: 0, usedSeconds: Number(row?.used ?? GUEST_VOICE_LIMIT_SECONDS) };
+
+export const guestVoiceLimitBody = () => ({
+  error: 'GUEST_VOICE_LIMIT',
+  message: 'Your 2-minute voice trial is over. Sign in to keep talking.',
+  remainingSeconds: 0,
+  limitSeconds: GUEST_VOICE_LIMIT_SECONDS,
+});
+
+// Only anonymous (guest) sessions use the lifetime trial. Signed-in accounts keep the daily quota.
+export const usesGuestVoiceTrial = (user) => user?.is_anonymous === true;

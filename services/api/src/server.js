@@ -33,7 +33,17 @@ import { indexTurnMemorySafe } from './memory/vectorWorker.js';
 import { formatRetrievedContext, recallContextSafe } from './memory/vectorSearch.js';
 import { getUserBrain, getUserFromToken, getUserPlan, getUserTheme, saveUserBrain, saveUserTheme, supabase } from './supabase.js';
 import { debitVoiceQuota } from './voiceQuota.js';
-import { HEARTBEAT_SECONDS, dailyVoiceLimitSeconds, voicePlan } from './voiceQuotaPolicy.js';
+import { debitGuestVoice } from './guestVoice.js';
+import {
+  GUEST_VOICE_LIMIT_SECONDS,
+  GUEST_VOICE_MAX_STEP_SECONDS,
+  HEARTBEAT_SECONDS,
+  dailyVoiceLimitSeconds,
+  guestClaimSeconds,
+  guestVoiceLimitBody,
+  usesGuestVoiceTrial,
+  voicePlan,
+} from './voiceQuotaPolicy.js';
 import { dailyTokenLimit, isDailyTokenCapReached } from './tokenQuotaPolicy.js';
 import { adminRouter, getSystemFlag, getUserLimitState } from './admin/routes.js';
 import { startAdminWorkers } from './workers/index.js';
@@ -133,9 +143,6 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     console.warn(`[${requestId}] rejected: ${invalidMessages}`);
     return res.status(400).json({ error: invalidMessages });
   }
-  if (requestType === 'voice' && user.is_anonymous) {
-    return res.status(403).json({ error: 'Voice mode is available for signed-in accounts only.' });
-  }
   try {
     const plan = await getUserPlan(user.id);
     const { data: tokensToday, error: tokensErr } = await supabase.rpc('roll_daily_tokens', { p_user_id: user.id });
@@ -155,13 +162,19 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
 
   if (requestType === 'voice') {
     try {
-      const quota = await debitVoiceQuota({
-        userId: user.id,
-        plan: voicePlan(user, await getUserPlan(user.id)),
-        increment: 0,
-      });
-      if (quota.exhausted) {
-        return res.status(403).json({ error: 'QUOTA_EXHAUSTED', message: 'Daily voice limit reached.', ...quota });
+      if (usesGuestVoiceTrial(user)) {
+        // Each voice turn charges the wall-clock time since the last touch (capped per request).
+        const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed: GUEST_VOICE_MAX_STEP_SECONDS, touch: true });
+        if (trial.exhausted) return res.status(403).json(guestVoiceLimitBody());
+      } else {
+        const quota = await debitVoiceQuota({
+          userId: user.id,
+          plan: voicePlan(user, await getUserPlan(user.id)),
+          increment: 0,
+        });
+        if (quota.exhausted) {
+          return res.status(403).json({ error: 'QUOTA_EXHAUSTED', message: 'Daily voice limit reached.', ...quota });
+        }
       }
     } catch (err) {
       console.error(`[${requestId}] voice quota check failed: ${err.message}`);
@@ -705,10 +718,23 @@ app.post('/api/voice/session-complete', async (req, res) => {
 });
 
 // Voice quota: the server is the only authority. Clients never report their own timers as truth.
+// Guest voice trial: lifetime allowance, charged from the client's claimed active seconds.
+const handleGuestVoice = async (res, user, claimed, label) => {
+  try {
+    const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed, touch: true });
+    if (trial.exhausted) return res.status(403).json(guestVoiceLimitBody());
+    res.json({ remainingSeconds: trial.remainingSeconds, limitSeconds: GUEST_VOICE_LIMIT_SECONDS });
+  } catch (err) {
+    logger.warn(`${label} failed: ${err.message}`);
+    res.status(502).json({ error: 'Voice trial could not be checked. Please try again.' });
+  }
+};
+
 const handleVoiceQuota = (increment, label) => async (req, res) => {
   const user = await requireUser(req, res);
   if (!user) return;
   if (rejectIfLimited(userLimits.voice, user.id, res)) return;
+  if (usesGuestVoiceTrial(user)) return handleGuestVoice(res, user, guestClaimSeconds(increment, req.body), label);
   try {
     const quota = await debitVoiceQuota({
       userId: user.id,
@@ -730,10 +756,26 @@ const handleVoiceQuota = (increment, label) => async (req, res) => {
 };
 
 // Called before a voice session starts. Read-only: it blocks if no balance is left.
-app.post('/api/voice/session-start', handleVoiceQuota(0, 'voice session start'));
+// The IP limit stops a script from opening guest sessions in bulk; a real user starts a few per minute at most.
+app.post('/api/voice/session-start', rateLimit({ max: 12 }), handleVoiceQuota(0, 'voice session start'));
 
-// Called every HEARTBEAT_SECONDS while voice mode is on. Adds the interval to the daily total.
+// Called every HEARTBEAT_SECONDS while voice mode is on. Adds the interval to the daily total
+// (guests: adds the client's claimed active seconds, capped by the server's clock).
 app.post('/api/voice/heartbeat', handleVoiceQuota(HEARTBEAT_SECONDS, 'voice heartbeat'));
+
+// Guest voice balance for the sidebar row. Read-only: it never starts or extends a session.
+app.get('/api/voice/trial', async (req, res) => {
+  const user = await requireUser(req, res);
+  if (!user) return;
+  if (!usesGuestVoiceTrial(user)) return res.json({ guest: false });
+  try {
+    const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed: 0, touch: false });
+    res.json({ guest: true, limitSeconds: GUEST_VOICE_LIMIT_SECONDS, remainingSeconds: trial.remainingSeconds });
+  } catch (err) {
+    logger.warn(`voice trial read failed: ${err.message}`);
+    res.status(502).json({ error: 'Voice trial could not be loaded. Please try again.' });
+  }
+});
 
 // Dev-only sink for browser logs (apps/web/src/utils/logger.ts) so they print in the API server terminal.
 const CLIENT_LOG_LEVELS = new Set(['debug', 'info', 'warn', 'error']);
@@ -918,6 +960,16 @@ app.post('/api/agent/chat', async (req, res) => {
   if (!user) return;
   if (rejectIfLimited(userLimits.agent, user.id, res)) return;
   const { agentId, chatId, turn, message, mode: requestedMode, requestType, replyLanguage, memories, focus, recent } = req.body ?? {};
+
+  if (requestType === 'voice' && usesGuestVoiceTrial(user)) {
+    try {
+      const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed: GUEST_VOICE_MAX_STEP_SECONDS, touch: true });
+      if (trial.exhausted) return res.status(403).json(guestVoiceLimitBody());
+    } catch (err) {
+      logger.warn(`[${requestId}] guest voice check failed: ${err.message}`);
+      return res.status(502).json({ error: 'Voice trial could not be checked. Please try again.' });
+    }
+  }
 
   if (typeof chatId !== 'string' || !CHAT_ID_PATTERN.test(chatId)) {
     return res.status(400).json({ error: 'chatId is required' });

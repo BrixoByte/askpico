@@ -15,3 +15,9 @@ apps/mobile-project.zip
 
 # Testing scratch artifacts
 testing/
+
+# Repo archives and wrangler local state
+docs.zip
+services.zip
+.wrangler/
+**/.wrangler/

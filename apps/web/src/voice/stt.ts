@@ -89,6 +89,11 @@ const ERROR_MESSAGES: Record<string, string> = {
 // Errors worth an automatic silent retry (transient engine states).
 const RETRYABLE = new Set(['network', 'no-speech']);
 
+// Codes meaning the mic permission itself is off. The UI listens for
+// pico:mic-denied and opens the blocked-permission modal (with retry)
+// instead of only showing the inline error strip.
+const PERMISSION_DENIED = new Set(['not-allowed', 'service-not-allowed']);
+
 const androidErrorToKey = (code: number): string => {
   switch (code) {
     case 1: // ERROR_NETWORK_TIMEOUT
@@ -425,6 +430,9 @@ export class SpeechInput {
       return;
     }
 
+    if (PERMISSION_DENIED.has(code)) {
+      window.dispatchEvent(new Event('pico:mic-denied'));
+    }
     const message = ERROR_MESSAGES[code] ?? 'Speech recognition failed. Try again.';
     this.wantRunning = false;
     this.handlers.onError?.(message, true);
@@ -553,6 +561,9 @@ export class SpeechInput {
         }
         if (RETRYABLE.has(key)) {
           return;
+        }
+        if (PERMISSION_DENIED.has(key)) {
+          window.dispatchEvent(new Event('pico:mic-denied'));
         }
         const message = ERROR_MESSAGES[key] ?? 'Speech recognition failed. Try again.';
         this.wantRunning = false;

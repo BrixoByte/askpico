@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@api/supabase';
+import { resetRedirectUrl } from '@utils/authRoutes';
 
 export type AuthMode = 'signin' | 'signup';
 
@@ -122,17 +123,27 @@ interface FormProps {
   onSignedIn: (session?: Session | null) => void;
 }
 
+const RESET_COOLDOWN_MS = 45_000;
+
 const SignInForm = ({ onSignedIn }: FormProps) => {
   const [formError, setFormError] = useState<string | null>(null);
+  const [showReset, setShowReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetInfo, setResetInfo] = useState<string | null>(null);
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetSending, setResetSending] = useState(false);
+  const [cooldownUntil, setCooldownUntil] = useState(0);
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
     mode: 'onChange',
     defaultValues: { email: '', password: '' },
   });
+  const signInEmail = watch('email');
 
   const onSubmit = async (values: SignInValues) => {
     setFormError(null);
@@ -144,6 +155,86 @@ const SignInForm = ({ onSignedIn }: FormProps) => {
     if (error) return setFormError(friendlyError(error.message));
     onSignedIn(data.session);
   };
+
+  const openReset = () => {
+    setResetEmail(signInEmail?.includes('@') ? signInEmail : '');
+    setResetInfo(null);
+    setResetError(null);
+    setShowReset(true);
+  };
+
+  const sendReset = async () => {
+    setResetError(null);
+    setResetInfo(null);
+    const email = resetEmail.trim();
+    if (!emailField.safeParse(email).success) {
+      return setResetError('Enter a valid email address.');
+    }
+    if (!supabase) return setResetError(NOT_CONFIGURED);
+    if (Date.now() < cooldownUntil) {
+      return setResetError('Please wait a moment before requesting another link.');
+    }
+    setResetSending(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: resetRedirectUrl(),
+      });
+      if (error) {
+        const text = error.message.toLowerCase();
+        if (text.includes('rate limit') || text.includes('too many') || text.includes('email rate limit')) {
+          setCooldownUntil(Date.now() + RESET_COOLDOWN_MS);
+          return setResetError('Too many attempts. Please wait a minute and try again.');
+        }
+        return setResetError('Could not send the reset link. Check your connection and try again.');
+      }
+      setCooldownUntil(Date.now() + RESET_COOLDOWN_MS);
+      // Generic on purpose: never reveal whether the email exists.
+      setResetInfo('If an account exists for this email, we sent a password reset link.');
+    } catch {
+      setResetError('Could not send the reset link. Check your connection and try again.');
+    } finally {
+      setResetSending(false);
+    }
+  };
+
+  if (showReset) {
+    return (
+      <div className='flex flex-col gap-4'>
+        {resetError && <Banner tone='error'>{resetError}</Banner>}
+        {resetInfo && <Banner tone='info'>{resetInfo}</Banner>}
+        <div>
+          <label htmlFor='auth-reset-email' className='mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300'>
+            Email
+          </label>
+          <input
+            id='auth-reset-email'
+            type='email'
+            autoComplete='email'
+            placeholder='you@example.com'
+            value={resetEmail}
+            onChange={(e) => setResetEmail(e.target.value)}
+            className={inputClass(false)}
+          />
+        </div>
+        <button
+          type='button'
+          onClick={sendReset}
+          disabled={resetSending || Date.now() < cooldownUntil}
+          className='flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60'
+        >
+          {resetSending && <Spinner />}
+          {resetSending ? 'Sending...' : 'Send reset link'}
+        </button>
+        <button
+          type='button'
+          onClick={() => setShowReset(false)}
+          className='text-xs text-zinc-500 underline-offset-4 hover:underline dark:text-zinc-400'
+        >
+          Back to sign in
+        </button>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className='flex flex-col gap-4'>
@@ -182,7 +273,7 @@ const SignInForm = ({ onSignedIn }: FormProps) => {
           <input type='checkbox' className='h-3.5 w-3.5 rounded border-zinc-300 dark:border-zinc-700' />
           Remember me
         </label>
-        <button type='button' className='text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-400'>
+        <button type='button' onClick={openReset} className='text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-400'>
           Forgot Password
         </button>
       </div>

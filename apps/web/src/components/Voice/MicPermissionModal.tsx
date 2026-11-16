@@ -51,15 +51,17 @@ const MicPermissionModal = ({ onAllow, onDismiss }: Props) => {
           >
             Allow microphone
           </button>
-          {!native && (
-            <button
-              type='button'
-              onClick={onDismiss}
-              className='rounded-full border border-surface-line px-4 py-1.5 text-sm text-ink-soft transition-colors hover:bg-surface-muted dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800'
-            >
-              Use text instead
-            </button>
-          )}
+          <button
+            type='button'
+            onClick={onDismiss}
+            className={
+              native
+                ? 'w-full rounded-2xl py-3 text-sm font-medium text-zinc-600 transition-all hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900'
+                : 'rounded-full border border-surface-line px-4 py-1.5 text-sm text-ink-soft transition-colors hover:bg-surface-muted dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800'
+            }
+          >
+            Use text instead
+          </button>
         </div>
       </div>
     </div>,

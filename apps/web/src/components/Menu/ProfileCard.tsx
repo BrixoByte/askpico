@@ -49,6 +49,18 @@ const ProfileCard = () => {
             {email || 'Free Plan'}
           </div>
         </div>
+        {!isSignedIn && (
+          <button
+            type='button'
+            onClick={(e) => {
+              e.stopPropagation();
+              handleProfileClick();
+            }}
+            className='ml-2 shrink-0 rounded-full bg-[#9EFF00] px-3 py-1 text-xs font-semibold text-black transition-opacity hover:opacity-90'
+          >
+            Sign in
+          </button>
+        )}
         <svg
           viewBox='0 0 24 24'
           fill='none'

@@ -1,6 +1,7 @@
 import { ShareGPTSubmitBodyInterface } from '@type/api';
 import { ImageAspectRatio, MessageInterface, ModelOptions } from '@type/chat';
 import useStore from '@store/store';
+import { markGuestTrialOver, TRIAL_OVER_MESSAGE } from '@store/guest-voice-store';
 import { getAccessToken } from './supabase';
 
 // Default: the API lives on the same host as this page, port 3001. Works for
@@ -172,6 +173,10 @@ export const askSpecialistAgent = async (
     body: JSON.stringify({ agentId, chatId, turn, message, mode: mode === 'auto' ? undefined : mode, requestType, memories, ...context }),
   });
   const data = await response.json().catch(() => null);
+  if (data?.error === 'GUEST_VOICE_LIMIT') {
+    markGuestTrialOver();
+    throw new Error(TRIAL_OVER_MESSAGE);
+  }
   if (!response.ok) throw new Error(data?.error ?? `Agent request failed (${response.status})`);
   return data.reply as string;
 };
@@ -179,7 +184,7 @@ export const askSpecialistAgent = async (
 export const extractAttachmentText = async (name: string, dataBase64: string): Promise<string> => {
   const response = await fetch(`${backendUrl}/api/attachments/extract`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: await authHeaders(),
     body: JSON.stringify({ name, dataBase64 }),
   });
   const data = await response.json().catch(() => null);
@@ -213,8 +218,16 @@ export const getChatCompletionStream = async (
     const text = await response.text();
     let error = text;
     let busy = false;
-    try { busy = JSON.parse(text).code === 'UPSTREAM_BUSY'; } catch { /* not JSON */ }
-    if (busy) error = 'Service is busy. Please try again.';
+    let trialOver = false;
+    try {
+      const body = JSON.parse(text);
+      busy = body.code === 'UPSTREAM_BUSY';
+      trialOver = body.error === 'GUEST_VOICE_LIMIT';
+    } catch { /* not JSON */ }
+    if (trialOver) {
+      markGuestTrialOver();
+      error = TRIAL_OVER_MESSAGE;
+    } else if (busy) error = 'Service is busy. Please try again.';
     else if (response.status === 429) error += '\nRate limited!';
     throw new Error(error);
   }
@@ -339,6 +352,33 @@ export const notifyVoiceSessionComplete = async (): Promise<void> => {
     headers: await authHeaders(),
   });
   if (!response.ok) throw new Error(`Voice session report failed (${response.status})`);
+};
+
+// Guest voice trial. The server decides; these return the balance or the refusal code.
+export type GuestVoiceResult = { ok: true; remainingSeconds: number } | { ok: false; code: string };
+
+const guestVoiceRequest = async (path: string, body?: unknown): Promise<GuestVoiceResult> => {
+  const response = await fetch(`${backendUrl}${path}`, {
+    method: 'POST',
+    headers: await authHeaders(),
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => null);
+  if (response.ok) return { ok: true, remainingSeconds: Number(data?.remainingSeconds ?? 0) };
+  return { ok: false, code: data?.error ?? `HTTP_${response.status}` };
+};
+
+export const startGuestVoice = (): Promise<GuestVoiceResult> => guestVoiceRequest('/api/voice/session-start');
+
+export const sendGuestVoiceHeartbeat = (seconds: number): Promise<GuestVoiceResult> =>
+  guestVoiceRequest('/api/voice/heartbeat', { seconds });
+
+// Null when the balance cannot be read; the sidebar row then stays hidden rather than guessing.
+export const fetchGuestVoiceTrial = async (): Promise<number | null> => {
+  const response = await fetch(`${backendUrl}/api/voice/trial`, { headers: await authHeaders() });
+  const data = await response.json().catch(() => null);
+  if (!response.ok || !data?.guest) return null;
+  return Number(data.remainingSeconds ?? 0);
 };
 
 export const fetchReferralCode = async (): Promise<string> => {

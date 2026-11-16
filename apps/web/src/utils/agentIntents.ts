@@ -1,10 +1,13 @@
 // Client-side device-intent detector for the native shell. Conservative:
 // only fires inside the Android app (window.PicoBridge present), only for the
-// six beta actions, and only behind VITE_AGENT_ACTIONS=1. Desktop and voice
+// six beta actions, and only behind VITE_AGENT_ACTIONS=true. Desktop and voice
 // paths are unaffected — a non-match returns null and normal chat proceeds.
 import { isNativeApp, runAgentAction, type AgentActionName } from './nativeAgent';
 
-export const AGENT_ACTIONS_ENABLED = import.meta.env.VITE_AGENT_ACTIONS === '1';
+// Static member access is required: Vite only replaces `import.meta.env.VITE_*`
+// when it appears as a literal member expression. Build with
+// `VITE_AGENT_ACTIONS=true vite build` to enable; unset means OFF.
+export const AGENT_ACTIONS_ENABLED = import.meta.env.VITE_AGENT_ACTIONS === 'true';
 
 interface DeviceIntent {
   action: AgentActionName;

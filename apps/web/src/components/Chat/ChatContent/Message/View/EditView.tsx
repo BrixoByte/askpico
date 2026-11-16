@@ -11,6 +11,8 @@ import LockBadge from '@components/Auth/LockBadge';
 import VoiceWaveIcon from '@components/Voice/VoiceWaveIcon';
 import ModeSelector from '@components/Chat/ModeSelector';
 import { gateSignedIn, useIsSignedIn } from '@utils/authGate';
+import { gateVoiceStart } from '@voice/guestVoiceGate';
+import useGuestVoiceStore from '@store/guest-voice-store';
 import { tryDeviceIntent } from '@utils/agentIntents';
 import { attachmentBlockReason } from '@constants/attachments';
 import {
@@ -148,6 +150,7 @@ const EditView = ({
   const voiceMode = useVoiceStore((state) => state.voiceMode);
   const voiceSupported = sttSupported();
   const signedIn = useIsSignedIn();
+  const isGuest = useGuestVoiceStore((state) => state.isGuest);
   const speech = useSpeechRecognition({
     onFinal: (text) =>
       _setContent((prev) => (prev.trim() === '' ? text : `${prev.trimEnd()} ${text}`)),
@@ -551,7 +554,7 @@ const EditView = ({
                   onClick={() =>
                     voiceMode
                       ? useVoiceStore.getState().setVoiceMode(false)
-                      : gateSignedIn('Sign in to use voice mode.', () => {
+                      : gateVoiceStart(() => {
                           const state = useStore.getState();
                           useVoiceStore
                             .getState()
@@ -562,7 +565,7 @@ const EditView = ({
                   title='Voice to voice mode'
                 >
                   <VoiceWaveIcon />
-                  {!signedIn && <LockBadge />}
+                  {!signedIn && !isGuest && <LockBadge />}
                 </button>
               ) : (
                 <button

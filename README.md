@@ -10,7 +10,7 @@
 
 **An all-in-one AI workspace for Urdu, Hindi, and Roman Urdu speakers, combining multi-model chat, task agents, and a live code-preview environment.**
 
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22.5-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22.9-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-4-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
@@ -64,7 +64,7 @@ Pico is an all-in-one AI workspace with three core components:
 ```text
 ┌──────────────────────┐   /api/chat, /api/agent/*    ┌────────────────────┐   ┌─────────────────────┐
 │ apps/web/                 │ ───────────────────────────▶ │ services/api/           │──▶│ Gemini / OpenRouter │
-│ React, Vite, Zustand │ ◀─────────── SSE / JSON ──── │ Express, SQLite    │◀──│ (LLM and image APIs)│
+│ React, Vite, Zustand │ ◀─────────── SSE / JSON ──── │ Express, Supabase  │◀──│ (LLM and image APIs)│
 └──────────────────────┘                              └────────────────────┘   └─────────────────────┘
         │
         │  artifact code blocks
@@ -76,7 +76,8 @@ Pico is an all-in-one AI workspace with three core components:
 ```
 
 - The browser never receives provider API keys. All keys live in `services/api/.env`.
-- The backend stores agent conversation history in SQLite (`node:sqlite`).
+- Storage is Supabase (Postgres). Agent conversation history is in the `agent_messages` table, and the backend has no local database file. The browser also keeps chat history and settings in localStorage.
+- Guests (anonymous "Continue as guest" sessions) get a lifetime 2-minute voice trial, enforced on the server in `guest_voice_usage`. Text chat stays available after the trial ends.
 - Tools that need a third-party API are called through the backend, so keys stay server-side.
 
 ## Repository Structure
@@ -106,7 +107,7 @@ askpico/
 
 ### Prerequisites
 
-- **Node.js 22.5 or later** for the backend (it uses the built-in `node:sqlite` module).
+- **Node.js 22.9 or later** for the backend (the `start` script uses `--env-file-if-exists`, added in Node 22.9). No `node:sqlite` is needed.
 - **Node.js 18 or later** for the web app.
 - **Yarn 1** for the web app (`npm install -g yarn`).
 - A **Gemini API key** (`GEMINI_API_KEY`), or an **OpenRouter key** if you set `LLM_PROVIDER=openrouter`.
