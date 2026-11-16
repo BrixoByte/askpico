@@ -143,3 +143,30 @@ test('a concurrent first touch falls back to the stored grant', async () => {
   assert.equal(calls, 1);
   assert.equal(seconds, 30); // the concurrently-stored reduced grant wins
 });
+
+test('missing grants table falls back to the full trial (pre-migration deploy)', async () => {
+  const client = {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () => ({ data: null, error: { code: 'PGRST205', message: 'Could not find the table' } }),
+        }),
+      }),
+    }),
+  };
+  const seconds = await resolveGuestTrialSeconds({ client, userId: 'u1', ipHash: 'ip1' });
+  assert.equal(seconds, GUEST_VOICE_LIMIT_SECONDS);
+});
+
+test('non-PGRST205 grant read errors still throw', async () => {
+  const client = {
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () => ({ data: null, error: { code: '42501', message: 'permission denied' } }),
+        }),
+      }),
+    }),
+  };
+  await assert.rejects(() => resolveGuestTrialSeconds({ client, userId: 'u1', ipHash: 'ip1' }), /trial grant read failed/);
+});

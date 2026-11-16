@@ -16,6 +16,9 @@ export const resolveGuestTrialSeconds = async ({ client, userId, ipHash }) => {
     .select('granted_seconds')
     .eq('user_id', userId)
     .maybeSingle();
+  // Deploy order: the API may ship before migration 0014 creates the table.
+  // A missing table falls back to the full trial; other errors still throw.
+  if (readErr && readErr.code === 'PGRST205') return GUEST_VOICE_LIMIT_SECONDS;
   if (readErr) throw new Error(`trial grant read failed: ${readErr.message}`);
   if (grant) return grant.granted_seconds;
   if (!ipHash) return GUEST_VOICE_LIMIT_SECONDS;
