@@ -370,8 +370,8 @@ const guestVoiceRequest = async (path: string, body?: unknown): Promise<GuestVoi
 
 export const startGuestVoice = (): Promise<GuestVoiceResult> => guestVoiceRequest('/api/voice/session-start');
 
-export const sendGuestVoiceHeartbeat = (seconds: number): Promise<GuestVoiceResult> =>
-  guestVoiceRequest('/api/voice/heartbeat', { seconds });
+export const sendGuestVoiceHeartbeat = (seconds: number, reason?: 'beat' | 'pause' | 'end'): Promise<GuestVoiceResult> =>
+  guestVoiceRequest('/api/voice/heartbeat', { seconds, reason });
 
 // Null when the balance cannot be read; the sidebar row then stays hidden rather than guessing.
 export const fetchGuestVoiceTrial = async (): Promise<number | null> => {

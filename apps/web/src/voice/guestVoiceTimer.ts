@@ -51,6 +51,19 @@ export const adoptServerRemaining = (timer: TrialTimer, serverRemaining: number)
   anchorRemaining: Math.min(timer.anchorRemaining, serverRemaining),
 });
 
+// Returns seconds that were claimed but never billed (a heartbeat that failed to send).
+// They go back into both the balance and the un-claimed pool, so the countdown shows
+// the same value and the next heartbeat claims the whole stretch again — otherwise a
+// single dropped request would silently lose those seconds (the Round 25 billing bug).
+export const refundClaim = (timer: TrialTimer, claim: number): TrialTimer => {
+  const seconds = Math.max(0, Math.floor(claim));
+  return {
+    ...timer,
+    anchorRemaining: timer.anchorRemaining + seconds,
+    accumulatedMs: timer.accumulatedMs + seconds * 1000,
+  };
+};
+
 // m:ss for the sidebar row, for example 2:00, 0:20, 0:05.
 export const formatTrialTime = (seconds: number): string => {
   const safe = Math.max(0, Math.floor(seconds));

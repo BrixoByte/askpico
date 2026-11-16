@@ -8,6 +8,7 @@ import {
   adoptServerRemaining,
   claimActiveSeconds,
   pauseTrialTimer,
+  refundClaim,
   remainingSeconds,
   resumeTrialTimer,
   startTrialTimer,
@@ -39,18 +40,28 @@ const useGuestVoiceTrial = () => {
     timer.current = startTrialTimer(start, Date.now());
 
     // Sends the whole seconds of active time not yet reported. The server caps what it accepts.
-    const flush = async () => {
+    // A failed heartbeat refunds the claim so the next one can report it again — otherwise
+    // a single dropped request would silently lose those seconds (the Round 25 billing bug).
+    const flush = async (reason: 'beat' | 'pause' | 'end' = 'beat') => {
       const current = timer.current;
       if (!current) return;
       const { claim, timer: next } = claimActiveSeconds(current, Date.now());
-      timer.current = next;
       if (claim === 0) return;
-      const result = await sendGuestVoiceHeartbeat(claim).catch(() => null);
+      timer.current = next;
+      const result = await sendGuestVoiceHeartbeat(claim, reason).catch(() => null);
       if (result?.ok) {
-        if (timer.current) timer.current = adoptServerRemaining(timer.current, result.remainingSeconds);
-        if (timer.current) useGuestVoiceStore.getState().setRemaining(remainingSeconds(timer.current, Date.now()));
+        if (timer.current) {
+          timer.current = adoptServerRemaining(timer.current, result.remainingSeconds);
+          useGuestVoiceStore.getState().setRemaining(remainingSeconds(timer.current, Date.now()));
+        } else {
+          // The session already ended; keep the sidebar in sync with the server's balance.
+          useGuestVoiceStore.getState().setRemaining(result.remainingSeconds);
+        }
       } else if (result?.code === 'GUEST_VOICE_LIMIT') {
         markGuestTrialOver();
+      } else if (timer.current) {
+        timer.current = refundClaim(timer.current, claim);
+        useGuestVoiceStore.getState().setRemaining(remainingSeconds(timer.current, Date.now()));
       }
     };
 
@@ -66,20 +77,20 @@ const useGuestVoiceTrial = () => {
       const now = Date.now();
       if (document.visibilityState === 'hidden') {
         timer.current = pauseTrialTimer(timer.current, now);
-        void flush();
+        void flush('pause');
       } else {
         timer.current = resumeTrialTimer(timer.current, now);
       }
     };
 
     const tick = window.setInterval(publish, TICK_MS);
-    const beat = window.setInterval(() => void flush(), HEARTBEAT_MS);
+    const beat = window.setInterval(() => void flush('beat'), HEARTBEAT_MS);
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
       window.clearInterval(tick);
       window.clearInterval(beat);
       document.removeEventListener('visibilitychange', onVisibility);
-      void flush();
+      void flush('end');
       timer.current = null;
     };
   }, [voiceMode, isGuest]);

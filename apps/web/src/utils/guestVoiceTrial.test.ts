@@ -5,6 +5,7 @@ import {
   claimActiveSeconds,
   formatTrialTime,
   pauseTrialTimer,
+  refundClaim,
   remainingSeconds,
   resumeTrialTimer,
   startTrialTimer,
@@ -60,5 +61,17 @@ describe('guest voice trial clock', () => {
     const t = startTrialTimer(100, 0);
     expect(remainingSeconds(adoptServerRemaining(t, 60), 0)).toBe(60);
     expect(remainingSeconds(adoptServerRemaining(t, 150), 0)).toBe(100);
+  });
+
+  // The Round 25 billing fix: a heartbeat whose request never landed must not lose
+  // its seconds. The failed claim is refunded so the next heartbeat reports it again.
+  it('refunds a failed claim so the next heartbeat can report it again', () => {
+    const t = startTrialTimer(120, 0);
+    const { claim, timer: afterClaim } = claimActiveSeconds(t, 30 * S);
+    expect(claim).toBe(30);
+    const refunded = refundClaim(afterClaim, claim);
+    expect(remainingSeconds(refunded, 30 * S)).toBe(90);
+    // The next claim covers the whole 60 s stretch, including the refunded part.
+    expect(claimActiveSeconds(refunded, 60 * S).claim).toBe(60);
   });
 });

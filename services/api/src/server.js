@@ -6,6 +6,7 @@ import {
   sanitizeCompletion,
   sanitizeSseStream,
 } from './llmClient.js';
+import { logLlmCall, startProviderSync } from './aiUsage.js';
 import { modelsForMode, publicMode } from './routing.js';
 import { resolveRoutingMode } from './routingService.js';
 import { logger } from './logger.js';
@@ -36,7 +37,6 @@ import { debitVoiceQuota } from './voiceQuota.js';
 import { debitGuestVoice } from './guestVoice.js';
 import {
   GUEST_VOICE_LIMIT_SECONDS,
-  GUEST_VOICE_MAX_STEP_SECONDS,
   HEARTBEAT_SECONDS,
   dailyVoiceLimitSeconds,
   guestClaimSeconds,
@@ -44,6 +44,7 @@ import {
   usesGuestVoiceTrial,
   voicePlan,
 } from './voiceQuotaPolicy.js';
+import { voiceTurnQuotaCheck } from './voiceTurnGate.js';
 import { dailyTokenLimit, isDailyTokenCapReached } from './tokenQuotaPolicy.js';
 import { adminRouter, getSystemFlag, getUserLimitState } from './admin/routes.js';
 import { startAdminWorkers } from './workers/index.js';
@@ -160,27 +161,7 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
   }
 
-  if (requestType === 'voice') {
-    try {
-      if (usesGuestVoiceTrial(user)) {
-        // Each voice turn charges the wall-clock time since the last touch (capped per request).
-        const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed: GUEST_VOICE_MAX_STEP_SECONDS, touch: true });
-        if (trial.exhausted) return res.status(403).json(guestVoiceLimitBody());
-      } else {
-        const quota = await debitVoiceQuota({
-          userId: user.id,
-          plan: voicePlan(user, await getUserPlan(user.id)),
-          increment: 0,
-        });
-        if (quota.exhausted) {
-          return res.status(403).json({ error: 'QUOTA_EXHAUSTED', message: 'Daily voice limit reached.', ...quota });
-        }
-      }
-    } catch (err) {
-      console.error(`[${requestId}] voice quota check failed: ${err.message}`);
-      return res.status(502).json({ error: 'Voice quota could not be checked. Please try again.' });
-    }
-  }
+  if (requestType === 'voice' && (await blockVoiceTurnOverQuota(res, user, requestId, 'chat'))) return;
 
   // Admin kill switch + per-user enforcement (ban / throttle cap).
   try {
@@ -286,20 +267,29 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
   res.on('close', () => controller.abort());
 
   try {
+    const llmStartedAt = Date.now();
     const result = await fetchWithFallback(
       models,
       { messages: outgoingMessages, stream, max_tokens: clampCompletionTokens(maxTokens) },
       controller.signal,
       requestId
     );
+    const feature = requestType === 'voice' ? 'voice' : 'text';
     if (!result.upstream) {
       logger.error(`[${requestId}] all models unavailable (status ${result.status}) after ${elapsed()}`);
+      // Failed calls still go on the ledger — cost is 0 but they exist.
+      logLlmCall({
+        feature,
+        userId: user.id,
+        latencyMs: Date.now() - llmStartedAt,
+        success: false,
+        errorCode: `upstream_${result.status}`,
+      });
       return res.status(result.status === 429 ? 429 : 503).json({ error: 'Service is busy. Please try again.', code: 'UPSTREAM_BUSY' });
     }
-    const { upstream } = result;
+    const { upstream, model: servedModel } = result;
     logger.debug(`[${requestId}] response from tier "${mode}" after ${elapsed()}`);
 
-    const feature = requestType === 'voice' ? 'voice' : 'text';
     const intentTag = classifyIntent(typeof lastUserText === 'string' ? lastUserText : null);
     const promptEstimate = () =>
       estimateTokens(outgoingMessages.map((m) => (typeof m.content === 'string' ? m.content : '')).join(''));
@@ -308,15 +298,23 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
-      const body = sanitizeSseStream(upstream.body, (fullText) => {
+      const body = sanitizeSseStream(upstream.body, (fullText, streamUsage) => {
         indexTurnMemorySafe({ userId: user.id, chatId: memoryChatId, userText: typeof lastUserText === 'string' ? lastUserText : '', assistantText: fullText });
-        recordRequest({
-          userId: user.id,
-          mode,
+        // Providers that honour include_usage give real counts on the last
+        // chunk; otherwise fall back to text-length estimates.
+        const realUsage =
+          Number.isInteger(streamUsage?.prompt_tokens) && Number.isInteger(streamUsage?.completion_tokens);
+        const promptTokens = realUsage ? streamUsage.prompt_tokens : promptEstimate();
+        const completionTokens = realUsage ? streamUsage.completion_tokens : estimateTokens(fullText);
+        recordRequest({ userId: user.id, mode, feature, intentTag, promptTokens, completionTokens });
+        logLlmCall({
+          model: servedModel,
           feature,
-          intentTag,
-          promptTokens: promptEstimate(),
-          completionTokens: estimateTokens(fullText),
+          userId: user.id,
+          promptTokens,
+          completionTokens,
+          latencyMs: Date.now() - llmStartedAt,
+          estimated: !realUsage,
         });
       });
       body.on('error', (err) => {
@@ -329,15 +327,21 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
 
     const data = await upstream.json();
     const usage = data?.usage ?? {};
-    recordRequest({
-      userId: user.id,
-      mode,
+    const realPrompt = Number.isInteger(usage.prompt_tokens);
+    const realCompletion = Number.isInteger(usage.completion_tokens);
+    const promptTokens = realPrompt ? usage.prompt_tokens : promptEstimate();
+    const completionTokens = realCompletion
+      ? usage.completion_tokens
+      : estimateTokens(data?.choices?.[0]?.message?.content);
+    recordRequest({ userId: user.id, mode, feature, intentTag, promptTokens, completionTokens });
+    logLlmCall({
+      model: servedModel,
       feature,
-      intentTag,
-      promptTokens: Number.isInteger(usage.prompt_tokens) ? usage.prompt_tokens : promptEstimate(),
-      completionTokens: Number.isInteger(usage.completion_tokens)
-        ? usage.completion_tokens
-        : estimateTokens(data?.choices?.[0]?.message?.content),
+      userId: user.id,
+      promptTokens,
+      completionTokens,
+      latencyMs: Date.now() - llmStartedAt,
+      estimated: !(realPrompt && realCompletion),
     });
     indexTurnMemorySafe({
       userId: user.id,
@@ -719,9 +723,14 @@ app.post('/api/voice/session-complete', async (req, res) => {
 
 // Voice quota: the server is the only authority. Clients never report their own timers as truth.
 // Guest voice trial: lifetime allowance, charged from the client's claimed active seconds.
-const handleGuestVoice = async (res, user, claimed, label) => {
+// Every debit is logged with its reason so Railway logs can reconstruct a session's billing.
+const handleGuestVoice = async (res, user, claimed, label, reason) => {
   try {
     const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed, touch: true });
+    logger.info(
+      `[voice-trial] ${label} user=${user.id.slice(-8)} claimed=${claimed} charged=${trial.chargedSeconds} ` +
+        `used=${trial.usedSeconds} remaining=${trial.remainingSeconds} reason=${reason ?? 'n/a'}`,
+    );
     if (trial.exhausted) return res.status(403).json(guestVoiceLimitBody());
     res.json({ remainingSeconds: trial.remainingSeconds, limitSeconds: GUEST_VOICE_LIMIT_SECONDS });
   } catch (err) {
@@ -730,11 +739,44 @@ const handleGuestVoice = async (res, user, claimed, label) => {
   }
 };
 
+// Voice turns (chat + agent chat) share one quota gate: guests are charged against the
+// lifetime trial, signed-in users get the daily-quota read-only check. Both are logged.
+const blockVoiceTurnOverQuota = async (res, user, requestId, label) => {
+  try {
+    const result = await voiceTurnQuotaCheck({
+      user,
+      plan: usesGuestVoiceTrial(user) ? null : voicePlan(user, await getUserPlan(user.id)),
+      debitGuest: ({ userId, claimed }) => debitGuestVoice({ client: supabase, userId, claimed, touch: true }),
+      debitDaily: debitVoiceQuota,
+    });
+    logger.info(
+      `[voice-turn] ${label} user=${user.id.slice(-8)} anon=${user.is_anonymous === true} ` +
+        `charged=${result.chargedSeconds ?? 0} blocked=${result.blocked}`,
+    );
+    if (!result.blocked) return false;
+    res.status(result.status).json(result.body);
+    return true;
+  } catch (err) {
+    console.error(`[${requestId}] voice quota check failed: ${err.message}`);
+    res.status(502).json({ error: 'Voice quota could not be checked. Please try again.' });
+    return true;
+  }
+};
+
+// A short client-supplied label for why a heartbeat was sent (beat | pause | end).
+// Logged only; it never affects billing, which stays claim + wall-clock based.
+const heartbeatReason = (body) => {
+  const reason = typeof body?.reason === 'string' ? body.reason : '';
+  return /^[a-z_]{1,24}$/.test(reason) ? reason : 'n/a';
+};
+
 const handleVoiceQuota = (increment, label) => async (req, res) => {
   const user = await requireUser(req, res);
   if (!user) return;
   if (rejectIfLimited(userLimits.voice, user.id, res)) return;
-  if (usesGuestVoiceTrial(user)) return handleGuestVoice(res, user, guestClaimSeconds(increment, req.body), label);
+  if (usesGuestVoiceTrial(user)) {
+    return handleGuestVoice(res, user, guestClaimSeconds(increment, req.body), label, heartbeatReason(req.body));
+  }
   try {
     const quota = await debitVoiceQuota({
       userId: user.id,
@@ -961,15 +1003,7 @@ app.post('/api/agent/chat', async (req, res) => {
   if (rejectIfLimited(userLimits.agent, user.id, res)) return;
   const { agentId, chatId, turn, message, mode: requestedMode, requestType, replyLanguage, memories, focus, recent } = req.body ?? {};
 
-  if (requestType === 'voice' && usesGuestVoiceTrial(user)) {
-    try {
-      const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed: GUEST_VOICE_MAX_STEP_SECONDS, touch: true });
-      if (trial.exhausted) return res.status(403).json(guestVoiceLimitBody());
-    } catch (err) {
-      logger.warn(`[${requestId}] guest voice check failed: ${err.message}`);
-      return res.status(502).json({ error: 'Voice trial could not be checked. Please try again.' });
-    }
-  }
+  if (requestType === 'voice' && (await blockVoiceTurnOverQuota(res, user, requestId, 'agent'))) return;
 
   if (typeof chatId !== 'string' || !CHAT_ID_PATTERN.test(chatId)) {
     return res.status(400).json({ error: 'chatId is required' });
@@ -1255,4 +1289,5 @@ startAdminWorkers();
 
 app.listen(serverConfig.port, () => {
   logger.info(`Backend running on http://localhost:${serverConfig.port}`);
+  startProviderSync();
 });
