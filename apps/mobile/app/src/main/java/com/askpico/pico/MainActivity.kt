@@ -5,6 +5,8 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -22,6 +24,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -47,6 +50,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var container: ViewGroup
     private lateinit var splash: View
     private lateinit var offline: View
+    private lateinit var retryButton: Button
+    @Volatile private var retryInFlight = false
     @Volatile private var lastUrl: String = BuildConfig.WEB_URL
     // Token that Pico-origin frames get through the document-start script. Null = bridge refuses everything.
     @Volatile private var bridgeToken: String? = null
@@ -153,7 +158,8 @@ class MainActivity : AppCompatActivity() {
         container = findViewById(R.id.container)
         splash = findViewById(R.id.splash)
         offline = findViewById(R.id.offline)
-        offline.findViewById<Button>(R.id.retry_button).setOnClickListener { webView.loadUrl(lastUrl) }
+        retryButton = offline.findViewById(R.id.retry_button)
+        retryButton.setOnClickListener { retryLoad() }
         offline.findViewById<Button>(R.id.open_browser_button).setOnClickListener { openExternal(lastUrl) }
 
         tts = TextToSpeech(this) { status ->
@@ -217,6 +223,7 @@ class MainActivity : AppCompatActivity() {
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                 lastUrl = url
                 offline.visibility = View.GONE
+                resetRetryState()
             }
 
             override fun onPageFinished(view: WebView, url: String) {
@@ -228,7 +235,10 @@ class MainActivity : AppCompatActivity() {
                 request: WebResourceRequest,
                 error: android.webkit.WebResourceError
             ) {
-                if (request.isForMainFrame) showOffline()
+                if (request.isForMainFrame) {
+                    resetRetryState()
+                    showOffline()
+                }
             }
 
             // Renderer crashed: drop the dead WebView and reload the last page in a fresh one.
@@ -695,6 +705,39 @@ $wrappers
     private fun showOffline() {
         splash.visibility = View.GONE
         offline.visibility = View.VISIBLE
+    }
+
+    private fun isOnline(): Boolean {
+        val manager = getSystemService(ConnectivityManager::class.java) ?: return false
+        val network = manager.activeNetwork ?: return false
+        val caps = manager.getNetworkCapabilities(network) ?: return false
+        return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+            caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
+    // Retry first checks real connectivity instead of blindly reloading (a blind reload
+    // while still offline just errors again). The button is disabled while a retry is in
+    // flight so taps cannot stack, and the main document is fetched with no-cache so a
+    // stale cached shell cannot come back. The login session lives in WebView storage
+    // (localStorage), which a page reload never touches.
+    private fun retryLoad() {
+        if (retryInFlight) return
+        if (!isOnline()) {
+            Toast.makeText(this, R.string.offline_still_offline, Toast.LENGTH_SHORT).show()
+            return
+        }
+        retryInFlight = true
+        retryButton.isEnabled = false
+        retryButton.text = getString(R.string.offline_retrying)
+        webView.loadUrl(lastUrl, mapOf("Cache-Control" to "no-cache"))
+    }
+
+    private fun resetRetryState() {
+        retryInFlight = false
+        if (::retryButton.isInitialized) {
+            retryButton.isEnabled = true
+            retryButton.text = getString(R.string.offline_retry)
+        }
     }
 
     private fun confirmExit() {

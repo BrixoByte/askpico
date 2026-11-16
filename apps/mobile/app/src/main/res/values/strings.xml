@@ -4,5 +4,7 @@
     <string name="offline_title">No connection</string>
     <string name="offline_message">Pico could not load. Check your internet connection and try again.</string>
     <string name="offline_retry">Retry</string>
+    <string name="offline_retrying">Retrying…</string>
+    <string name="offline_still_offline">Still offline. Check your connection.</string>
     <string name="offline_open_browser">Open in browser</string>
 </resources>
