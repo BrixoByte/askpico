@@ -61,7 +61,7 @@ const ColorPalette = () => {
 
   return (
     <div className='flex flex-col gap-3 text-sm'>
-      <input type='file' accept='image/*' onChange={(e) => onFile(e.target.files?.[0])} />
+      <input type='file' accept='image/*' aria-label='choose image' onChange={(e) => onFile(e.target.files?.[0])} />
       {error && <p className='text-red-600'>{error}</p>}
       {palette.length > 0 && (
         <div className='flex flex-wrap gap-2'>

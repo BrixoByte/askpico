@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { saveBlob } from '@utils/saveBlob';
 
 const FORMATS = ['image/png', 'image/jpeg', 'image/webp'] as const;
 type Format = (typeof FORMATS)[number];
@@ -37,13 +38,8 @@ const ImageConverter = () => {
         canvas.toBlob(resolve, format, format === 'image/png' ? undefined : quality)
       );
       if (!blob) throw new Error('Conversion failed');
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
       const base = file.name.replace(/\.[^.]+$/, '') || 'image';
-      a.href = url;
-      a.download = `${base}.${extFor[format]}`;
-      a.click();
-      URL.revokeObjectURL(url);
+      saveBlob(blob, `${base}.${extFor[format]}`);
     } catch (e: unknown) {
       setError((e as Error).message);
     } finally {
@@ -56,6 +52,7 @@ const ImageConverter = () => {
       <input
         type='file'
         accept='image/*'
+        aria-label='choose image'
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
       />
       <div className='flex flex-wrap items-center gap-2'>

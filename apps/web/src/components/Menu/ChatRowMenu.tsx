@@ -31,9 +31,33 @@ const Dialog = ({
   label: string;
   onClose: () => void;
 }) => {
+  const boxRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
+    const box = boxRef.current;
+    const first = box?.querySelector<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    first?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      if (e.key === 'Tab' && box) {
+        const items = Array.from(
+          box.querySelectorAll<HTMLElement>(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter((el) => !el.hasAttribute('disabled'));
+        if (items.length === 0) return;
+        const firstEl = items[0];
+        const lastEl = items[items.length - 1];
+        if (e.shiftKey && document.activeElement === firstEl) {
+          lastEl.focus();
+          e.preventDefault();
+        } else if (!e.shiftKey && document.activeElement === lastEl) {
+          firstEl.focus();
+          e.preventDefault();
+        }
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -48,6 +72,7 @@ const Dialog = ({
       onMouseDown={onClose}
     >
       <div
+        ref={boxRef}
         className='w-full max-w-sm rounded-2xl border border-surface-line bg-surface p-4 shadow-2xl'
         onMouseDown={(e) => e.stopPropagation()
         }

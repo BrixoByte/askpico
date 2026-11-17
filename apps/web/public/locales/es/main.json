@@ -42,5 +42,9 @@
   "cloneChat": "Clone Chat",
   "cloned": "Cloned",
   "enterToSubmit": "Enter to submit",
-  "submitPlaceholder": "Escribe un mensaje o haz clic en [/] para prompt..."
+  "submitPlaceholder": "Escribe un mensaje o haz clic en [/] para prompt...",
+  "attachTooLarge": "El archivo supera los 10 MB",
+  "attachNotText": "No es un archivo de texto",
+  "attachReadFail": "No se pudo leer el archivo",
+  "cameraDenied": "Acceso a la cámara denegado. Revisa los permisos del navegador (se requiere HTTPS o localhost)."
 }

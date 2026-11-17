@@ -3,5 +3,19 @@
     <color name="brand_600">#7A46E3</color>
     <color name="brand_500">#8B63EF</color>
     <color name="ink">#202123</color>
+    <color name="ink_muted">#5B5F6B</color>
     <color name="app_bg">#EFECF6</color>
+    <!-- Same amber identity as the web app's offline banner
+         (bg-amber-100 / text-amber-900, icon amber-500). -->
+    <color name="warn_bg">#FEF3C7</color>
+    <color name="warn_ink">#78350F</color>
+    <color name="warn_icon">#F59E0B</color>
+    <color name="surface_card">#FFFFFF</color>
+    <!-- Opaque distraction-shield overlay: deep purple charcoal so the
+         blocked app underneath is fully hidden. -->
+    <color name="shield_bg_top">#1A1428</color>
+    <color name="shield_bg_bottom">#0E0B14</color>
+    <color name="shield_text">#F5F3FC</color>
+    <color name="shield_text_muted">#A9A5B5</color>
+    <color name="shield_footer">#6E6A7E</color>
 </resources>

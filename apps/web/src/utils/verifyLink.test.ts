@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { classifyEmailLink, readVerifyCode, readVerifyParams } from '@utils/verifyLink';
+import { classifyEmailLink, readVerifyCode, readVerifyParams, withTimeout } from '@utils/verifyLink';
 
 describe('verify link params', () => {
   it('reads token_hash and a known type', () => {
@@ -16,6 +16,29 @@ describe('verify link params', () => {
   it('reads a PKCE code', () => {
     expect(readVerifyCode('?code=pkce-123')).toBe('pkce-123');
     expect(readVerifyCode('?token_hash=abc&type=recovery')).toBeNull();
+  });
+});
+
+describe('withTimeout', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('resolves with the wrapped value', async () => {
+    await expect(withTimeout(Promise.resolve('ok'), 100)).resolves.toBe('ok');
+  });
+
+  it('rejects with the wrapped error', async () => {
+    await expect(withTimeout(Promise.reject(new Error('denied')), 100)).rejects.toThrow('denied');
+  });
+
+  it('rejects with "timeout" when the promise never settles', async () => {
+    vi.useFakeTimers();
+    const hanging = new Promise<string>(() => {});
+    const raced = withTimeout(hanging, 20_000);
+    const assertion = expect(raced).rejects.toThrow('timeout');
+    await vi.advanceTimersByTimeAsync(20_000);
+    await assertion;
   });
 });
 

@@ -111,7 +111,7 @@ const STATUS_TEXT: Record<string, string> = {
   done_set_alarm: 'Alarm set.',
   done_set_timer: 'Timer set.',
   done_share_whatsapp: 'Opening WhatsApp share…',
-  done_call: 'Call placed.',
+  done_call: 'Opening the dialer…',
   cancelled: 'Cancelled.',
   invalid: "I couldn't understand that action — try rephrasing it.",
   unsupported: "This device can't do that.",

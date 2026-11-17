@@ -1,10 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Pico</string>
-    <string name="offline_title">No connection</string>
-    <string name="offline_message">Pico could not load. Check your internet connection and try again.</string>
+
+    <!-- Shared -->
+    <string name="error_retry">Retry</string>
+    <string name="error_retrying">Retrying…</string>
+    <string name="error_open_browser">Open in browser</string>
+    <string name="error_still_offline">Still offline — reconnect and try again.</string>
+
+    <!-- Offline: device has no validated network -->
+    <string name="error_offline_title">You are offline</string>
+    <string name="error_offline_message">Pico needs an internet connection. Check your Wi-Fi or mobile data and try again.</string>
+
+    <!-- Server unreachable: network is fine, host did not answer -->
+    <string name="error_unreachable_title">Pico is not available right now</string>
+    <string name="error_unreachable_message">The problem is on our side, not your internet. Please try again in a moment.</string>
+
+    <!-- Server error: host answered with 5xx -->
+    <string name="error_server_title">Something went wrong on our side</string>
+    <string name="error_server_message">Our servers hit a problem. Your internet is fine — try again in a moment.</string>
+
+    <!-- Slow / timeout: connected but load took too long -->
+    <string name="error_timeout_title">Taking too long to load</string>
+    <string name="error_timeout_message">The connection is slow right now. Retry, or try again in a moment.</string>
+
+    <!-- Mid-session amber banner (page already loaded, then connection lost) -->
+    <string name="banner_offline">You are offline. Reconnect to keep chatting. Your account stays signed in.</string>
+    <string name="banner_server">Pico is having trouble right now. Reconnecting may fix it.</string>
+
+    <!-- Icon descriptions (accessibility) -->
+    <string name="cd_error_offline">Offline icon</string>
+    <string name="cd_error_server">Server problem icon</string>
+    <string name="cd_error_timeout">Slow connection icon</string>
+
+    <!-- Legacy ids kept for the mid-session banner and any old references -->
     <string name="offline_retry">Retry</string>
     <string name="offline_retrying">Retrying…</string>
-    <string name="offline_still_offline">Still offline. Check your connection.</string>
     <string name="offline_open_browser">Open in browser</string>
+    <string name="offline_still_offline">Still offline. Check your connection.</string>
 </resources>

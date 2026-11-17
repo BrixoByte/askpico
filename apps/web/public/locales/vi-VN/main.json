@@ -42,5 +42,9 @@
   "cloneChat": "Nhân đôi cuộc trò chuyện",
   "cloned": "Đã nhân bản",
   "enterToSubmit": "Enter để nộp",
-  "submitPlaceholder": "Nhập tin nhắn hoặc ấn [/] để tìm các lời nhắc..."
+  "submitPlaceholder": "Nhập tin nhắn hoặc ấn [/] để tìm các lời nhắc...",
+  "attachTooLarge": "Tệp lớn hơn 10 MB",
+  "attachNotText": "Không phải tệp văn bản",
+  "attachReadFail": "Không thể đọc tệp",
+  "cameraDenied": "Đã từ chối quyền truy cập camera. Kiểm tra quyền trình duyệt (yêu cầu HTTPS hoặc localhost)."
 }

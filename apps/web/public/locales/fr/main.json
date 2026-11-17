@@ -42,5 +42,9 @@
   "cloneChat": "Cloner la Conversation",
   "cloned": "Clonée",
   "enterToSubmit": "Entrée pour soumettre",
-  "submitPlaceholder": "Saisissez un message ou cliquez sur [/] pour des prompts..."
+  "submitPlaceholder": "Saisissez un message ou cliquez sur [/] pour des prompts...",
+  "attachTooLarge": "Le fichier dépasse 10 Mo",
+  "attachNotText": "Ce n'est pas un fichier texte",
+  "attachReadFail": "Impossible de lire le fichier",
+  "cameraDenied": "Accès à la caméra refusé. Vérifiez les autorisations du navigateur (HTTPS ou localhost requis)."
 }

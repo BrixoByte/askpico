@@ -14,7 +14,6 @@ object Capabilities {
 
     fun runtimePermission(feature: String): String? = when (feature) {
         "microphone" -> Manifest.permission.RECORD_AUDIO
-        "phone" -> Manifest.permission.CALL_PHONE
         "notifications" ->
             if (Build.VERSION.SDK_INT >= 33) Manifest.permission.POST_NOTIFICATIONS else null
         else -> null

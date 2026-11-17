@@ -65,6 +65,7 @@ const PdfToJpg = () => {
       <input
         type='file'
         accept='application/pdf'
+        aria-label='choose PDF file'
         disabled={busy}
         onChange={(e) => convert(e.target.files?.[0])}
       />

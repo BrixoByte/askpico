@@ -153,7 +153,7 @@ const ChatSectionList = ({
 }) => {
   return (
     <div className='mb-2'>
-      <div className='sticky top-0 z-10 flex items-center justify-between bg-transparent px-3 pb-2 text-[11px] font-medium uppercase tracking-wider text-ink-muted'>
+      <div className='sticky top-0 z-10 flex items-center justify-between bg-surface px-3 pb-2 text-[11px] font-medium uppercase tracking-wider text-ink-muted'>
         <span>Recent</span>
         <button
           type='button'

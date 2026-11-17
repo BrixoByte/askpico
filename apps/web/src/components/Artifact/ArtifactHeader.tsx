@@ -19,7 +19,7 @@ const ArtifactHeader = ({
       {artifacts.map((artifact) => (
         <button
           key={artifact.id}
-          className={`shrink-0 rounded-lg px-2.5 py-1 font-mono text-xs transition-colors ${
+          className={`relative shrink-0 rounded-lg px-2.5 py-1 font-mono text-xs transition-colors after:absolute after:-inset-y-2 after:inset-x-0 ${
             artifact.id === activeArtifactId
               ? 'bg-brand-50 text-brand-700'
               : 'text-ink-soft hover:bg-surface-muted'

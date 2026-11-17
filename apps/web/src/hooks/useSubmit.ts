@@ -25,8 +25,19 @@ import useUsageStore, { FREE_DEEP_LIMIT } from '@store/usage-store';
 import useVoiceStore from '@store/voice-store';
 import { _defaultChatConfig } from '@constants/chat';
 import { extractArtifacts } from '@utils/artifactParser';
+import { prefetchMermaidAssets } from '@utils/mermaidDoc';
+import { withTimeout } from '@utils/verifyLink';
 import { logger } from '@utils/logger';
 import { consumeRouteBypass } from '@utils/routeBypass';
+
+// A hung request or stalled stream must never leave `generating` on forever —
+// error out with a friendly message so the user can resend (60 s is generous:
+// streamed tokens arrive continuously once the response starts).
+const REQUEST_TIMEOUT_MS = 60_000;
+const timed = <T,>(promise: Promise<T>, friendly: string): Promise<T> =>
+  withTimeout(promise, REQUEST_TIMEOUT_MS).catch((e) => {
+    throw (e as Error).message === 'timeout' ? new Error(friendly) : e;
+  });
 
 const syncArtifacts = (
   chatId: string,
@@ -36,6 +47,7 @@ const syncArtifacts = (
 ) => {
   const detected = extractArtifacts(content, chatId, messageIndex);
   if (detected.length === 0) return;
+  if (detected.some((a) => a.language === 'mermaid')) prefetchMermaidAssets();
 
   const state = useStore.getState();
   const prefix = `${chatId}-${messageIndex}-`;
@@ -357,14 +369,17 @@ const useSubmit = () => {
         setChats(repliedChats);
       } else if (!toolHandled) {
         trace('3. core: POST /api/chat (streaming)', { messages: messages.length });
-        const result = await getChatCompletionStream(
-          messages,
-          selectedMode,
-          memories,
-          focus,
-          chats[currentChatIndex].completionTokens,
-          chats[currentChatIndex].id,
-          requestType
+        const result = await timed(
+          getChatCompletionStream(
+            messages,
+            selectedMode,
+            memories,
+            focus,
+            chats[currentChatIndex].completionTokens,
+            chats[currentChatIndex].id,
+            requestType
+          ),
+          'The server took too long to reply. Check your connection and try again.'
         );
         stream = result.stream;
         // Server quota enforcement: the user asked for Deep but the backend
@@ -390,7 +405,10 @@ const useSubmit = () => {
         let partial = '';
         let finishReason: string | null = null;
         while (reading && useStore.getState().generating) {
-          const { done, value } = await reader.read();
+          const { done, value } = await timed(
+            reader.read(),
+            'The reply stopped mid-stream. Check your connection and try again.'
+          );
           const result = parseEventSource(
             partial + new TextDecoder().decode(value)
           );
@@ -443,7 +461,10 @@ const useSubmit = () => {
           regenerated[currentChatIndex].completionTokens = raised;
           setChats(regenerated);
           stream = (
-            await getChatCompletionStream(messages, selectedMode, memories, focus, raised, chats[currentChatIndex].id, requestType)
+            await timed(
+              getChatCompletionStream(messages, selectedMode, memories, focus, raised, chats[currentChatIndex].id, requestType),
+              'The server took too long to reply. Check your connection and try again.'
+            )
           ).stream;
           continue;
         }

@@ -20,7 +20,7 @@ const ArtifactTabs = ({
         return (
           <button
             key={tab.value}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+            className={`relative rounded-full px-3 py-1 text-xs font-medium transition-colors after:absolute after:-inset-y-1.5 after:inset-x-0 ${
               activeTab === tab.value
                 ? 'bg-surface text-ink shadow-soft'
                 : 'text-ink-soft hover:text-ink'

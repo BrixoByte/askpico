@@ -10,7 +10,7 @@ const Toggle = ({
   setIsChecked: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   return (
-    <label className='relative flex items-center cursor-pointer'>
+    <label className='relative flex min-h-[48px] items-center cursor-pointer'>
       <input
         type='checkbox'
         className='sr-only peer'

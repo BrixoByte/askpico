@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '@api/supabase';
 import { authUrl } from '@utils/authRoutes';
 import { isNativeMobileApp } from '@utils/device';
-import { readVerifyCode, readVerifyParams } from '@utils/verifyLink';
+import { readVerifyCode, readVerifyParams, VERIFY_TIMEOUT_MS, withTimeout } from '@utils/verifyLink';
 import ResetPasswordModal from './ResetPasswordModal';
 
 // Email links point here: https://go.askpico.app/verify?token_hash=...&type=signup|recovery
@@ -32,40 +32,57 @@ const VerifyPage = () => {
     setStatus('verifying');
     setError(null);
     window.history.replaceState(null, '', '/verify');
-    if (pkceCode && !hasTokenHash) {
-      // PKCE (?code=...) link: exchange it; Supabase emits PASSWORD_RECOVERY for
-      // recovery flows, SIGNED_IN otherwise. Fails cleanly when the code
-      // verifier is not in this browser's storage.
-      let recovery = false;
-      const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-        if (event === 'PASSWORD_RECOVERY') recovery = true;
-      });
-      const { error: codeError } = await supabase.auth.exchangeCodeForSession(pkceCode);
-      sub.subscription.unsubscribe();
-      if (codeError) {
-        setStatus('error');
-        setError('This link is invalid or has expired. Request a new one from the sign-in page.');
+    try {
+      if (pkceCode && !hasTokenHash) {
+        // PKCE (?code=...) link: exchange it; Supabase emits PASSWORD_RECOVERY for
+        // recovery flows, SIGNED_IN otherwise. Fails cleanly when the code
+        // verifier is not in this browser's storage.
+        let recovery = false;
+        const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+          if (event === 'PASSWORD_RECOVERY') recovery = true;
+        });
+        const { error: codeError } = await withTimeout(supabase.auth.exchangeCodeForSession(pkceCode), VERIFY_TIMEOUT_MS);
+        sub.subscription.unsubscribe();
+        if (codeError) {
+          setStatus('error');
+          setError('This link is invalid or has expired. Request a new one from the sign-in page.');
+          return;
+        }
+        if (recovery) return setStatus('recovery');
+        await withTimeout(supabase.auth.signOut({ scope: 'local' }), VERIFY_TIMEOUT_MS).catch(() => {});
+        setStatus('signup-done');
         return;
       }
-      if (recovery) return setStatus('recovery');
-      await supabase.auth.signOut({ scope: 'local' });
+      if (!initial.tokenHash || !initial.type) {
+        setStatus('error');
+        setError('This link is incomplete. Request a new email from the sign-in page.');
+        return;
+      }
+      const { error: otpError } = await withTimeout(
+        supabase.auth.verifyOtp({ token_hash: initial.tokenHash, type: initial.type }),
+        VERIFY_TIMEOUT_MS
+      );
+      if (otpError) {
+        setStatus('error');
+        setError('This link is invalid or has already been used. Request a new one from the sign-in page.');
+        return;
+      }
+      if (initial.type === 'recovery') return setStatus('recovery');
+      await withTimeout(supabase.auth.signOut({ scope: 'local' }), VERIFY_TIMEOUT_MS).catch(() => {});
       setStatus('signup-done');
-      return;
-    }
-    if (!initial.tokenHash || !initial.type) {
+    } catch (e) {
       setStatus('error');
-      setError('This link is incomplete. Request a new email from the sign-in page.');
-      return;
+      setError(
+        e instanceof Error && e.message === 'timeout'
+          ? 'Verification timed out. Check your connection and try again.'
+          : 'This link is invalid or has expired. Request a new one from the sign-in page.'
+      );
     }
-    const { error: otpError } = await supabase.auth.verifyOtp({ token_hash: initial.tokenHash, type: initial.type });
-    if (otpError) {
-      setStatus('error');
-      setError('This link is invalid or has already been used. Request a new one from the sign-in page.');
-      return;
-    }
-    if (initial.type === 'recovery') return setStatus('recovery');
-    await supabase.auth.signOut({ scope: 'local' });
-    setStatus('signup-done');
+  };
+
+  const retry = () => {
+    started.current = false;
+    void verify();
   };
 
   useEffect(() => {
@@ -93,7 +110,14 @@ const VerifyPage = () => {
           <>
             <h1 className='text-lg font-semibold text-zinc-900 dark:text-zinc-100'>Link not valid</h1>
             <p className='mt-2 text-sm text-zinc-600 dark:text-zinc-400'>{error}</p>
-            <button type='button' className={primary} onClick={() => window.location.assign(authUrl())}>
+            <button type='button' className={primary} onClick={retry}>
+              Try again
+            </button>
+            <button
+              type='button'
+              className='mt-2 w-full rounded-xl border border-zinc-300 px-4 py-2.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800'
+              onClick={() => window.location.assign(authUrl())}
+            >
               Go to sign in
             </button>
           </>

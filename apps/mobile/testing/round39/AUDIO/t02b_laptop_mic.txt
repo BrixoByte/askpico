@@ -1,0 +1,3 @@
+# t02b_laptop_mic.wav | detected language: en (0.79)
+[  0.00s ->   4.00s] What time is it in all time right now?
+[ 30.00s ->  34.00s] What time is it in all time right now?

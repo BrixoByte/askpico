@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PDFDocument } from 'pdf-lib';
+import { saveBlob } from '@utils/saveBlob';
 
 // Accepts ranges like "1-3, 5, 8-9" (1-based). Returns zero-based page indexes or null if invalid.
 export const parsePageRanges = (spec: string, pageCount: number): number[] | null => {
@@ -51,12 +52,7 @@ const PdfSplit = () => {
       const pages = await output.copyPages(source, indexes);
       pages.forEach((page) => output.addPage(page));
       const bytes = await output.save();
-      const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'application/pdf' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${file.name.replace(/\.pdf$/i, '')}-split.pdf`;
-      link.click();
-      URL.revokeObjectURL(url);
+      saveBlob(new Blob([bytes as BlobPart], { type: 'application/pdf' }), `${file.name.replace(/\.pdf$/i, '')}-split.pdf`);
     } catch (err) {
       setError(`Split fail hua: ${(err as Error).message}`);
     } finally {
@@ -66,7 +62,7 @@ const PdfSplit = () => {
 
   return (
     <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4 text-sm'>
-      <input type='file' accept='application/pdf' onChange={(e) => loadFile(e.target.files?.[0])} />
+      <input type='file' accept='application/pdf' aria-label='choose PDF file' onChange={(e) => loadFile(e.target.files?.[0])} />
       {file && <p className='text-gray-500'>{file.name} · {pageCount} pages</p>}
       <input
         aria-label='page ranges'

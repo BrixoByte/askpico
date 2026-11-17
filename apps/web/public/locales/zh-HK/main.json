@@ -42,5 +42,9 @@
   "cloneChat": "建立傾偈副本",
   "cloned": "建立成功",
   "enterToSubmit": "撳 Enter 鍵送出",
-  "submitPlaceholder": "輸入訊息或撳 [/] 以使用提示詞…"
+  "submitPlaceholder": "輸入訊息或撳 [/] 以使用提示詞…",
+  "attachTooLarge": "檔案超過 10 MB",
+  "attachNotText": "不是文字檔案",
+  "attachReadFail": "無法讀取檔案",
+  "cameraDenied": "相機存取被拒絕。請檢查瀏覽器權限（需要 HTTPS 或 localhost）。"
 }

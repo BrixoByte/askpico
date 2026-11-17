@@ -9,6 +9,8 @@ import android.util.Log
 import android.webkit.JavascriptInterface
 import androidx.core.view.WindowCompat
 import com.askpico.pico.agent.Capabilities
+import com.askpico.pico.agent.FocusPolicy
+import com.askpico.pico.agent.FocusStore
 import com.askpico.pico.agent.ShieldRules
 import com.askpico.pico.agent.ShieldService
 import org.json.JSONObject
@@ -123,6 +125,85 @@ class PicoBridge(private val activity: Activity) {
         if (saved) activity.runOnUiThread { ShieldService.sync(activity) }
         return saved
     }
+
+    // Focus apps. Passcodes are passed in and checked here; they are never stored or returned.
+    @JavascriptInterface
+    fun focusStatus(token: String?): String =
+        if (!ok(token)) "{}" else FocusStore.statusJson(context, System.currentTimeMillis()).toString()
+
+    @JavascriptInterface
+    fun focusSetEnabled(token: String?, enabled: Boolean) {
+        if (!ok(token)) return
+        FocusStore.setEnabled(context, enabled)
+        activity.runOnUiThread { ShieldService.sync(activity) }
+    }
+
+    /** Returns the one-time recovery code, or "" if a passcode already exists or the passcode is too short. */
+    @JavascriptInterface
+    fun focusSetupPasscode(token: String?, passcode: String): String =
+        if (!ok(token)) "" else FocusStore.setupPasscode(context, passcode) ?: ""
+
+    /** Body: {"lengthMs":number,"strength":"STRICT|BALANCED|LIGHT","packages":["pkg",...]}. Returns "OK" or "ERROR". */
+    @JavascriptInterface
+    fun focusStart(token: String?, json: String): String {
+        if (!ok(token)) return "ERROR"
+        return try {
+            val o = JSONObject(json)
+            val strength = FocusPolicy.Strength.valueOf(o.getString("strength"))
+            val arr = o.getJSONArray("packages")
+            val packages = (0 until arr.length()).map { arr.getString(it) }.filter { it != activity.packageName }.toSet()
+            val started = FocusStore.startSession(context, o.getLong("lengthMs"), strength, packages, System.currentTimeMillis())
+            if (started) activity.runOnUiThread { ShieldService.sync(activity) }
+            if (started) "OK" else "ERROR"
+        } catch (_: Exception) {
+            "ERROR"
+        }
+    }
+
+    /** Launchable apps for the Focus picker: [{"package":"...","label":"..."}], Pico excluded, sorted by label. */
+    @JavascriptInterface
+    fun listLaunchableApps(token: String?): String {
+        if (!ok(token)) return "[]"
+        val pm = activity.packageManager
+        val launcher = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
+        val apps = pm.queryIntentActivities(launcher, 0)
+            .map { it.activityInfo.packageName to it.loadLabel(pm).toString() }
+            .filter { it.first != activity.packageName }
+            .distinctBy { it.first }
+            .sortedBy { it.second.lowercase() }
+            .map { JSONObject().put("package", it.first).put("label", it.second) }
+        return org.json.JSONArray(apps).toString()
+    }
+
+    @JavascriptInterface
+    fun focusBeginWait(token: String?) {
+        if (ok(token)) FocusStore.beginWait(context, System.currentTimeMillis())
+    }
+
+    /** Outcome names: OK, WRONG_PASSCODE, LOCKED, NO_PASSCODE, NO_SESSION, NO_UNBLOCKS, WAIT_REQUIRED. */
+    @JavascriptInterface
+    fun focusEarlyUnblock(token: String?, passcode: String): String {
+        if (!ok(token)) return "NO_SESSION"
+        val outcome = FocusStore.earlyUnblock(context, passcode, System.currentTimeMillis())
+        activity.runOnUiThread { ShieldService.sync(activity) }
+        return outcome.name
+    }
+
+    @JavascriptInterface
+    fun focusEmergency(token: String?, passcode: String): String {
+        if (!ok(token)) return "NO_SESSION"
+        val outcome = FocusStore.emergency(context, passcode, System.currentTimeMillis())
+        activity.runOnUiThread { ShieldService.sync(activity) }
+        return outcome.name
+    }
+
+    @JavascriptInterface
+    fun focusRecover(token: String?, recoveryCode: String, newPasscode: String): Boolean =
+        ok(token) && FocusStore.recover(context, recoveryCode, newPasscode)
+
+    @JavascriptInterface
+    fun focusRequestAccountReset(token: String?, newPasscode: String): Boolean =
+        ok(token) && FocusStore.requestAccountReset(context, newPasscode, System.currentTimeMillis())
 
     @JavascriptInterface
     fun setSystemBars(token: String?, darkBackground: Boolean) {

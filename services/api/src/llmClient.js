@@ -10,13 +10,16 @@ export const isFallbackStatus = (status) => status === 429 || status >= 500;
 
 export const attemptModel = (model, body, signal) => {
   const timeout = AbortSignal.timeout(ATTEMPT_TIMEOUT_MS);
+  // Ask the provider to append a usage object on the final SSE chunk —
+  // real token counts for streamed replies instead of text-length guesses.
+  const extras = body.stream ? { stream_options: { include_usage: true } } : {};
   return fetch(`${llmConfig.baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${llmConfig.apiKey}`,
     },
-    body: JSON.stringify({ ...chatConfig, ...body, model }),
+    body: JSON.stringify({ ...chatConfig, ...body, ...extras, model }),
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
 };
@@ -46,11 +49,12 @@ export const fetchWithFallback = async (models, body, signal, requestId = '-') =
   throw lastError ?? new Error('No model available for this request');
 };
 
-const sanitizeSseLine = (line, parts) => {
+const sanitizeSseLine = (line, parts, onUsage) => {
   const trimmed = line.trimEnd();
   if (!trimmed.startsWith('data: ') || trimmed === 'data: [DONE]') return line;
   try {
     const payload = JSON.parse(trimmed.slice(6));
+    if (payload.usage && onUsage) onUsage(payload.usage);
     const delta = payload.choices?.[0]?.delta?.content;
     if (parts && typeof delta === 'string') parts.push(delta);
     payload.model = PUBLIC_MODEL_NAME;
@@ -63,6 +67,8 @@ const sanitizeSseLine = (line, parts) => {
 async function* sanitizeSse(webStream, onDone) {
   const decoder = new TextDecoder();
   const parts = onDone ? [] : null;
+  let usage = null;
+  const captureUsage = (u) => { usage = u; };
   let buffer = '';
   for await (const chunk of webStream) {
     buffer += decoder.decode(chunk, { stream: true });
@@ -70,12 +76,12 @@ async function* sanitizeSse(webStream, onDone) {
     while ((index = buffer.indexOf('\n')) >= 0) {
       const line = buffer.slice(0, index + 1);
       buffer = buffer.slice(index + 1);
-      yield sanitizeSseLine(line, parts);
+      yield sanitizeSseLine(line, parts, captureUsage);
     }
   }
   buffer += decoder.decode();
-  if (buffer) yield sanitizeSseLine(buffer, parts);
-  if (parts) onDone(parts.join(''));
+  if (buffer) yield sanitizeSseLine(buffer, parts, captureUsage);
+  if (parts) onDone(parts.join(''), usage);
 }
 
 // Optional onDone(fullText) fires once the stream ends with the assembled

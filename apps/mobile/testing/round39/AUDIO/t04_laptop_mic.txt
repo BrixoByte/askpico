@@ -1,0 +1,2 @@
+# t04_laptop_mic.wav | detected language: en (0.41)
+[  0.00s ->   7.00s] What time is it in return right now?

@@ -42,5 +42,9 @@
   "cloneChat": "Klona chatt",
   "cloned": "Klonad",
   "enterToSubmit": "Tryck på Enter för att skicka",
-  "submitPlaceholder": "Skriv ett meddelande eller klicka på [/] för uppmaning..."
+  "submitPlaceholder": "Skriv ett meddelande eller klicka på [/] för uppmaning...",
+  "attachTooLarge": "Filen är större än 10 MB",
+  "attachNotText": "Inte en textfil",
+  "attachReadFail": "Kunde inte läsa filen",
+  "cameraDenied": "Kameraåtkomst nekades. Kontrollera webbläsarens behörigheter (HTTPS eller localhost krävs)."
 }

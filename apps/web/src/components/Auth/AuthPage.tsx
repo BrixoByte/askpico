@@ -4,7 +4,7 @@ import AuthModal, { type AuthMode } from './AuthModal';
 import { supabase } from '@api/supabase';
 import useStore from '@store/store';
 import { resolveTheme } from '@utils/theme';
-import { chatOrigin } from '@utils/authRoutes';
+import { chatOrigin, marketingOrigin } from '@utils/authRoutes';
 import TechWaveBackground from '@components/Background/TechWaveBackground';
 
 // Standalone auth page, shown on the auth.* subdomain (and /auth in dev) per
@@ -25,16 +25,6 @@ const sessionHash = (session: Session): string => {
   if (session.provider_refresh_token)
     params.set('provider_refresh_token', session.provider_refresh_token);
   return params.toString();
-};
-
-const marketingOrigin = () => {
-  const { hostname, port, protocol } = window.location;
-  if (hostname === 'localhost' || hostname.endsWith('.localhost')) {
-    // Apex localhost serves the marketing site via the marketingOnApex Vite
-    // plugin, mirroring askpico.app in production.
-    return `${protocol}//localhost${port ? `:${port}` : ''}`;
-  }
-  return 'https://askpico.app';
 };
 
 const AuthPage = () => {

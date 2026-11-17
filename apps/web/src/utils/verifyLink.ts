@@ -37,6 +37,17 @@ const hasPkceVerifier = (): boolean => {
 //   'none'           normal visit, render as usual
 export type EmailLinkKind = 'verify-params' | 'pkce-code' | 'implicit-hash' | 'none';
 
+// supabase-js auth calls have no fetch timeout; on a suspended WebView or flaky
+// mobile network they can stay pending forever. Bound them so the verify screen
+// falls back to an error + retry instead of an endless spinner.
+export const VERIFY_TIMEOUT_MS = 20_000;
+
+export const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+  ]);
+
 export const classifyEmailLink = (pathname: string, search: string, hash: string): EmailLinkKind => {
   if (pathname === '/verify') return 'none';
   const { tokenHash, type } = readVerifyParams(search);

@@ -19,6 +19,11 @@ const localOrigin = () => {
 // Sign-in hand-off target: the hosted app. Local dev keeps its own origin.
 export const chatOrigin = (): string => (isProductionHost(window.location.hostname) ? APP_ORIGIN : localOrigin());
 
+// Apex host serves the marketing site (privacy/terms/deletion-request pages).
+// Local dev mirrors it through the marketingOnApex Vite plugin.
+export const marketingOrigin = (): string =>
+  isProductionHost(window.location.hostname) ? 'https://askpico.app' : localOrigin();
+
 export const resetRedirectUrl = (): string =>
   isProductionHost(window.location.hostname) ? RESET_REDIRECT_URL : `${localOrigin()}/`;
 

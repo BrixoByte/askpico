@@ -54,6 +54,22 @@ export const modelsForMode = (mode) => {
     .filter(Boolean);
 };
 
+// Live variant: the model_routing feature flag can override the ordered
+// model chain per mode without a redeploy. Flag shape:
+//   {"chat": {"model": "x", "fallbacks": ["y"]}, "smart": {...}}
+// Falls back to the env/default chain whenever the flag has no entry.
+import { getFlag } from './flags.js';
+export const modelsForModeLive = async (mode) => {
+  const routing = await getFlag('model_routing', null);
+  const entry = routing?.[mode] ?? routing?.chat;
+  if (entry && typeof entry.model === 'string' && entry.model.trim()) {
+    return [entry.model, ...(Array.isArray(entry.fallbacks) ? entry.fallbacks : [])].filter(
+      (m) => typeof m === 'string' && m.trim(),
+    );
+  }
+  return modelsForMode(mode);
+};
+
 const planLimitFor = (plan, mode) => {
   const planKey = routingLimits[plan] ? plan : 'free';
   return routingLimits[planKey][mode] ?? 0;

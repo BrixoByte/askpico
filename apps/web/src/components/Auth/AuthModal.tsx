@@ -60,7 +60,7 @@ const friendlyError = (message: string): string => {
 };
 
 const inputClass = (hasError: boolean) =>
-  `mobile-auth-input w-full rounded-xl border bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 transition-colors focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600 ${
+  `mobile-auth-input min-h-[48px] w-full rounded-xl border bg-zinc-50 px-3.5 py-2.5 text-sm text-zinc-900 placeholder-zinc-400 transition-colors focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-600 ${
     hasError
       ? 'border-red-500/60 focus:border-red-500'
       : 'border-zinc-300 focus:border-brand-500 dark:border-zinc-800'
@@ -93,7 +93,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, React.InputHTMLAttribut
           type='button'
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? 'Hide password' : 'Show password'}
-          className='absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400 transition-colors hover:text-zinc-600 dark:hover:text-zinc-200'
+          className='absolute inset-y-0 right-0 flex min-w-[48px] items-center justify-center px-3 text-zinc-400 transition-colors hover:text-zinc-600 dark:hover:text-zinc-200'
         >
           <EyeIcon off={visible} />
         </button>
@@ -220,7 +220,7 @@ const SignInForm = ({ onSignedIn }: FormProps) => {
           type='button'
           onClick={sendReset}
           disabled={resetSending || Date.now() < cooldownUntil}
-          className='flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60'
+          className="relative flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 after:absolute after:-inset-y-1 after:content-['']  text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {resetSending && <Spinner />}
           {resetSending ? 'Sending...' : 'Send reset link'}
@@ -269,18 +269,18 @@ const SignInForm = ({ onSignedIn }: FormProps) => {
         <FieldError message={errors.password?.message} />
       </div>
       <div className='flex items-center justify-between text-xs'>
-        <label className='flex cursor-pointer items-center gap-2 text-zinc-600 dark:text-zinc-400'>
-          <input type='checkbox' className='h-3.5 w-3.5 rounded border-zinc-300 dark:border-zinc-700' />
+        <label className="relative flex cursor-pointer items-center gap-2 text-zinc-600 dark:text-zinc-400 after:absolute after:-inset-y-[17px] after:content-['']">
+          <input type='checkbox' aria-label='Remember me' className='h-3.5 w-3.5 rounded border-zinc-300 dark:border-zinc-700' />
           Remember me
         </label>
-        <button type='button' onClick={openReset} className='text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-400'>
+        <button type='button' onClick={openReset} className="relative text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-400 after:absolute after:-inset-y-3 after:-inset-x-2 after:content-['']">
           Forgot Password
         </button>
       </div>
       <button
         type='submit'
         disabled={isSubmitting}
-        className='flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60'
+        className="relative flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 after:absolute after:-inset-y-1 after:content-['']  text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting && <Spinner />}
         {isSubmitting ? 'Signing in...' : 'Sign in'}
@@ -401,7 +401,7 @@ const SignUpForm = ({ onSignedIn, wide = false }: FormProps & { wide?: boolean }
       <button
         type='submit'
         disabled={isSubmitting}
-        className='flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60'
+        className="relative flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-2.5 after:absolute after:-inset-y-1 after:content-['']  text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isSubmitting && <Spinner />}
         {isSubmitting ? 'Creating account...' : 'Create account'}

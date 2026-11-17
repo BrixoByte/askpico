@@ -42,5 +42,9 @@
   "cloneChat": "Klone chat",
   "cloned": "Klonet",
   "enterToSubmit": "Trykk enter for å sende",
-  "submitPlaceholder": "Skriv en melding eller klikk på [/] for oppgave..."
+  "submitPlaceholder": "Skriv en melding eller klikk på [/] for oppgave...",
+  "attachTooLarge": "Filen er større enn 10 MB",
+  "attachNotText": "Ikke en tekstfil",
+  "attachReadFail": "Kunne ikke lese filen",
+  "cameraDenied": "Kameratilgang nektet. Sjekk nettlesertillatelser (HTTPS eller localhost kreves)."
 }

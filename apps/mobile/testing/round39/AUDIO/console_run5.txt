@@ -1,0 +1,164 @@
+# tap started 2026-11-17T16:42:56.929Z
+21:42:56 ⚡ [PICO-ACTION][STT] User Action: %cStarting speech input background: #9EFF00; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px; Object
+21:42:56 🟢 [PICO-INFO][STT]: Invoking PicoBridge.startVoiceInput 
+21:42:56 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:42:56 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:42:56 [VoiceDebug] partial Object
+21:42:56 [VoiceDebug] partial Object
+21:42:56 [VoiceDebug] partial Object
+21:42:56 [VoiceDebug] partial Object
+21:42:56 [VoiceDebug] partial Object
+21:42:56 [VoiceDebug] partial Object
+21:42:56 [VoiceDebug] partial Object
+21:43:03 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+21:43:04 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+21:43:04 🟢 [PICO-INFO][STT]: No final result in window; re-arming listening Object
+21:43:13 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:43:14 [VoiceDebug] partial Object
+21:43:15 [VoiceDebug] partial Object
+21:43:15 [VoiceDebug] partial Object
+21:43:16 [VoiceDebug] partial Object
+21:43:16 [VoiceDebug] partial Object
+21:43:17 [VoiceDebug] partial Object
+21:43:17 [VoiceDebug] partial Object
+21:43:17 [VoiceDebug] partial Object
+21:43:17 [VoiceDebug] partial Object
+21:43:17 [VoiceDebug] partial Object
+21:43:17 [VoiceDebug] partial Object
+21:43:17 [VoiceDebug] partial Object
+21:43:26 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:43:27 [VoiceDebug] partial Object
+21:43:27 [VoiceDebug] partial Object
+21:43:27 [VoiceDebug] partial Object
+21:43:27 [VoiceDebug] partial Object
+21:43:27 [VoiceDebug] partial Object
+21:43:27 [VoiceDebug] partial Object
+21:43:27 [VoiceDebug] partial Object
+21:43:27 [VoiceDebug] partial Object
+21:43:27 [VoiceDebug] partial Object
+21:43:27 [VoiceDebug] partial Object
+21:43:28 [VoiceDebug] partial Object
+21:43:28 [VoiceDebug] partial Object
+21:43:28 [VoiceDebug] partial Object
+21:43:28 [VoiceDebug] partial Object
+21:43:28 🟢 [PICO-INFO][STT]: Native final result: "What time is it in Wilton right now" 
+21:43:28 [VoiceDebug] utterance Object
+21:43:28 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+21:43:28 [VoiceDebug] partial Object
+21:43:28 [VoiceDebug] store Object
+21:43:28 [VoiceDebug] submit turn Object
+21:43:28 [VoiceDebug] store Object
+21:43:28 [VoiceDebug] store Object
+21:43:32 [VoiceDebug] store Object
+21:43:32 [VoiceDebug] store Object
+21:43:32 [VoiceDebug] store Object
+21:43:32 [VoiceDebug] store Object
+21:43:32 🟢 [PICO-INFO][Session]: Resuming listening (reply finished) Object
+21:43:32 ⚡ [PICO-ACTION][STT] User Action: %cStarting speech input background: #9EFF00; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px; Object
+21:43:32 🟢 [PICO-INFO][STT]: Invoking PicoBridge.startVoiceInput 
+21:43:56 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+21:43:56 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+21:43:56 🟢 [PICO-INFO][STT]: No final result in window; re-arming listening Object
+21:44:08 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:44:08 [VoiceDebug] partial Object
+21:44:08 [VoiceDebug] partial Object
+21:44:08 [VoiceDebug] partial Object
+21:44:09 [VoiceDebug] partial Object
+21:44:09 [VoiceDebug] partial Object
+21:44:09 [VoiceDebug] partial Object
+21:44:09 [VoiceDebug] partial Object
+21:44:09 [VoiceDebug] partial Object
+21:44:09 [VoiceDebug] partial Object
+21:44:10 [VoiceDebug] partial Object
+21:44:10 🟢 [PICO-INFO][STT]: Native final result: "What time is it in Wilton right now" 
+21:44:10 [VoiceDebug] utterance Object
+21:44:10 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+21:44:10 [VoiceDebug] partial Object
+21:44:10 [VoiceDebug] store Object
+21:44:10 🟢 [PICO-INFO][Session]: Resuming listening (reply finished) Object
+21:44:10 [VoiceDebug] submit turn Object
+21:44:10 [VoiceDebug] store Object
+21:44:10 [VoiceDebug] store Object
+21:44:12 [VoiceDebug] store Object
+21:44:12 [VoiceDebug] store Object
+21:44:12 [VoiceDebug] store Object
+21:44:12 [VoiceDebug] store Object
+21:44:12 🟢 [PICO-INFO][Session]: Resuming listening (reply finished) Object
+21:44:12 ⚡ [PICO-ACTION][STT] User Action: %cStarting speech input background: #9EFF00; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px; Object
+21:44:12 🟢 [PICO-INFO][STT]: Invoking PicoBridge.startVoiceInput 
+21:44:20 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:44:20 [VoiceDebug] partial Object
+21:44:20 [VoiceDebug] partial Object
+21:44:21 [VoiceDebug] partial Object
+21:44:21 [VoiceDebug] partial Object
+21:44:21 [VoiceDebug] partial Object
+21:44:21 [VoiceDebug] partial Object
+21:44:21 [VoiceDebug] partial Object
+21:44:21 [VoiceDebug] partial Object
+21:44:21 [VoiceDebug] partial Object
+21:44:21 [VoiceDebug] partial Object
+21:44:21 [VoiceDebug] partial Object
+21:44:22 [VoiceDebug] partial Object
+21:44:46 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+21:44:46 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+21:44:46 🟢 [PICO-INFO][STT]: No final result in window; re-arming listening Object
+21:45:02 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:45:02 [VoiceDebug] partial Object
+21:45:02 [VoiceDebug] partial Object
+21:45:02 [VoiceDebug] partial Object
+21:45:03 [VoiceDebug] partial Object
+21:45:03 [VoiceDebug] partial Object
+21:45:03 [VoiceDebug] partial Object
+21:45:03 [VoiceDebug] partial Object
+21:45:03 [VoiceDebug] partial Object
+21:45:03 [VoiceDebug] partial Object
+21:45:04 [VoiceDebug] partial Object
+21:45:04 [VoiceDebug] partial Object
+21:45:04 [VoiceDebug] partial Object
+21:45:04 🟢 [PICO-INFO][STT]: Native final result: "Tell me one short fact about the Moon" 
+21:45:04 [VoiceDebug] utterance Object
+21:45:04 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+21:45:04 [VoiceDebug] partial Object
+21:45:04 [VoiceDebug] store Object
+21:45:04 🟢 [PICO-INFO][Session]: Resuming listening (reply finished) Object
+21:45:04 [VoiceDebug] submit turn Object
+21:45:04 [VoiceDebug] store Object
+21:45:04 [VoiceDebug] store Object
+21:45:06 [VoiceDebug] store Object
+21:45:06 [VoiceDebug] store Object
+21:45:06 🟢 [PICO-INFO][Session]: Resuming listening (reply finished) Object
+21:45:06 ⚡ [PICO-ACTION][STT] User Action: %cStarting speech input background: #9EFF00; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px; Object
+21:45:06 🟢 [PICO-INFO][STT]: Invoking PicoBridge.startVoiceInput 
+21:45:11 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:45:38 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+21:45:38 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+21:45:38 🟢 [PICO-INFO][STT]: No final result in window; re-arming listening Object
+21:45:55 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:46:07 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:46:33 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+21:46:33 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+21:46:33 🟢 [PICO-INFO][STT]: No final result in window; re-arming listening Object
+21:46:49 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:47:16 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+21:47:16 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+21:47:16 🟢 [PICO-INFO][STT]: No final result in window; re-arming listening Object
+21:47:39 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:47:52 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:48:10 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+21:48:36 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+21:48:36 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+21:48:36 🟢 [PICO-INFO][STT]: Re-arm cap reached; listening stopped until the next tap Object
+21:48:36 [VoiceDebug] partial Object
+# tap started 2026-11-17T17:13:09.940Z
+22:13:09 ⚡ [PICO-ACTION][STT] User Action: %cStarting speech input background: #9EFF00; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px; Object
+22:13:10 🟢 [PICO-INFO][STT]: Invoking PicoBridge.startVoiceInput 
+22:13:26 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+22:13:27 [VoiceDebug] partial Object
+22:13:27 [VoiceDebug] partial Object
+22:13:27 [VoiceDebug] partial Object
+22:13:27 [VoiceDebug] partial Object
+22:13:53 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+22:13:53 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+22:13:53 [VoiceDebug] partial Object
+22:17:05 [VoiceDebug] store Object
+# tap started 2026-11-17T17:21:26.492Z

@@ -56,7 +56,7 @@ const ProfileCard = () => {
               e.stopPropagation();
               handleProfileClick();
             }}
-            className='ml-2 shrink-0 rounded-full bg-[#9EFF00] px-3 py-1 text-xs font-semibold text-black transition-opacity hover:opacity-90'
+            className="relative ml-2 shrink-0 rounded-full bg-[#9EFF00] px-3 py-1 text-xs font-semibold text-black transition-opacity hover:opacity-90 after:absolute after:-inset-2 after:content-['']"
           >
             Sign in
           </button>

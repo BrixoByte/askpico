@@ -48,6 +48,12 @@ const MAX_AUTO_RETRIES = 3;
 // Max consecutive restarts after an `end` with no speech/result in between.
 const MAX_IDLE_RESTARTS = 3;
 const RESTART_COOLDOWN_MS = 400;
+// Android voice: a listening window that ends without a final result (silence, or partial
+// speech only) is re-armed at most this many times per voice session. The counter resets
+// only on a final result.
+const ANDROID_REARM_MAX = 3;
+const ANDROID_REARM_COOLDOWN_MS = 1500;
+export const ANDROID_REARM_CAP_MESSAGE = 'Voice stopped. Tap to try again.';
 // An engine that ends this soon after starting, having heard nothing, is a failed start, not silence.
 const QUICK_END_MS = 2000;
 
@@ -144,6 +150,7 @@ export class SpeechInput {
   private restartTimer: ReturnType<typeof setTimeout> | null = null;
   private retryCount = 0;
   private idleRestarts = 0;
+  private androidRearms = 0;
   // Engines that heard an onset but emitted zero results get one fresh try.
   private noResultRestarts = 0;
   private startedAt = 0;
@@ -187,6 +194,7 @@ export class SpeechInput {
     this.wantRunning = true;
     this.retryCount = 0;
     this.idleRestarts = 0;
+    this.androidRearms = 0;
     this.startedAt = Date.now();
     this.heardAudio = false;
     this.finals = '';
@@ -540,6 +548,7 @@ export class SpeechInput {
         if (stale() || !this.wantRunning) return;
         this.retryCount = 0;
         this.idleRestarts = 0;
+        this.androidRearms = 0;
         const onUtterance = this.handlers.onUtterance;
         this.closeListeningWindow();
         onUtterance?.(text);
@@ -552,11 +561,7 @@ export class SpeechInput {
         // The native recognizer owns transient retries; a no-speech code only
         // arrives after its bounded idle-restart cap, so surface it to the user.
         if (key === 'no-speech') {
-          this.wantRunning = false;
-          this.handlers.onError?.(ERROR_MESSAGES['no-speech'], false);
-          setTimeout(() => {
-            if (!stale()) this.finish();
-          }, 300);
+          // onEnd decides: it re-arms the window while the per-session cap allows it.
           return;
         }
         if (RETRYABLE.has(key)) {
@@ -579,7 +584,40 @@ export class SpeechInput {
           idleRestarts: this.idleRestarts,
         });
         if (stale()) return;
-        // Wake-driven listening: the native recognizer is not restarted during silence.
+        // A window that ends while still wanted has no final result (a final result clears
+        // wantRunning first), whether or not partial speech was heard. Re-arm it, capped.
+        if (this.wantRunning) {
+          if (this.androidRearms < ANDROID_REARM_MAX) {
+            this.androidRearms += 1;
+            PicoLogger.info('STT', 'No final result in window; re-arming listening', {
+              id: this.id,
+              attempt: this.androidRearms,
+              max: ANDROID_REARM_MAX,
+            });
+            this.clearRestartTimer();
+            const rearmSession = this.session;
+            this.restartTimer = setTimeout(() => {
+              this.restartTimer = null;
+              if (rearmSession !== this.session || !this.wantRunning) return;
+              this.heardAudio = false;
+              try {
+                picoBridge()?.startVoiceInput?.(this.options.lang ?? navigator.language ?? 'en-US');
+              } catch (error) {
+                PicoLogger.error('STT', 'Re-arm startVoiceInput threw', error);
+                this.finish();
+              }
+            }, ANDROID_REARM_COOLDOWN_MS);
+            return;
+          }
+          PicoLogger.info('STT', 'Re-arm cap reached; listening stopped until the next tap', {
+            id: this.id,
+            max: ANDROID_REARM_MAX,
+          });
+          this.wantRunning = false;
+          this.handlers.onError?.(ANDROID_REARM_CAP_MESSAGE, false);
+          this.finish(true);
+          return;
+        }
         this.wantRunning = false;
         this.finish(true);
       },

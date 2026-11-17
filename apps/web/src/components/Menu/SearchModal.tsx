@@ -70,7 +70,7 @@ const SearchModal = ({
             results.map((result) => (
               <button
                 key={`${result.title}-${result.index}`}
-                className='flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-ink-soft hover:bg-ink/5 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40'
+                className='relative flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-ink-soft hover:bg-ink/5 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 after:absolute after:-inset-y-1 after:inset-x-0'
                 disabled={generating}
                 onClick={() => {
                   setCurrentChatIndex(result.index);

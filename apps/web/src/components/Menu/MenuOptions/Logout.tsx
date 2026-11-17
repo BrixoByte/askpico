@@ -20,7 +20,7 @@ const Logout = () => {
 
   return (
     <a
-      className='flex py-2.5 px-3 items-center gap-3 rounded-lg hover:bg-gray-100/80 transition-colors text-ink cursor-pointer text-sm dark:hover:bg-neutral-800'
+      className="relative flex py-2.5 px-3 items-center gap-3 rounded-lg hover:bg-gray-100/80 transition-colors text-ink cursor-pointer text-sm dark:hover:bg-neutral-800 after:absolute after:-inset-y-1 after:content-['']"
       onClick={signOut}
     >
       <LogoutIcon />

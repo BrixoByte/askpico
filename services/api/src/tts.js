@@ -174,20 +174,76 @@ export const ttsStatus = () => ({
 });
 
 // Returns { stream, contentType, provider } or null when every provider fails.
-export const synthesize = async (text, lang) => {
-  for (const name of providers) {
+// The chain order is re-resolved per call: voice_enabled kills voice entirely
+// and tts_primary promotes an engine — both change live from the admin panel.
+import { getFlag } from './flags.js';
+import { recordTtsRequest } from './voiceHealth.js';
+export const synthesize = async (text, lang, meta = {}) => {
+  const startedAt = Date.now();
+  const done = (engineUsed, fallbackTriggered, fallbackReason, success) => {
+    recordTtsRequest({
+      engineUsed,
+      fallbackTriggered,
+      fallbackReason,
+      latencyMs: Date.now() - startedAt,
+      success,
+      userId: meta.userId ?? null,
+    });
+  };
+  if ((await getFlag('voice_enabled', true)) === false) {
+    done(null, false, 'voice_disabled', false);
+    return null;
+  }
+  const primary = await getFlag('tts_primary', null);
+  const order = primary && providers.includes(primary)
+    ? [primary, ...providers.filter((p) => p !== primary)]
+    : providers;
+  let firstReason = null;
+  for (let i = 0; i < order.length; i++) {
+    const name = order[i];
     const impl = providerImpl[name];
-    if (!impl) continue;
+    if (!impl) {
+      if (i === 0) firstReason = 'primary_disabled';
+      continue;
+    }
     try {
       const result = await impl(text, lang);
       logger.info(`tts: synthesized via ${name} (${text.length} chars, lang=${lang || 'default'})`);
+      done(name, i > 0, i > 0 ? firstReason ?? 'primary_failed' : null, true);
       return { ...result, provider: name };
     } catch (err) {
       logger.warn(`tts: provider ${name} failed: ${err.message}`);
+      if (i === 0) firstReason = 'primary_failed';
     }
   }
+  done(null, false, 'all_failed', false);
   return null;
 };
+
+// Synthetic probe for the health checker: runs one engine directly on a very
+// short phrase and measures latency + produced bytes. Never touches flags or
+// the request ledger — probes belong only in tts_health_checks.
+const PROBE_TEXT = 'Pico.';
+export const probeEngine = async (name) => {
+  const impl = providerImpl[name];
+  if (!impl) return { ok: false, latencyMs: null, bytes: null, error: 'engine not configured' };
+  const startedAt = Date.now();
+  try {
+    const { stream } = await impl(PROBE_TEXT, 'en');
+    let bytes = 0;
+    await new Promise((resolve, reject) => {
+      stream.on('data', (c) => { bytes += c.length; });
+      stream.on('end', resolve);
+      stream.on('error', reject);
+    });
+    return { ok: bytes > 0, latencyMs: Date.now() - startedAt, bytes, error: bytes > 0 ? null : 'empty audio' };
+  } catch (err) {
+    return { ok: false, latencyMs: Date.now() - startedAt, bytes: null, error: String(err.message ?? err).slice(0, 300) };
+  }
+};
+
+// Which provider names are probeable right now (engine enabled in env).
+export const probeableEngines = () => Object.keys(providerImpl).filter((n) => providerImpl[n]);
 
 export const isRateLimited = rateLimited;
 export const maxTextLength = MAX_TEXT_LENGTH;

@@ -42,5 +42,9 @@
   "cloneChat": "Klon Chat",
   "cloned": "Klonet",
   "enterToSubmit": "Tryk Enter for at sende",
-  "submitPlaceholder": "Skriv en besked eller klik på [/] for opgave..."
+  "submitPlaceholder": "Skriv en besked eller klik på [/] for opgave...",
+  "attachTooLarge": "Filen er større end 10 MB",
+  "attachNotText": "Ikke en tekstfil",
+  "attachReadFail": "Kunne ikke læse filen",
+  "cameraDenied": "Kameraadgang nægtet. Tjek browserens tilladelser (HTTPS eller localhost påkrævet)."
 }

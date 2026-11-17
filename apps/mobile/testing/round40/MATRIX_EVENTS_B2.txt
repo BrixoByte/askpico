@@ -1,0 +1,66 @@
+22:55:26.185 CONSOLE[log] ⚡ [PICO-ACTION][STT] User Action: %cStarting speech input background: #9EFF00; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px; Object
+22:55:26.189 CONSOLE[log] 🟢 [PICO-INFO][STT]: Invoking PicoBridge.startVoiceInput 
+22:55:26.190 CONSOLE[log] [VoiceDebug] store Object
+22:55:26.190 CONSOLE[error] 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+22:55:26.191 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+22:55:26.191 CONSOLE[log] 🟢 [PICO-INFO][STT]: No final result in window; re-arming listening Object
+22:55:26.192 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+22:55:26.193 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.193 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.194 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.194 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.195 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.195 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.196 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.196 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.197 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.197 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.197 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.198 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.198 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.199 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.199 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native final result: "What time is it in Wilton right now" 
+22:55:26.199 CONSOLE[log] [VoiceDebug] utterance Object
+22:55:26.200 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+22:55:26.200 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.201 CONSOLE[log] [VoiceDebug] store Object
+22:55:26.201 CONSOLE[log] [VoiceDebug] submit turn Object
+22:55:26.201 CONSOLE[log] 🎤 [Voice Debug] Audio chunk sent at: 38107.10ms
+22:55:26.202 CONSOLE[log] [VoiceDebug] store Object
+22:55:26.202 CONSOLE[log] [VoiceDebug] store Object
+22:55:26.203 CONSOLE[log] [VoiceDebug] store Object
+22:55:26.203 CONSOLE[log] [VoiceDebug] store Object
+22:55:26.210 CONSOLE[log] 🟢 [PICO-INFO][Session]: Resuming listening (reply finished) Object
+22:55:26.210 CONSOLE[log] ⚡ [PICO-ACTION][STT] User Action: %cStarting speech input background: #9EFF00; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px; Object
+22:55:26.211 CONSOLE[log] 🟢 [PICO-INFO][STT]: Invoking PicoBridge.startVoiceInput 
+22:55:26.211 CONSOLE[log] [VoiceDebug] store Object
+22:55:26.211 CONSOLE[log] 🟢 [PICO-INFO][Session]: Resuming listening (reply finished) Object
+22:55:26.212 CONSOLE[log] [VoiceDebug] store Object
+22:55:26.212 CONSOLE[error] 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+22:55:26.213 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+22:55:26.213 CONSOLE[log] 🟢 [PICO-INFO][STT]: No final result in window; re-arming listening Object
+22:55:26.214 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+22:55:26.214 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.214 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.215 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.215 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.216 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.216 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.216 CONSOLE[error] 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+22:55:26.217 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+22:55:26.217 CONSOLE[log] 🟢 [PICO-INFO][STT]: No final result in window; re-arming listening Object
+22:55:26.218 CONSOLE[error] 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+22:55:26.218 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+22:55:26.218 CONSOLE[log] 🟢 [PICO-INFO][STT]: No final result in window; re-arming listening Object
+22:55:26.219 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+22:55:26.219 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+22:55:26.220 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.220 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.221 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.221 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.221 CONSOLE[error] 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+22:55:26.222 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+22:55:26.222 CONSOLE[log] 🟢 [PICO-INFO][STT]: Re-arm cap reached; listening stopped until the next tap Object
+22:55:26.223 CONSOLE[log] [VoiceDebug] partial Object
+22:55:26.350 CONSOLE[log] [VoiceDebug] store Object
+22:55:27.188 RESP /api/preferences/theme status=200 ttfb_ms=?

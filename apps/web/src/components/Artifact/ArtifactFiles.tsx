@@ -25,7 +25,7 @@ const ArtifactFiles = ({
         <div className='flex items-center justify-between gap-2 border-b border-surface-line px-3 py-2 text-xs text-ink-muted'>
           <span>{entries.length} files</span>
           <button
-            className='rounded-lg border border-surface-line bg-surface px-2 py-1 text-ink-soft hover:bg-surface-muted'
+            className='relative rounded-lg border border-surface-line bg-surface px-2 py-1 text-ink-soft hover:bg-surface-muted after:absolute after:-inset-y-2 after:inset-x-0'
             onClick={() => setDownloadOpen(true)}
             aria-label='download'
           >

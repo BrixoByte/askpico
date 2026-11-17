@@ -1,6 +1,5 @@
 package com.askpico.pico.agent
 
-import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
@@ -30,7 +29,7 @@ class ActionExecutor(private val activity: MainActivity, private val vault: Vaul
             "open_url" -> done(openUrl(args.optString("url")))
             "set_alarm" -> done(setAlarm(args))
             "set_timer" -> done(setTimer(args))
-            "share_whatsapp" -> done(shareWhatsApp(args.optString("text")))
+            "share_whatsapp" -> confirmShare(args.optString("text"), done)
             "call" -> confirmCall(args.optString("number"), done)
             else -> done(ActionStatus.UNSUPPORTED)
         }
@@ -52,7 +51,7 @@ class ActionExecutor(private val activity: MainActivity, private val vault: Vaul
     }
 
     private fun openApp(pkg: String): String {
-        if (pkg !in APP_ALLOWLIST) return ActionStatus.INVALID
+        if (!ActionValidation.isAllowedApp(pkg)) return ActionStatus.INVALID
         val intent = activity.packageManager.getLaunchIntentForPackage(pkg)
             ?: return ActionStatus.UNSUPPORTED
         return start(intent)
@@ -60,7 +59,7 @@ class ActionExecutor(private val activity: MainActivity, private val vault: Vaul
 
     private fun openUrl(url: String): String {
         val uri = Uri.parse(url)
-        if (uri.scheme != "https" && uri.scheme != "http") return ActionStatus.INVALID
+        if (!ActionValidation.isWebUrl(uri.scheme)) return ActionStatus.INVALID
         if (uri.host.isNullOrEmpty()) return ActionStatus.INVALID
         return start(Intent(Intent.ACTION_VIEW, uri))
     }
@@ -99,8 +98,22 @@ class ActionExecutor(private val activity: MainActivity, private val vault: Vaul
         return if (value is Int || value is Long) (value as Number).toInt() else null
     }
 
+    // Shares are user-approved like calls: a confirm dialog runs first. The
+    // message text is never echoed into the dialog (it may be vault-resolved).
+    private fun confirmShare(text: String, done: (String) -> Unit) {
+        if (text.isBlank() || text.length > MAX_TEXT) {
+            done(ActionStatus.INVALID)
+            return
+        }
+        AlertDialog.Builder(activity)
+            .setTitle("Share this text on WhatsApp?")
+            .setPositiveButton("Share") { _, _ -> done(shareWhatsApp(text)) }
+            .setNegativeButton("Cancel") { _, _ -> done(ActionStatus.CANCELLED) }
+            .setOnCancelListener { done(ActionStatus.CANCELLED) }
+            .show()
+    }
+
     private fun shareWhatsApp(text: String): String {
-        if (text.isBlank() || text.length > MAX_TEXT) return ActionStatus.INVALID
         val send = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
             putExtra(Intent.EXTRA_TEXT, text)
@@ -113,23 +126,17 @@ class ActionExecutor(private val activity: MainActivity, private val vault: Vaul
         }
     }
 
+    // ACTION_DIAL needs no runtime permission: the dialer opens pre-filled
+    // and the user presses the call button themselves.
     private fun confirmCall(number: String, done: (String) -> Unit) {
-        if (!PHONE_PATTERN.matches(number)) {
+        if (!ActionValidation.isValidPhone(number)) {
             done(ActionStatus.INVALID)
             return
         }
         AlertDialog.Builder(activity)
-            .setTitle("Call ${mask(number)}?")
+            .setTitle("Call ${ActionValidation.mask(number)}?")
             .setPositiveButton("Call") { _, _ ->
-                activity.requestPermission(Manifest.permission.CALL_PHONE) { granted ->
-                    done(
-                        if (granted) {
-                            start(Intent(Intent.ACTION_CALL, Uri.parse("tel:$number")))
-                        } else {
-                            ActionStatus.DENIED
-                        }
-                    )
-                }
+                done(start(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$number"))))
             }
             .setNegativeButton("Cancel") { _, _ -> done(ActionStatus.CANCELLED) }
             .setOnCancelListener { done(ActionStatus.CANCELLED) }
@@ -141,9 +148,6 @@ class ActionExecutor(private val activity: MainActivity, private val vault: Vaul
         val text = args.optString("label")
         return if (text.codePointCount(0, text.length) > MAX_LABEL) null else text
     }
-
-    private fun mask(number: String): String =
-        "\u2022".repeat((number.length - 2).coerceAtLeast(0)) + number.takeLast(2)
 
     private fun start(intent: Intent): String = try {
         activity.startActivity(intent)
@@ -159,14 +163,5 @@ class ActionExecutor(private val activity: MainActivity, private val vault: Vaul
         private const val MAX_TEXT = 4000
         private const val MAX_LABEL = 100
         private const val MAX_TIMER_SECONDS = 86400
-        private val PHONE_PATTERN = Regex("^\\+?[0-9]{3,20}$")
-        private val APP_ALLOWLIST = setOf(
-            "com.whatsapp",
-            "com.instagram.android",
-            "com.google.android.youtube",
-            "com.zhiliaoapp.musically",
-            "com.facebook.katana",
-            "com.android.chrome"
-        )
     }
 }

@@ -22,7 +22,7 @@ const ModelWarningModal = ({ onClose, onConfirm }: ModelWarningModalProps) =>
       >
         <button
           type='button'
-          className='absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:text-white'
+          className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-lg text-zinc-400 transition-colors after:absolute after:-inset-1 after:content-[''] hover:text-white"
           onClick={onClose}
           aria-label='dismiss warning'
         >

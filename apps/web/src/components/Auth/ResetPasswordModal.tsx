@@ -62,7 +62,7 @@ const ResetPasswordModal = ({ onClose }: { onClose: () => void }) => {
             <button
               type='button'
               onClick={onClose}
-              className='rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90'
+              className="relative rounded-xl bg-brand-600 px-4 py-2.5 after:absolute after:-inset-y-1 after:content-['']  text-sm font-medium text-white transition-opacity hover:opacity-90"
             >
               Continue
             </button>

@@ -63,7 +63,7 @@ const PopupModal = ({
               </h3>
               <button
                 type='button'
-                className='text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-full text-sm p-1.5 ml-auto inline-flex items-center transition-colors dark:hover:bg-zinc-800 dark:hover:text-zinc-100'
+                className="relative text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-full text-sm p-1.5 ml-auto inline-flex items-center transition-colors dark:hover:bg-zinc-800 dark:hover:text-zinc-100 after:absolute after:-inset-1.5 after:content-['']"
                 onClick={_handleClose}
                 aria-label='close modal'
               >

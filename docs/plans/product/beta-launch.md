@@ -1,6 +1,7 @@
 # Beta Launch Plan
 
 **Status:** Planning
+**Changelog 2025-11-17 (Round 38):** Focus apps replaces the whole-app shield; call uses ACTION_DIAL; Chibi visual removed; guest voice trial (2 minutes) replaces the signed-in-only voice rule in sections 4.1 and 11.
 **Owner:** Pico product team
 **Platforms:** Web (browser) and Mobile (Android, Kotlin WebView)
 **Related:** [Feature catalog](feature-catalog.md) · [Roadmap](roadmap.md) · [Beta test plan](beta-testing.md) · [Voice mode](../modules/voice-mode.md) · [Agent persona](../modules/agent-persona.md) · [Pico character](../modules/pico-character.md) · [Memory system](../modules/memory-system.md) · [Authentication](../engineering/authentication.md) · [Branching strategy](../engineering/branching-strategy.md)
@@ -391,7 +392,7 @@ Checked against the codebase. Items marked `[ ]` are not yet found in code.
 
 ### Persona and character
 - [x] Persona system with per-agent persona and mood tags
-- [ ] Chibi character and animation
+- [ ] Chibi character visual removed by owner decision; mood labels and emotions only
 - [x] Reduced motion support
 
 ### Referral
@@ -444,8 +445,8 @@ Checked against the codebase. Items marked `[ ]` are not yet found in code.
 ### Android
 - [x] WebView shell and native voice bridge
 - [x] Share and open-in-browser bridge
-- [x] Intent actions (place call with confirm, open app, share-to-WhatsApp prefilled, alarms/timers, open URLs) — code complete, device testing pending
-- [x] Whole-app distraction shield (usage access + overlay, Back to Pico) — code complete, device testing pending
+- [x] Intent actions (call via ACTION_DIAL with masked-number confirm, open app, share-to-WhatsApp prefilled with share-sheet fallback, alarms/timers, open URLs) — device-tested in Round 35; CALL_PHONE removed in Round 37
+- [x] Focus apps (opt-in per app, Usage access and Display over other apps, passcode, strength levels, emergency, natural end): device-tested in Round 33 (17/17)
 - [x] Pico Vault v1, strictly local (encrypted store, on-device ref resolution) — code complete, device testing pending
 - [x] Agent settings in web app (permissions, shield presets, private details), shown only inside the Android app
 - [x] Native bridge wrapper with `PicoAction.onResult` listener (`utils/nativeAgent.ts`)
@@ -495,9 +496,9 @@ Tick each item after it passes on the target device or browser. Scenario IDs ref
 - [ ] S12: bad news gets empathetic reply, mood changes to concerned, mood tag hidden
 - [ ] S13: sincere "are you a real person?" gets AI disclosure
 - [ ] Same question in two moods gets two tones
-- [ ] Chibi character reacts to each mood (not built yet)
+- [ ] Chibi character visual removed by owner decision; mood labels and emotions only
 - [ ] S17: reduced motion stops orb and character animation, content stays readable
-- [ ] Animation pauses when tab is hidden (not built yet)
+- [ ] Animation pauses when tab is hidden — character visual removed; orb animation only
 
 ### 12.5 Web: Memory and Referral
 
@@ -533,27 +534,31 @@ Tick each item after it passes on the target device or browser. Scenario IDs ref
 - [ ] A2: guest and magic-link sign-in work inside the app
 - [ ] A3: `share`, `openExternal`, `getAppVersion` work from the web app
 - [ ] A4: spoken input lands in composer, permission denial shows typed fallback
-- [ ] S3: first launch shows Auth screen
+- [x] S3: first launch shows Auth screen (testing/round35/TALKBACK.md — signed-out state shows the auth page)
 - [ ] S16: account deletion works inside the app
-- [ ] S18: low-memory device disables heavy features with a message, chat and voice still work
-- [ ] No network: error screen offers Retry and Open in browser
+- [x] S18: low-memory device disables heavy features with a message, chat and voice still work (testing/round35/LOWMEM.md)
+- [x] No network: error screen offers Retry and Open in browser (testing/round35/OFFLINE.md)
 
 ### 12.9 Android: Agent Layer
 
-- [ ] Settings > Agent section appears only in the Android app
-- [ ] Permission status in Settings matches real state after Grant (refreshes on return)
-- [ ] `call`: confirm dialog shows masked number, Cancel returns `cancelled`, Call with denied permission returns `denied`
-- [ ] `open_app`: allow-listed app opens, non-listed package returns `invalid`
-- [ ] `open_url`: https link opens in browser, `javascript:` or `file:` rejected
-- [ ] `set_alarm` and `set_timer` create entries in the clock app
-- [ ] `share_whatsapp`: prefilled WhatsApp composer opens, falls back to share sheet when WhatsApp is missing
-- [ ] Vault: saved value survives app restart and is not shown in the web UI
-- [ ] Vault: ref in action args resolves on-device and action returns status only
-- [ ] Vault: no secret value in logcat, network requests, or screenshots
-- [ ] Shield: enabling with Usage access and Display over other apps blocks Instagram or YouTube within about 1 second
-- [ ] Shield: "Back to Pico" returns to the app, Pico itself is never blocked
-- [ ] Shield: disabling a preset removes the block without restart
-- [ ] Shield: missing permission leaves the shield off and shows a clear state
+- [x] Settings > Agent section appears only in the Android app (testing/round35)
+- [x] Permission status in Settings matches real state after Grant (refreshes on return) (testing/round38/AGENT_PERMISSIONS.md)
+- [x] `call`: opens the dialer with ACTION_DIAL after masked-number confirmation; Cancel returns `cancelled`. CALL_PHONE is not requested. (testing/round35/CHAT_ACTIONS.md + testing/round37/FINAL_REPORT_AC.md)
+- [x] `open_app`: allow-listed app opens, non-listed package returns `invalid` (testing/round35/INTENT_ACTIONS.md)
+- [x] `open_url`: https link opens in browser, `javascript:` or `file:` rejected (testing/round35/INTENT_ACTIONS.md)
+- [x] `set_alarm` and `set_timer` create entries in the clock app (testing/round31/INTENT_ACTIONS.md)
+- [x] `share_whatsapp`: prefilled WhatsApp composer opens, falls back to share sheet when WhatsApp is missing (testing/round35/CHAT_ACTIONS.md + testing/round38/PROGRESS.md)
+- [x] Vault: saved value survives app restart and is not shown in the web UI (testing/round35/VAULT.md)
+- [x] Vault: ref in action args resolves on-device and action returns status only (testing/round35/VAULT.md)
+- [x] Vault: no secret value in logcat, network requests, or screenshots (testing/round35/VAULT.md)
+- [x] Focus apps: disclosure shown before any permission prompt (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: overlay appears on a chosen app within about 1 second; "Back to Pico" returns (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: Pico and the dialer are never overlaid (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: strength levels and early-unblock limits enforced (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: emergency needs passcode plus 60-second wait (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: session ends naturally at end time with no action (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: exiting through system Settings works (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: missing permission shows "Needs permissions" (testing/round33/FOCUS_APPS.md)
 
 ## 13. Diagrams and Cache Checklist
 

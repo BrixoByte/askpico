@@ -42,5 +42,9 @@
   "cloneChat": "Chat klonen",
   "cloned": "Klonen erfolgreich",
   "enterToSubmit": "Drücke Enter zum absenden",
-  "submitPlaceholder": "Verfasse eine Nachricht oder klicke auf [/] für gespeicherte Prompts..."
+  "submitPlaceholder": "Verfasse eine Nachricht oder klicke auf [/] für gespeicherte Prompts...",
+  "attachTooLarge": "Die Datei ist größer als 10 MB",
+  "attachNotText": "Keine Textdatei",
+  "attachReadFail": "Datei konnte nicht gelesen werden",
+  "cameraDenied": "Kamerazugriff verweigert. Browserberechtigungen prüfen (HTTPS oder localhost erforderlich)."
 }

@@ -62,7 +62,7 @@ const DownloadModal = ({
             <p className='mt-3 text-sm text-red-600'>{error}</p>
             <div className='mt-5 flex justify-end'>
               <button
-                className='rounded-lg border border-surface-line bg-surface px-3 py-1.5 text-sm text-ink-soft hover:bg-surface-muted'
+                className='relative rounded-lg border border-surface-line bg-surface px-3 py-1.5 text-sm text-ink-soft hover:bg-surface-muted after:absolute after:-inset-y-2 after:inset-x-0'
                 onClick={onClose}
               >
                 Close

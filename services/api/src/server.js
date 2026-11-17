@@ -7,7 +7,8 @@ import {
   sanitizeSseStream,
 } from './llmClient.js';
 import { logLlmCall, startProviderSync } from './aiUsage.js';
-import { modelsForMode, publicMode } from './routing.js';
+import { modelsForModeLive, publicMode } from './routing.js';
+import { flagMiddleware, getFlag } from './flags.js';
 import { resolveRoutingMode } from './routingService.js';
 import { logger } from './logger.js';
 import { compileTailwind, validateSources } from './tailwind.js';
@@ -56,6 +57,8 @@ import {
   truncateForModel,
 } from './attachments.js';
 import { isRateLimited, maxTextLength, synthesize, ttsStatus } from './tts.js';
+import { recordHeartbeat, startVoiceProbes } from './voiceHealth.js';
+import { healthSnapshot, startLocalHealthSampling } from './localHealth.js';
 import { createLimiter, isSafeFileName, rateLimit, rejectIfLimited, validateChatMessages } from './security.js';
 
 const app = express();
@@ -128,6 +131,27 @@ app.use((req, res, next) => {
 
 // Unified admin panel API (role-checked inside).
 app.use('/api/admin', adminRouter);
+// Live flags: 503 on every user-facing route while global_kill_switch or
+// maintenance_mode is on. Admin + health stay reachable (exempt inside).
+app.use(flagMiddleware);
+
+// Public health probe — uptime, process memory, and event-loop lag. The admin
+// panel polls it directly too, so health stays visible even when the Railway
+// API is down. Exempt from the kill switch by the flagMiddleware regex.
+app.get('/api/health', (_req, res) => {
+  const s = healthSnapshot();
+  res.json({
+    ok: true,
+    ts: s.ts,
+    uptimeSec: s.uptimeSec,
+    memoryMb: {
+      rss: Math.round(s.memory.rss / 1024 / 1024),
+      heapUsed: Math.round(s.memory.heapUsed / 1024 / 1024),
+      heapTotal: Math.round(s.memory.heapTotal / 1024 / 1024),
+    },
+    eventLoopLagMs: s.lagMs,
+  });
+});
 
 app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
   const { messages, stream = false, mode: requestedMode, requestType, replyLanguage, agentId, memories, focus, maxTokens, chatId } = req.body ?? {};
@@ -185,6 +209,11 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     if (user.is_anonymous && (await countGuestMessagesToday(user.id)) >= guestLimits.dailyMessages) {
       return res.status(429).json({ error: 'Free guest limit reached for today. Sign in to keep chatting.' });
     }
+    // Live admin cap: daily_request_cap_per_user (0 = unlimited).
+    const dailyCap = await getFlag('daily_request_cap_per_user', 0);
+    if (Number.isFinite(dailyCap) && dailyCap > 0 && (await countGuestMessagesToday(user.id)) >= dailyCap) {
+      return res.status(429).json({ error: 'Daily request cap reached. Your quota resets at midnight UTC.' });
+    }
   } catch (err) {
     logger.warn(`[${requestId}] enforcement check failed, allowing request: ${err.message}`);
   }
@@ -213,7 +242,7 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
   }
   const retrieved = formatRetrievedContext(await recall);
   const memoryChatId = typeof chatId === 'string' && CHAT_ID_PATTERN.test(chatId) ? chatId : 'core';
-  const models = modelsForMode(mode);
+  const models = await modelsForModeLive(mode);
   logger.debug(`[${requestId}] new request: stream=${stream}, messages=${messages.length}, mode=${mode}`);
 
   // Lets the client see which tier actually served the request (streaming
@@ -1189,6 +1218,21 @@ app.get('/api/tts/status', (_req, res) => {
   res.json(ttsStatus());
 });
 
+// Laptop TTS machine posts here every ~30s: curl -X POST /api/tts/heartbeat
+//   -H "x-pico-heartbeat: $TTS_HEARTBEAT_SECRET" -d '{"meta":{...}}'
+// No auth user is involved — the shared secret is the credential. Sleep, IP
+// changes, and tunnel drops all just delay the next post; last_seen is what
+// the health page reads.
+const HEARTBEAT_SECRET = process.env.TTS_HEARTBEAT_SECRET || '';
+app.post('/api/tts/heartbeat', express.json({ limit: '8kb' }), async (req, res) => {
+  if (!HEARTBEAT_SECRET || req.headers['x-pico-heartbeat'] !== HEARTBEAT_SECRET) {
+    return res.status(403).json({ error: 'forbidden' });
+  }
+  const meta = req.body && typeof req.body === 'object' ? req.body.meta : null;
+  const ok = await recordHeartbeat(meta && typeof meta === 'object' ? meta : {});
+  res.status(ok ? 200 : 502).json({ ok });
+});
+
 app.post('/api/tts', async (req, res) => {
   const user = await requireSignedInUser(req, res);
   if (!user) return;
@@ -1208,7 +1252,7 @@ app.post('/api/tts', async (req, res) => {
     ? req.body.lang
     : undefined;
 
-  const result = await synthesize(text, lang);
+  const result = await synthesize(text, lang, { userId: user.id });
   if (!result) {
     // Client falls back to browser speechSynthesis — voice never goes silent.
     return res.status(503).json({ error: 'tts_unavailable' });
@@ -1293,4 +1337,6 @@ startAdminWorkers();
 app.listen(serverConfig.port, () => {
   logger.info(`Backend running on http://localhost:${serverConfig.port}`);
   startProviderSync();
+  startVoiceProbes();
+  startLocalHealthSampling();
 });

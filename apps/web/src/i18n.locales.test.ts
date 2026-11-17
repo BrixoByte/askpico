@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { selectableLanguages } from './constants/language';
 
 // Guards against the mojibake corruption that hit public/locales: UTF-8 text
 // decoded as latin1/cp1252 shows up as lead chars (U+00C2..U+00F4) followed by
@@ -36,5 +37,48 @@ describe('locale files', () => {
     expect(text).not.toMatch(C1_RE);
     expect(text).not.toMatch(MOJIBAKE_RE);
     expect(() => JSON.parse(text)).not.toThrow();
+  });
+});
+
+// Guards the i18next load chain: `load: 'all'` resolves e.g. zh-CN -> zh-CN ->
+// zh -> en, and entries that are flat files (checked-out symlink stubs like
+// `zh` -> "zh-CN") act as alias pointers to another locale directory. Every
+// selectable language must reach a real directory containing main.json; a
+// language that only reaches `en` renders English and is a bug (zh-CN, zh-TW
+// and yue all did this when the chain relied on the flattened `zh`/`yue` stubs).
+const FALLBACK: Record<string, string[]> = { yue: ['zh-HK', 'en'] };
+
+const localeEntry = (lng: string): { kind: 'dir' | 'alias'; target?: string } | null => {
+  const p = join(LOCALES_DIR, lng);
+  if (!existsSync(p)) return null;
+  if (statSync(p).isDirectory()) return { kind: 'dir' };
+  return { kind: 'alias', target: readFileSync(p, 'utf8').trim() };
+};
+
+const resolveLocale = (lng: string): string | null => {
+  const chain = [lng, ...lng.split('-').slice(0, 1), ...(FALLBACK[lng] ?? ['en'])];
+  for (const candidate of chain) {
+    let entry = localeEntry(candidate);
+    let resolved = candidate;
+    const seen = new Set<string>();
+    while (entry?.kind === 'alias' && entry.target && !seen.has(entry.target)) {
+      seen.add(entry.target);
+      resolved = entry.target;
+      entry = localeEntry(entry.target);
+    }
+    if (entry?.kind === 'dir' && existsSync(join(LOCALES_DIR, resolved, 'main.json'))) {
+      return resolved;
+    }
+  }
+  return null;
+};
+
+describe('selectable languages resolve to real locale dirs', () => {
+  it.each([...selectableLanguages])('%s resolves to a directory with main.json', (lng) => {
+    const resolved = resolveLocale(lng);
+    expect(resolved, `${lng} resolved to nothing`).not.toBeNull();
+    if (!lng.startsWith('en')) {
+      expect(resolved, `${lng} silently falls back to English`).not.toBe('en');
+    }
   });
 });

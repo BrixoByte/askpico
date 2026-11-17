@@ -1,5 +1,6 @@
 import { strToU8, zipSync } from 'fflate';
 import { buildExportFiles } from '@utils/projectScaffold';
+import { saveBlob } from '@utils/saveBlob';
 
 export const sanitizePath = (filePath: string) =>
   filePath
@@ -17,11 +18,5 @@ export const downloadArtifactsZip = (
     if (path) entries[path] = strToU8(file.content);
   });
 
-  const blob = new Blob([zipSync(entries)], { type: 'application/zip' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = zipName;
-  link.click();
-  URL.revokeObjectURL(url);
+  saveBlob(new Blob([zipSync(entries)], { type: 'application/zip' }), zipName);
 };

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -7,6 +8,38 @@
     <include
         layout="@layout/view_offline"
         android:visibility="gone" />
+
+    <!-- Mid-session notice: shown only when the page is already loaded and a
+         main-frame request then fails. Mirrors the web app's amber banner
+         (same colors/message) and never replaces the loaded page. -->
+    <LinearLayout
+        android:id="@+id/mid_session_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:background="@drawable/bg_mid_banner"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_marginEnd="6dp"
+            android:contentDescription="@string/cd_error_offline"
+            android:src="@drawable/ic_error_offline"
+            app:tint="@color/warn_ink" />
+
+        <TextView
+            android:id="@+id/mid_session_banner_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/banner_offline"
+            android:textColor="@color/warn_ink"
+            android:textSize="12sp" />
+    </LinearLayout>
 
     <include layout="@layout/view_splash" />
 

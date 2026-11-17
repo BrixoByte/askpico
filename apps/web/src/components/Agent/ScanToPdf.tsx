@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PDFDocument } from 'pdf-lib';
+import { saveBlob } from '@utils/saveBlob';
 
 const ScanToPdf = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -24,12 +25,7 @@ const ScanToPdf = () => {
         const page = pdf.addPage([image.width, image.height]);
         page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
       }
-      const url = URL.createObjectURL(new Blob([(await pdf.save()) as BlobPart], { type: 'application/pdf' }));
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'scan.pdf';
-      link.click();
-      URL.revokeObjectURL(url);
+      saveBlob(new Blob([(await pdf.save()) as BlobPart], { type: 'application/pdf' }), 'scan.pdf');
     } catch (err) {
       setError(`Conversion failed: ${(err as Error).message}`);
     } finally {
@@ -39,7 +35,7 @@ const ScanToPdf = () => {
 
   return (
     <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4 text-sm'>
-      <input type='file' accept='image/png,image/jpeg' multiple onChange={(e) => addFiles(e.target.files)} />
+      <input type='file' accept='image/png,image/jpeg' multiple aria-label='choose images' onChange={(e) => addFiles(e.target.files)} />
       <p className='text-gray-500'>PNG aur JPG images, jis tarteeb se select karein usi tarteeb se PDF pages banenge.</p>
       <ul className='flex flex-col gap-1'>
         {files.map((file, index) => (

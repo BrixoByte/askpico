@@ -75,7 +75,7 @@ const FileTree = ({
               onClick={() =>
                 setCollapsed((prev) => ({ ...prev, [node.path]: open }))
               }
-              className='flex w-full items-center gap-1.5 py-1 pr-2 text-left text-xs text-ink-soft hover:bg-surface'
+              className='relative flex w-full items-center gap-1.5 py-1.5 pr-2 text-left text-xs text-ink-soft hover:bg-surface after:absolute after:-inset-y-1 after:inset-x-0'
             >
               <Chevron open={open} />
               <FolderIcon />
@@ -94,7 +94,7 @@ const FileTree = ({
           style={indent}
           disabled={!node.file}
           onClick={() => node.file && onSelect(node.file.id)}
-          className={`flex w-full items-center gap-1.5 py-1 pr-2 text-left text-xs transition-colors ${
+          className={`relative flex w-full items-center gap-1.5 py-1.5 pr-2 text-left text-xs transition-colors after:absolute after:-inset-y-1 after:inset-x-0 ${
             active ? 'bg-brand-50 text-brand-700' : 'text-ink-soft hover:bg-surface'
           }`}
         >

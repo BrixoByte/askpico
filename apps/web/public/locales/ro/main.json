@@ -42,5 +42,9 @@
   "cloneChat": "Clone Chat",
   "cloned": "Clonat",
   "enterToSubmit": "Intrați pentru a trimite",
-  "submitPlaceholder": "Tastați un mesaj sau faceți clic pe [/] pentru solicitări..."
+  "submitPlaceholder": "Tastați un mesaj sau faceți clic pe [/] pentru solicitări...",
+  "attachTooLarge": "Fișierul depășește 10 MB",
+  "attachNotText": "Nu este un fișier text",
+  "attachReadFail": "Fișierul nu a putut fi citit",
+  "cameraDenied": "Accesul la cameră refuzat. Verifică permisiunile browserului (HTTPS sau localhost necesar)."
 }

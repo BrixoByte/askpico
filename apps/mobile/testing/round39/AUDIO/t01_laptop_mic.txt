@@ -1,0 +1,11 @@
+# t01_laptop_mic.wav | detected language: hi (0.51)
+[  0.00s ->   1.34s] ppers,
+[  1.60s ->   3.06s] hello, Piko,
+[  3.06s ->   4.66s] good morning.
+[  4.66s ->   4.72s] How are you today?
+[ 30.00s ->  31.00s] .
+[ 31.00s ->  32.00s] .
+[ 32.00s ->  33.00s] .
+[ 33.00s ->  34.00s] .
+[ 34.00s ->  35.00s] .
+[ 35.00s ->  36.00s] .

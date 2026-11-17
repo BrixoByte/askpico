@@ -27,6 +27,7 @@ import ResetPasswordModal from '@components/Auth/ResetPasswordModal';
 import PermissionPrompt from '@components/Permissions/PermissionPrompt';
 import VoiceController from '@components/Voice/VoiceController';
 import OfflineBanner from '@components/Chat/OfflineBanner';
+import LowMemoryBanner from '@components/Chat/LowMemoryBanner';
 import useUsageStore from '@store/usage-store';
 import useProfileStore from '@store/profile-store';
 
@@ -68,7 +69,11 @@ function App() {
           PicoBridge?: { setSystemBars?: (darkBackground: boolean) => void };
         }
       ).PicoBridge;
-      bridge?.setSystemBars?.(resolved === 'dark');
+      try {
+        bridge?.setSystemBars?.(resolved === 'dark');
+      } catch {
+        // Older APKs lack setSystemBars on the injected bridge stub — ignore.
+      }
     };
     apply();
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
@@ -213,6 +218,7 @@ function App() {
       {quotaOpen && null /* quota UI is the inline QuotaBanner above the composer */}
       <AuthGateModal />
       <OfflineBanner />
+      <LowMemoryBanner />
       {recoveryOpen && <ResetPasswordModal onClose={() => setRecoveryOpen(false)} />}
       <PermissionPrompt />
     </div>

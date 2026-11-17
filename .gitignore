@@ -21,3 +21,16 @@ docs.zip
 services.zip
 .wrangler/
 **/.wrangler/
+
+# Deploy-round additions: never commit secrets, OS junk, or scratch artifacts
+.env
+*.local
+nul
+**/nul
+*.log
+*.tsbuildinfo
+apps/web/vite.config.js
+apps/web/vite.config.d.ts
+apps/mobile/screenshots/
+apps/mobile/shield-test*.png
+supabase/.temp/

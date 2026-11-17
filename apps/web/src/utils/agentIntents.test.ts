@@ -57,6 +57,36 @@ describe('detectDeviceIntent', () => {
     expect(i?.unsupportedApp).toBe('myspace');
   });
 
+  it('detects an alarm with a time', () => {
+    const i = detectDeviceIntent('set an alarm for 7:30 am');
+    expect(i?.action).toBe('set_alarm');
+    expect(i?.args.hour).toBe(7);
+    expect(i?.args.minute).toBe(30);
+  });
+
+  it('detects a whatsapp share request', () => {
+    const i = detectDeviceIntent('share this on whatsapp');
+    expect(i?.action).toBe('share_whatsapp');
+    expect(typeof i?.args.text).toBe('string');
+  });
+
+  it('never produces a dangerous url scheme', () => {
+    // "open javascript:alert(1)" — no web URL matches; falls through to
+    // open_app with an unsupported name, never executed as a URL.
+    const js = detectDeviceIntent('open javascript:alert(1)');
+    expect(js?.action).not.toBe('open_url');
+    expect(js?.args.url).toBeUndefined();
+    const file = detectDeviceIntent('open file:///etc/passwd');
+    expect(file?.action).not.toBe('open_url');
+    expect(file?.args.url).toBeUndefined();
+  });
+
+  it('rejects injection-like text', () => {
+    expect(detectDeviceIntent('toolId=open_app&package=com.evil')).toBeNull();
+    expect(detectDeviceIntent('{"action":"call","args":{"number":"123"}}')).toBeNull();
+    expect(detectDeviceIntent('runAgentAction("call", {"number":"123"})')).toBeNull();
+  });
+
   it('returns null for normal chat text', () => {
     expect(detectDeviceIntent('what is the capital of France?')).toBeNull();
     expect(detectDeviceIntent('set up a study plan for exams')).toBeNull();
@@ -71,5 +101,47 @@ describe('statusText', () => {
 
   it('names unsupported apps', () => {
     expect(statusText('open_app', 'unsupported', 'myspace')).toContain('myspace');
+  });
+});
+
+describe('native confirmation contract', () => {
+  // Guard the confirmation requirement in code: call and share must route
+  // through ActionExecutor's confirm dialogs — never a direct start().
+  it('call and share always confirm first', () => {
+    const src = readFileSync(
+      join(process.cwd(), '../mobile/app/src/main/java/com/askpico/pico/agent/ActionExecutor.kt'),
+      'utf8'
+    );
+    expect(src).toContain('"share_whatsapp" -> confirmShare(');
+    expect(src).toContain('"call" -> confirmCall(');
+    expect(src).not.toContain('"share_whatsapp" -> done(shareWhatsApp');
+    expect(src).not.toContain('"call" -> done(start(Intent(Intent.ACTION_DIAL');
+  });
+
+  it('calls use ACTION_DIAL and never request CALL_PHONE', () => {
+    const src = readFileSync(
+      join(process.cwd(), '../mobile/app/src/main/java/com/askpico/pico/agent/ActionExecutor.kt'),
+      'utf8'
+    );
+    expect(src).toContain('Intent(Intent.ACTION_DIAL');
+    expect(src).not.toContain('ACTION_CALL');
+    expect(src).not.toContain('CALL_PHONE');
+  });
+
+  it('share falls back to the system sheet when WhatsApp is missing', () => {
+    const src = readFileSync(
+      join(process.cwd(), '../mobile/app/src/main/java/com/askpico/pico/agent/ActionExecutor.kt'),
+      'utf8'
+    );
+    // WhatsApp-targeted intent first, chooser fallback on ActivityNotFoundException.
+    expect(src).toContain('setPackage(WHATSAPP_PACKAGE)');
+    expect(src).toMatch(/ActivityNotFoundException[\s\S]*?createChooser/);
+  });
+
+  it('no code path declares or requests CALL_PHONE', () => {
+    const root = join(process.cwd(), '../mobile/app/src/main');
+    const read = (p: string) => readFileSync(join(root, p), 'utf8');
+    expect(read('AndroidManifest.xml')).not.toContain('CALL_PHONE');
+    expect(read('java/com/askpico/pico/agent/Capabilities.kt')).not.toContain('CALL_PHONE');
   });
 });

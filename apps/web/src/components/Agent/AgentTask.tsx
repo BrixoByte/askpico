@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { askAgent } from '@api/tools';
 import { markdownToHtml, printHtmlAsPdf } from '@utils/printDocument';
 import { markdownToDocxBlob } from '@utils/docx';
+import { saveBlob } from '@utils/saveBlob';
 
 export interface AgentTaskProps {
   placeholder: string;
@@ -24,12 +25,7 @@ const AgentTask = ({
 
   const downloadDocx = async () => {
     const blob = await markdownToDocxBlob(output);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${(downloadName ?? 'document').replace(/\.[^.]+$/, '')}.docx`;
-    a.click();
-    URL.revokeObjectURL(url);
+    saveBlob(blob, `${(downloadName ?? 'document').replace(/\.[^.]+$/, '')}.docx`);
   };
 
   const run = async () => {
@@ -46,13 +42,10 @@ const AgentTask = ({
   };
 
   const download = () => {
-    const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = downloadName ?? 'output.txt';
-    a.click();
-    URL.revokeObjectURL(url);
+    saveBlob(
+      new Blob([output], { type: 'text/plain;charset=utf-8' }),
+      downloadName ?? 'output.txt'
+    );
   };
 
   return (

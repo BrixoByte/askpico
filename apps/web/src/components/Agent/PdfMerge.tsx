@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
 import { PDFDocument } from 'pdf-lib';
+import { saveBlob } from '@utils/saveBlob';
 
-const downloadBlob = (bytes: Uint8Array, name: string) => {
-  const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'application/pdf' }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = name;
-  link.click();
-  URL.revokeObjectURL(url);
-};
+const downloadBlob = (bytes: Uint8Array, name: string) =>
+  saveBlob(new Blob([bytes as BlobPart], { type: 'application/pdf' }), name);
 
 const PdfMerge = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -52,7 +47,7 @@ const PdfMerge = () => {
 
   return (
     <div className='flex flex-col gap-3 rounded-2xl border border-surface-line bg-surface p-4 text-sm'>
-      <input type='file' accept='application/pdf' multiple onChange={(e) => addFiles(e.target.files)} />
+      <input type='file' accept='application/pdf' multiple aria-label='choose PDF files' onChange={(e) => addFiles(e.target.files)} />
       <ol className='flex flex-col gap-1'>
         {files.map((file, index) => (
           <li key={`${file.name}-${index}`} className='flex items-center justify-between gap-2 rounded-lg bg-surface-muted px-3 py-2'>

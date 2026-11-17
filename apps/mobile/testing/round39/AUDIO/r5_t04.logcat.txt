@@ -1,0 +1,109 @@
+11-17 21:46:04.748 I/RecognitionClient( 8287): #onStartOfSpeech
+11-17 21:46:04.751 I/RecognitionServiceImpl( 8287): RecognitionService#onStartOfSpeech
+11-17 21:46:04.773 I/chromium(19969): [INFO:CONSOLE:571] "🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) ", source: http://localhost:5173/assets/index-351f9c66.js (571)
+11-17 21:46:12.507 I/RecognitionServiceImpl( 8287): RecognitionService#onEndOfSpeech
+11-17 21:46:12.508 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneCloseRequested
+11-17 21:46:12.513 I/RecognitionServiceImpl( 8287): RecognitionService#onEndOfSpeech
+11-17 21:46:12.515 I/SodaSpeechRecognizer( 8287): #handleFinalResult: 1 hyp
+11-17 21:46:12.522 I/SodaSpeechRecognizer( 8287): Audio process finished, transcription completed.
+11-17 21:46:12.645 I/SodaSpeechRecognizer( 8287): #handleStop: MIC_END_OF_DATA
+11-17 21:46:12.646 W/RecognitionClient( 8287): #onError space agsa_transcription_NO_SPEECH_DETECTED code -1!
+11-17 21:46:12.646 W/RecognitionServiceImpl( 8287): Speech recognition error type NO_SPEECH_DETECTED with error code -1
+11-17 21:46:12.649 I/SodaSpeechRecognizer( 8287): #handleStop: scheduleSodaTimeout
+11-17 21:46:13.068 I/RecognitionServiceImpl( 8287): RecognitionService#onStartListening
+11-17 21:46:13.069 I/IntentParsingUtil( 8287): Using language specified in RecognizerIntent: en-US
+11-17 21:46:13.070 I/RecognitionServiceImpl( 8287): Create an attribution context to skip platform permission check
+11-17 21:46:13.071 I/RecognitionServiceImpl( 8287): RecognitionService#logStartListening: callingApp: com.askpico.pico, locale: en-US
+11-17 21:46:13.094 I/SodaSpeechRecognizer( 8287): Offline recognizer - start listening
+11-17 21:46:13.097 I/SodaSpeechRecognizer( 8287): Initialize Soda [locale: en-US], [applicationDomain: AMBIENT_ONESHOT], [aicore streaming: false]
+11-17 21:46:13.236 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneOpened
+11-17 21:46:13.259 I/SodaSpeechRecognizer( 8287): Initialize Soda with language pack directory
+11-17 21:46:13.259 I/RecognitionServiceImpl( 8287): Log languagePackInfo and personalizationInfo to westWorld logger.
+11-17 21:46:13.259 I/SodaSpeechRecognizer( 8287): SodaDetectionHandler.blockingReconnect
+11-17 21:46:13.421 I/native  ( 8287): I0000 00:00:1794933973.421264    8419 greco_session.cc:284] Initialized GoogleRecognizer.
+11-17 21:46:13.714 I/SodaSpeechRecognizer( 8287): Offline recognizer - start detection
+11-17 21:46:13.721 I/SodaSpeechRecognizer( 8287): #handleStart
+11-17 21:46:18.238 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneCloseRequested
+11-17 21:46:18.253 I/SodaSpeechRecognizer( 8287): Audio process finished, transcription completed.
+11-17 21:46:18.320 I/SodaSpeechRecognizer( 8287): #handleFinalResult: 1 hyp
+11-17 21:46:18.331 I/SodaSpeechRecognizer( 8287): #handleStop: MIC_END_OF_DATA
+11-17 21:46:18.332 W/RecognitionClient( 8287): #onError space agsa_transcription_NO_SPEECH_DETECTED code -1!
+11-17 21:46:18.333 W/RecognitionServiceImpl( 8287): Speech recognition error type NO_SPEECH_DETECTED with error code -1
+11-17 21:46:18.334 I/SodaSpeechRecognizer( 8287): #handleStop: scheduleSodaTimeout
+11-17 21:46:19.151 I/RecognitionServiceImpl( 8287): RecognitionService#onStartListening
+11-17 21:46:19.152 I/IntentParsingUtil( 8287): Using language specified in RecognizerIntent: en-US
+11-17 21:46:19.153 I/RecognitionServiceImpl( 8287): Create an attribution context to skip platform permission check
+11-17 21:46:19.157 I/RecognitionServiceImpl( 8287): RecognitionService#logStartListening: callingApp: com.askpico.pico, locale: en-US
+11-17 21:46:19.177 I/SodaSpeechRecognizer( 8287): Offline recognizer - start listening
+11-17 21:46:19.179 I/SodaSpeechRecognizer( 8287): Initialize Soda [locale: en-US], [applicationDomain: AMBIENT_ONESHOT], [aicore streaming: false]
+11-17 21:46:19.287 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneOpened
+11-17 21:46:19.387 I/SodaSpeechRecognizer( 8287): Initialize Soda with language pack directory
+11-17 21:46:19.387 I/RecognitionServiceImpl( 8287): Log languagePackInfo and personalizationInfo to westWorld logger.
+11-17 21:46:19.388 I/SodaSpeechRecognizer( 8287): SodaDetectionHandler.blockingReconnect
+11-17 21:46:19.459 I/native  ( 8287): I0000 00:00:1794933979.459625    8484 greco_session.cc:284] Initialized GoogleRecognizer.
+11-17 21:46:19.663 I/SodaSpeechRecognizer( 8287): Offline recognizer - start detection
+11-17 21:46:19.701 I/SodaSpeechRecognizer( 8287): #handleStart
+11-17 21:46:24.295 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneCloseRequested
+11-17 21:46:24.309 I/SodaSpeechRecognizer( 8287): Audio process finished, transcription completed.
+11-17 21:46:24.396 I/SodaSpeechRecognizer( 8287): #handleFinalResult: 1 hyp
+11-17 21:46:24.397 I/SodaSpeechRecognizer( 8287): #handleStop: MIC_END_OF_DATA
+11-17 21:46:24.398 W/RecognitionClient( 8287): #onError space agsa_transcription_NO_SPEECH_DETECTED code -1!
+11-17 21:46:24.398 W/RecognitionServiceImpl( 8287): Speech recognition error type NO_SPEECH_DETECTED with error code -1
+11-17 21:46:24.399 I/SodaSpeechRecognizer( 8287): #handleStop: scheduleSodaTimeout
+11-17 21:46:25.622 I/RecognitionServiceImpl( 8287): RecognitionService#onStartListening
+11-17 21:46:25.623 I/IntentParsingUtil( 8287): Using language specified in RecognizerIntent: en-US
+11-17 21:46:25.623 I/RecognitionServiceImpl( 8287): Create an attribution context to skip platform permission check
+11-17 21:46:25.624 I/RecognitionServiceImpl( 8287): RecognitionService#logStartListening: callingApp: com.askpico.pico, locale: en-US
+11-17 21:46:25.640 I/SodaSpeechRecognizer( 8287): Offline recognizer - start listening
+11-17 21:46:25.648 I/SodaSpeechRecognizer( 8287): Initialize Soda [locale: en-US], [applicationDomain: AMBIENT_ONESHOT], [aicore streaming: false]
+11-17 21:46:25.767 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneOpened
+11-17 21:46:25.811 I/SodaSpeechRecognizer( 8287): Initialize Soda with language pack directory
+11-17 21:46:25.812 I/RecognitionServiceImpl( 8287): Log languagePackInfo and personalizationInfo to westWorld logger.
+11-17 21:46:25.813 I/SodaSpeechRecognizer( 8287): SodaDetectionHandler.blockingReconnect
+11-17 21:46:25.943 I/native  ( 8287): I0000 00:00:1794933985.942998    8419 greco_session.cc:284] Initialized GoogleRecognizer.
+11-17 21:46:26.181 I/SodaSpeechRecognizer( 8287): Offline recognizer - start detection
+11-17 21:46:26.192 I/SodaSpeechRecognizer( 8287): #handleStart
+11-17 21:46:30.769 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneCloseRequested
+11-17 21:46:30.782 I/SodaSpeechRecognizer( 8287): Audio process finished, transcription completed.
+11-17 21:46:30.834 I/SodaSpeechRecognizer( 8287): #handleFinalResult: 1 hyp
+11-17 21:46:30.839 I/SodaSpeechRecognizer( 8287): #handleStop: MIC_END_OF_DATA
+11-17 21:46:30.840 W/RecognitionClient( 8287): #onError space agsa_transcription_NO_SPEECH_DETECTED code -1!
+11-17 21:46:30.845 W/RecognitionServiceImpl( 8287): Speech recognition error type NO_SPEECH_DETECTED with error code -1
+11-17 21:46:30.851 I/SodaSpeechRecognizer( 8287): #handleStop: scheduleSodaTimeout
+11-17 21:46:30.887 E/PICO_JS_ERROR(19969): 🔴 [PICO-ERROR][STT]: Native recognizer error code 7: 
+11-17 21:46:30.901 I/chromium(19969): [INFO:CONSOLE:571] "🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  ", source: http://localhost:5173/assets/index-351f9c66.js (571)
+11-17 21:46:30.902 I/chromium(19969): [INFO:CONSOLE:571] "🟢 [PICO-INFO][STT]: Native recognizer ended [object Object]", source: http://localhost:5173/assets/index-351f9c66.js (571)
+11-17 21:46:30.902 I/chromium(19969): [INFO:CONSOLE:571] "🟢 [PICO-INFO][STT]: No final result in window; re-arming listening [object Object]", source: http://localhost:5173/assets/index-351f9c66.js (571)
+11-17 21:46:32.406 I/RecognitionServiceImpl( 8287): RecognitionService#onStartListening
+11-17 21:46:32.407 I/IntentParsingUtil( 8287): Using language specified in RecognizerIntent: en-US
+11-17 21:46:32.407 I/RecognitionServiceImpl( 8287): Create an attribution context to skip platform permission check
+11-17 21:46:32.409 I/RecognitionServiceImpl( 8287): RecognitionService#logStartListening: callingApp: com.askpico.pico, locale: en-US
+11-17 21:46:32.430 I/SodaSpeechRecognizer( 8287): Offline recognizer - start listening
+11-17 21:46:32.434 I/SodaSpeechRecognizer( 8287): Initialize Soda [locale: en-US], [applicationDomain: AMBIENT_ONESHOT], [aicore streaming: false]
+11-17 21:46:32.563 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneOpened
+11-17 21:46:32.596 I/SodaSpeechRecognizer( 8287): Initialize Soda with language pack directory
+11-17 21:46:32.597 I/RecognitionServiceImpl( 8287): Log languagePackInfo and personalizationInfo to westWorld logger.
+11-17 21:46:32.599 I/SodaSpeechRecognizer( 8287): SodaDetectionHandler.blockingReconnect
+11-17 21:46:32.737 I/native  ( 8287): I0000 00:00:1794933992.737507    8420 greco_session.cc:284] Initialized GoogleRecognizer.
+11-17 21:46:32.926 I/SodaSpeechRecognizer( 8287): Offline recognizer - start detection
+11-17 21:46:32.937 I/SodaSpeechRecognizer( 8287): #handleStart
+11-17 21:46:37.565 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneCloseRequested
+11-17 21:46:37.594 I/SodaSpeechRecognizer( 8287): Audio process finished, transcription completed.
+11-17 21:46:37.664 I/SodaSpeechRecognizer( 8287): #handleFinalResult: 1 hyp
+11-17 21:46:37.672 I/SodaSpeechRecognizer( 8287): #handleStop: MIC_END_OF_DATA
+11-17 21:46:37.672 W/RecognitionClient( 8287): #onError space agsa_transcription_NO_SPEECH_DETECTED code -1!
+11-17 21:46:37.673 W/RecognitionServiceImpl( 8287): Speech recognition error type NO_SPEECH_DETECTED with error code -1
+11-17 21:46:37.673 I/SodaSpeechRecognizer( 8287): #handleStop: scheduleSodaTimeout
+11-17 21:46:38.094 I/RecognitionServiceImpl( 8287): RecognitionService#onStartListening
+11-17 21:46:38.095 I/IntentParsingUtil( 8287): Using language specified in RecognizerIntent: en-US
+11-17 21:46:38.096 I/RecognitionServiceImpl( 8287): Create an attribution context to skip platform permission check
+11-17 21:46:38.098 I/RecognitionServiceImpl( 8287): RecognitionService#logStartListening: callingApp: com.askpico.pico, locale: en-US
+11-17 21:46:38.121 I/SodaSpeechRecognizer( 8287): Offline recognizer - start listening
+11-17 21:46:38.128 I/SodaSpeechRecognizer( 8287): Initialize Soda [locale: en-US], [applicationDomain: AMBIENT_ONESHOT], [aicore streaming: false]
+11-17 21:46:38.278 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneOpened
+11-17 21:46:38.296 I/SodaSpeechRecognizer( 8287): Initialize Soda with language pack directory
+11-17 21:46:38.296 I/RecognitionServiceImpl( 8287): Log languagePackInfo and personalizationInfo to westWorld logger.
+11-17 21:46:38.296 I/SodaSpeechRecognizer( 8287): SodaDetectionHandler.blockingReconnect
+11-17 21:46:38.369 I/native  ( 8287): I0000 00:00:1794933998.369914    8485 greco_session.cc:284] Initialized GoogleRecognizer.
+11-17 21:46:38.621 I/SodaSpeechRecognizer( 8287): Offline recognizer - start detection
+11-17 21:46:38.629 I/SodaSpeechRecognizer( 8287): #handleStart

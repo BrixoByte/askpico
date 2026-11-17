@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { saveBlob } from '@utils/saveBlob';
 
 const ImageResizer = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -32,12 +33,7 @@ const ImageResizer = () => {
         canvas.toBlob(resolve, 'image/png')
       );
       if (!blob) throw new Error('Resize failed');
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${file.name.replace(/\.[^.]+$/, '') || 'image'}-${canvas.width}x${canvas.height}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
+      saveBlob(blob, `${file.name.replace(/\.[^.]+$/, '') || 'image'}-${canvas.width}x${canvas.height}.png`);
     } catch (e: unknown) {
       setError((e as Error).message);
     } finally {
@@ -47,7 +43,7 @@ const ImageResizer = () => {
 
   return (
     <div className='flex flex-col gap-3 text-sm'>
-      <input type='file' accept='image/*' onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+      <input type='file' accept='image/*' aria-label='choose image' onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
       <div className='flex flex-wrap items-center gap-2'>
         <input
           aria-label='target width'

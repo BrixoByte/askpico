@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 import { compileArtifactTailwind, submitArtifactForm } from '@api/api';
 import useStore from '@store/store';
@@ -10,6 +10,8 @@ import {
   setArtifactStateItem,
 } from '@utils/artifactState';
 import { logger } from '@utils/logger';
+import { buildMermaidDoc } from '@utils/mermaidDoc';
+import { isLowMemoryMode, subscribeLowMemory } from '@utils/nativeAgent';
 import PreviewErrorCard from './PreviewErrorCard';
 
 const REACT_LANGUAGES = ['jsx', 'tsx'];
@@ -46,6 +48,9 @@ const PreviewFrame = ({
   const [error, setError] = useState<string | null>(null);
   const [entryOverride, setEntryOverride] = useState<string | null>(null);
   const generating = useStore((state) => state.generating);
+  // The Android shell latches this after a low-memory trim — previews stay
+  // unmounted so the WebView keeps the memory for chat and voice.
+  const lowMemory = useSyncExternalStore(subscribeLowMemory, isLowMemoryMode, () => false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const sourcesRef = useRef(sources);
   sourcesRef.current = sources;
@@ -128,7 +133,11 @@ const PreviewFrame = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isReact, generating, sourceKey, reloadKey, entryOverride]);
 
-  const srcDoc = isReact ? reactDoc ?? '' : artifact.content;
+  const srcDoc = isReact
+    ? reactDoc ?? ''
+    : artifact.language === 'mermaid'
+      ? buildMermaidDoc(artifact.content)
+      : artifact.content;
 
   const openFullPage = () => {
     if (!srcDoc) return;
@@ -141,7 +150,7 @@ const PreviewFrame = ({
     <div className='flex min-h-0 flex-1 flex-col bg-surface-muted'>
       <div className='flex items-center justify-end gap-2 border-b border-surface-line bg-surface px-3 py-2 text-xs'>
         <button
-          className='flex items-center gap-1 rounded-lg border border-surface-line bg-surface px-2 py-1 text-ink-soft hover:bg-surface-muted'
+          className='relative flex items-center gap-1 rounded-lg border border-surface-line bg-surface px-2 py-1 text-ink-soft hover:bg-surface-muted after:absolute after:-inset-y-2 after:inset-x-0'
           onClick={() => setReloadKey((prev) => prev + 1)}
           aria-label='refresh preview'
         >
@@ -157,7 +166,7 @@ const PreviewFrame = ({
           Refresh
         </button>
         <button
-          className='flex items-center gap-1 rounded-lg border border-surface-line bg-surface px-2 py-1 text-ink-soft hover:bg-surface-muted disabled:opacity-50'
+          className='relative flex items-center gap-1 rounded-lg border border-surface-line bg-surface px-2 py-1 text-ink-soft hover:bg-surface-muted disabled:opacity-50 after:absolute after:-inset-y-2 after:inset-x-0'
           onClick={openFullPage}
           disabled={!srcDoc}
           aria-label='open full page preview'
@@ -193,7 +202,13 @@ const PreviewFrame = ({
             Compiling...
           </div>
         )}
-        {!error && (!isReact || (reactDoc && !generating)) && (
+        {!error && lowMemory && (
+          <div className='flex h-full items-center justify-center p-6 text-center text-sm text-ink-muted'>
+            Preview paused — this device is low on memory. The code is still in
+            the Code tab.
+          </div>
+        )}
+        {!error && !lowMemory && (!isReact || (reactDoc && !generating)) && (
           <iframe
             key={reloadKey}
             ref={iframeRef}
