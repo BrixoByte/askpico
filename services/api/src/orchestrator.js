@@ -8,6 +8,9 @@ import { logger } from './logger.js';
 import { externalTools, toolsForExtensions } from './toolRegistry.js';
 import { matchAgentRules, ROUTER_CONFIDENCE_THRESHOLD } from './routingRules.js';
 import { withMemory } from './memory.js';
+import { logLlmCall } from './aiUsage.js';
+
+const estimateTokens = (text) => Math.ceil((typeof text === 'string' ? text.length : 0) / 4);
 import { mergeGroundedFacts, sanitizeFocus, sanitizeThreadMessages, withThread } from './threadContext.js';
 import { applyVerificationSpans, parseVerificationSpans, shouldVerifyReply } from './verify.js';
 
@@ -25,10 +28,13 @@ export const specialistDescriptions = {
   live: 'current weather, time zones, currency rates, latest live information',
 };
 
-const callLlm = async (messages, models, signal, overrides = {}) => {
+// meta: { userId?, feature? } — spend ledger fields; both optional, internal
+// calls default to feature 'orchestrator' with no user attribution.
+const callLlm = async (messages, models, signal, overrides = {}, meta = {}) => {
   let lastError;
   for (const candidate of models) {
     if (signal?.aborted) break;
+    const t0 = Date.now();
     try {
       const upstream = await attemptModel(candidate, { ...overrides, messages, stream: false }, signal);
       if (isFallbackStatus(upstream.status)) {
@@ -37,10 +43,21 @@ const callLlm = async (messages, models, signal, overrides = {}) => {
       }
       if (!upstream.ok) {
         logger.warn(`model ${candidate} rejected the request with status ${upstream.status}`);
+        logLlmCall({ model: candidate, feature: meta.feature ?? 'orchestrator', userId: meta.userId ?? null, latencyMs: Date.now() - t0, success: false, errorCode: `status_${upstream.status}` });
         lastError = new Error(`LLM request failed (${upstream.status})`);
         continue;
       }
       const data = await upstream.json();
+      const usage = data?.usage ?? {};
+      logLlmCall({
+        model: candidate,
+        feature: meta.feature ?? 'orchestrator',
+        userId: meta.userId ?? null,
+        promptTokens: Number.isInteger(usage.prompt_tokens) ? usage.prompt_tokens : estimateTokens(messages.map((m) => (typeof m.content === 'string' ? m.content : '')).join('')),
+        completionTokens: Number.isInteger(usage.completion_tokens) ? usage.completion_tokens : estimateTokens(data?.choices?.[0]?.message?.content),
+        latencyMs: Date.now() - t0,
+        estimated: !Number.isInteger(usage.prompt_tokens),
+      });
       const firstChoice = data.choices?.[0];
       if (firstChoice?.error) {
         logger.warn(`model ${candidate} choice error: ${firstChoice.error.message}`);

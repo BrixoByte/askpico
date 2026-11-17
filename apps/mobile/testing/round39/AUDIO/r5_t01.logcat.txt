@@ -1,0 +1,100 @@
+11-17 21:43:29.689 I/SodaSpeechRecognizer( 8287): Offline recognizer - start listening
+11-17 21:43:29.692 I/SodaSpeechRecognizer( 8287): Initialize Soda [locale: en-US], [applicationDomain: AMBIENT_ONESHOT], [aicore streaming: false]
+11-17 21:43:29.798 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneOpened
+11-17 21:43:29.829 I/SodaSpeechRecognizer( 8287): Initialize Soda with language pack directory
+11-17 21:43:29.830 I/RecognitionServiceImpl( 8287): Log languagePackInfo and personalizationInfo to westWorld logger.
+11-17 21:43:29.832 I/SodaSpeechRecognizer( 8287): SodaDetectionHandler.blockingReconnect
+11-17 21:43:29.964 I/native  ( 8287): I0000 00:00:1794933809.964743    8420 greco_session.cc:284] Initialized GoogleRecognizer.
+11-17 21:43:30.324 I/SodaSpeechRecognizer( 8287): Offline recognizer - start detection
+11-17 21:43:30.335 I/SodaSpeechRecognizer( 8287): #handleStart
+11-17 21:43:34.808 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneCloseRequested
+11-17 21:43:34.836 I/SodaSpeechRecognizer( 8287): Audio process finished, transcription completed.
+11-17 21:43:35.000 I/SodaSpeechRecognizer( 8287): #handleFinalResult: 1 hyp
+11-17 21:43:35.004 I/SodaSpeechRecognizer( 8287): #handleStop: MIC_END_OF_DATA
+11-17 21:43:35.004 W/RecognitionClient( 8287): #onError space agsa_transcription_NO_SPEECH_DETECTED code -1!
+11-17 21:43:35.005 W/RecognitionServiceImpl( 8287): Speech recognition error type NO_SPEECH_DETECTED with error code -1
+11-17 21:43:35.005 I/SodaSpeechRecognizer( 8287): #handleStop: scheduleSodaTimeout
+11-17 21:43:35.442 I/RecognitionServiceImpl( 8287): RecognitionService#onStartListening
+11-17 21:43:35.444 I/IntentParsingUtil( 8287): Using language specified in RecognizerIntent: en-US
+11-17 21:43:35.444 I/RecognitionServiceImpl( 8287): Create an attribution context to skip platform permission check
+11-17 21:43:35.446 I/RecognitionServiceImpl( 8287): RecognitionService#logStartListening: callingApp: com.askpico.pico, locale: en-US
+11-17 21:43:35.460 I/SodaSpeechRecognizer( 8287): Offline recognizer - start listening
+11-17 21:43:35.462 I/SodaSpeechRecognizer( 8287): Initialize Soda [locale: en-US], [applicationDomain: AMBIENT_ONESHOT], [aicore streaming: false]
+11-17 21:43:35.680 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneOpened
+11-17 21:43:35.726 I/SodaSpeechRecognizer( 8287): Initialize Soda with language pack directory
+11-17 21:43:35.726 I/RecognitionServiceImpl( 8287): Log languagePackInfo and personalizationInfo to westWorld logger.
+11-17 21:43:35.727 I/SodaSpeechRecognizer( 8287): SodaDetectionHandler.blockingReconnect
+11-17 21:43:35.866 I/native  ( 8287): I0000 00:00:1794933815.866453    8419 greco_session.cc:284] Initialized GoogleRecognizer.
+11-17 21:43:36.214 I/SodaSpeechRecognizer( 8287): Offline recognizer - start detection
+11-17 21:43:36.245 I/SodaSpeechRecognizer( 8287): #handleStart
+11-17 21:43:40.685 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneCloseRequested
+11-17 21:43:40.712 I/SodaSpeechRecognizer( 8287): Audio process finished, transcription completed.
+11-17 21:43:40.846 I/SodaSpeechRecognizer( 8287): #handleFinalResult: 1 hyp
+11-17 21:43:40.850 I/SodaSpeechRecognizer( 8287): #handleStop: MIC_END_OF_DATA
+11-17 21:43:40.851 W/RecognitionClient( 8287): #onError space agsa_transcription_NO_SPEECH_DETECTED code -1!
+11-17 21:43:40.851 W/RecognitionServiceImpl( 8287): Speech recognition error type NO_SPEECH_DETECTED with error code -1
+11-17 21:43:40.853 I/SodaSpeechRecognizer( 8287): #handleStop: scheduleSodaTimeout
+11-17 21:43:41.778 I/RecognitionServiceImpl( 8287): RecognitionService#onStartListening
+11-17 21:43:41.779 I/IntentParsingUtil( 8287): Using language specified in RecognizerIntent: en-US
+11-17 21:43:41.780 I/RecognitionServiceImpl( 8287): Create an attribution context to skip platform permission check
+11-17 21:43:41.785 I/RecognitionServiceImpl( 8287): RecognitionService#logStartListening: callingApp: com.askpico.pico, locale: en-US
+11-17 21:43:41.809 I/SodaSpeechRecognizer( 8287): Offline recognizer - start listening
+11-17 21:43:41.812 I/SodaSpeechRecognizer( 8287): Initialize Soda [locale: en-US], [applicationDomain: AMBIENT_ONESHOT], [aicore streaming: false]
+11-17 21:43:41.969 I/SodaSpeechRecognizer( 8287): Initialize Soda with language pack directory
+11-17 21:43:41.971 I/RecognitionServiceImpl( 8287): Log languagePackInfo and personalizationInfo to westWorld logger.
+11-17 21:43:41.976 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneOpened
+11-17 21:43:41.978 I/SodaSpeechRecognizer( 8287): SodaDetectionHandler.blockingReconnect
+11-17 21:43:42.173 I/native  ( 8287): I0000 00:00:1794933822.173410    8419 greco_session.cc:284] Initialized GoogleRecognizer.
+11-17 21:43:42.595 I/SodaSpeechRecognizer( 8287): Offline recognizer - start detection
+11-17 21:43:42.608 I/SodaSpeechRecognizer( 8287): #handleStart
+11-17 21:43:46.978 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneCloseRequested
+11-17 21:43:47.002 I/SodaSpeechRecognizer( 8287): Audio process finished, transcription completed.
+11-17 21:43:47.091 I/SodaSpeechRecognizer( 8287): #handleFinalResult: 1 hyp
+11-17 21:43:47.094 I/SodaSpeechRecognizer( 8287): #handleStop: MIC_END_OF_DATA
+11-17 21:43:47.095 W/RecognitionClient( 8287): #onError space agsa_transcription_NO_SPEECH_DETECTED code -1!
+11-17 21:43:47.095 W/RecognitionServiceImpl( 8287): Speech recognition error type NO_SPEECH_DETECTED with error code -1
+11-17 21:43:47.095 I/SodaSpeechRecognizer( 8287): #handleStop: scheduleSodaTimeout
+11-17 21:43:48.317 I/RecognitionServiceImpl( 8287): RecognitionService#onStartListening
+11-17 21:43:48.318 I/IntentParsingUtil( 8287): Using language specified in RecognizerIntent: en-US
+11-17 21:43:48.319 I/RecognitionServiceImpl( 8287): Create an attribution context to skip platform permission check
+11-17 21:43:48.321 I/RecognitionServiceImpl( 8287): RecognitionService#logStartListening: callingApp: com.askpico.pico, locale: en-US
+11-17 21:43:48.347 I/SodaSpeechRecognizer( 8287): Offline recognizer - start listening
+11-17 21:43:48.348 I/SodaSpeechRecognizer( 8287): Initialize Soda [locale: en-US], [applicationDomain: AMBIENT_ONESHOT], [aicore streaming: false]
+11-17 21:43:48.465 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneOpened
+11-17 21:43:48.466 I/SodaSpeechRecognizer( 8287): Initialize Soda with language pack directory
+11-17 21:43:48.466 I/RecognitionServiceImpl( 8287): Log languagePackInfo and personalizationInfo to westWorld logger.
+11-17 21:43:48.468 I/SodaSpeechRecognizer( 8287): SodaDetectionHandler.blockingReconnect
+11-17 21:43:48.603 I/native  ( 8287): I0000 00:00:1794933828.603331    8485 greco_session.cc:284] Initialized GoogleRecognizer.
+11-17 21:43:48.825 I/SodaSpeechRecognizer( 8287): Offline recognizer - start detection
+11-17 21:43:48.847 I/SodaSpeechRecognizer( 8287): #handleStart
+11-17 21:43:53.469 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneCloseRequested
+11-17 21:43:53.482 I/SodaSpeechRecognizer( 8287): Audio process finished, transcription completed.
+11-17 21:43:53.590 I/SodaSpeechRecognizer( 8287): #handleFinalResult: 1 hyp
+11-17 21:43:53.593 I/SodaSpeechRecognizer( 8287): #handleStop: MIC_END_OF_DATA
+11-17 21:43:53.593 W/RecognitionClient( 8287): #onError space agsa_transcription_NO_SPEECH_DETECTED code -1!
+11-17 21:43:53.593 W/RecognitionServiceImpl( 8287): Speech recognition error type NO_SPEECH_DETECTED with error code -1
+11-17 21:43:53.593 I/SodaSpeechRecognizer( 8287): #handleStop: scheduleSodaTimeout
+11-17 21:43:53.610 E/PICO_JS_ERROR(19969): 🔴 [PICO-ERROR][STT]: Native recognizer error code 7: 
+11-17 21:43:53.625 I/chromium(19969): [INFO:CONSOLE:571] "🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  ", source: http://localhost:5173/assets/index-351f9c66.js (571)
+11-17 21:43:53.625 I/chromium(19969): [INFO:CONSOLE:571] "🟢 [PICO-INFO][STT]: Native recognizer ended [object Object]", source: http://localhost:5173/assets/index-351f9c66.js (571)
+11-17 21:43:53.626 I/chromium(19969): [INFO:CONSOLE:571] "🟢 [PICO-INFO][STT]: No final result in window; re-arming listening [object Object]", source: http://localhost:5173/assets/index-351f9c66.js (571)
+11-17 21:43:55.132 I/RecognitionServiceImpl( 8287): RecognitionService#onStartListening
+11-17 21:43:55.133 I/IntentParsingUtil( 8287): Using language specified in RecognizerIntent: en-US
+11-17 21:43:55.134 I/RecognitionServiceImpl( 8287): Create an attribution context to skip platform permission check
+11-17 21:43:55.136 I/RecognitionServiceImpl( 8287): RecognitionService#logStartListening: callingApp: com.askpico.pico, locale: en-US
+11-17 21:43:55.164 I/SodaSpeechRecognizer( 8287): Offline recognizer - start listening
+11-17 21:43:55.168 I/SodaSpeechRecognizer( 8287): Initialize Soda [locale: en-US], [applicationDomain: AMBIENT_ONESHOT], [aicore streaming: false]
+11-17 21:43:55.289 I/SodaSpeechRecognizer( 8287): Initialize Soda with language pack directory
+11-17 21:43:55.289 I/RecognitionServiceImpl( 8287): Log languagePackInfo and personalizationInfo to westWorld logger.
+11-17 21:43:55.291 I/SodaSpeechRecognizer( 8287): SodaDetectionHandler.blockingReconnect
+11-17 21:43:55.312 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneOpened
+11-17 21:43:55.429 I/native  ( 8287): I0000 00:00:1794933835.429353    8419 greco_session.cc:284] Initialized GoogleRecognizer.
+11-17 21:43:55.651 I/SodaSpeechRecognizer( 8287): Offline recognizer - start detection
+11-17 21:43:55.664 I/SodaSpeechRecognizer( 8287): #handleStart
+11-17 21:44:00.318 I/RecognitionServiceImpl( 8287): RecognitionService#onMicrophoneCloseRequested
+11-17 21:44:00.334 I/SodaSpeechRecognizer( 8287): Audio process finished, transcription completed.
+11-17 21:44:00.388 I/SodaSpeechRecognizer( 8287): #handleFinalResult: 1 hyp
+11-17 21:44:00.418 I/SodaSpeechRecognizer( 8287): #handleStop: MIC_END_OF_DATA
+11-17 21:44:00.419 W/RecognitionClient( 8287): #onError space agsa_transcription_NO_SPEECH_DETECTED code -1!
+11-17 21:44:00.420 W/RecognitionServiceImpl( 8287): Speech recognition error type NO_SPEECH_DETECTED with error code -1
+11-17 21:44:00.420 I/SodaSpeechRecognizer( 8287): #handleStop: scheduleSodaTimeout

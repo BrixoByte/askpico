@@ -10,27 +10,12 @@ export const supabase: SupabaseClient | null =
       })
     : null;
 
-// Guest users get an anonymous Supabase session without sign-up.
-// Their data is kept for 7 days of inactivity, then removed by the server.
-const verifiedTokens = new Map<string, Promise<boolean>>();
-
-const isServerValid = (token: string): Promise<boolean> => {
-  let check = verifiedTokens.get(token);
-  if (!check) {
-    check = supabase!.auth.getUser(token).then(({ error }) => !error);
-    verifiedTokens.set(token, check);
-  }
-  return check;
-};
-
-export const ensureSession = async (): Promise<Session | null> => {
+// Guest users get an anonymous Supabase session, created ONLY when the user taps
+// "Continue as guest". Their data is kept for 7 days of inactivity, then removed.
+export const createGuestSession = async (): Promise<Session | null> => {
   if (!supabase) return null;
-  const { data } = await supabase.auth.getSession();
-  if (data.session) {
-    if (await isServerValid(data.session.access_token)) return data.session;
-    verifiedTokens.clear();
-    await supabase.auth.signOut({ scope: 'local' });
-  }
+  const { data: current } = await supabase.auth.getSession();
+  if (current.session) return current.session;
   const { data: anon, error } = await supabase.auth.signInAnonymously();
   if (error) {
     console.error('guest sign-in failed', error.message);
@@ -45,7 +30,9 @@ export const isSignedInSession = async (): Promise<boolean> => {
   return !!data.session && !data.session.user.is_anonymous;
 };
 
+// Never creates a session. Signed-out users send no Authorization header.
 export const getAccessToken = async (): Promise<string | null> => {
-  const session = await ensureSession();
-  return session?.access_token ?? null;
+  if (!supabase) return null;
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? null;
 };

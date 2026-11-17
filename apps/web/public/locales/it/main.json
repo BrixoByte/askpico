@@ -1,4 +1,4 @@
-﻿{
+{
   "save": "Salva",
   "generate": "Generare",
   "cancel": "Annulla",
@@ -18,12 +18,12 @@
   "assistant": "Assistente",
   "system": "Sistema",
   "newChat": "Nuova Conversazione",
-  "lightMode": "ModalitÃ  Chiara",
-  "darkMode": "ModalitÃ  Scura",
+  "lightMode": "Modalità Chiara",
+  "darkMode": "Modalità Scura",
   "setting": "Impostazioni",
   "image": "Immagine",
   "autoTitle": "Genera automaticamente il titolo",
-  "advancedMode": "ModalitÃ  avanzata",
+  "advancedMode": "Modalità avanzata",
   "inlineLatex": "Latex in linea",
   "prompt": "Prompt",
   "promptLibrary": "Libreria Prompt",
@@ -36,11 +36,15 @@
   "clearPrompts": "Cancella prompts",
   "postOnShareGPT": {
     "title": "Pubblica su ShareGPT",
-    "warning": "Ti ricordiamo che pubblicando la tua conversazione su ShareGPT, questa diventerÃ  pubblicamente accessibile e visualizzabile da chiunque. Una volta pubblicata, la conversazione non puÃ² essere nascosta o cancellata e puÃ² essere archiviata o condivisa da altri. Ti consigliamo di valutare attentamente e di evitare di condividere informazioni sensibili o private su questa piattaforma."
+    "warning": "Ti ricordiamo che pubblicando la tua conversazione su ShareGPT, questa diventerà pubblicamente accessibile e visualizzabile da chiunque. Una volta pubblicata, la conversazione non può essere nascosta o cancellata e può essere archiviata o condivisa da altri. Ti consigliamo di valutare attentamente e di evitare di condividere informazioni sensibili o private su questa piattaforma."
   },
   "newFolder": "Nuova Cartella",
   "cloneChat": "Duplica Conversazione",
   "cloned": "Duplicata",
   "enterToSubmit": "Invio per inviare",
-  "submitPlaceholder": "Digita un messaggio o fai clic su [/] per prompt..."
+  "submitPlaceholder": "Digita un messaggio o fai clic su [/] per prompt...",
+  "attachTooLarge": "Il file supera i 10 MB",
+  "attachNotText": "Non è un file di testo",
+  "attachReadFail": "Impossibile leggere il file",
+  "cameraDenied": "Accesso alla fotocamera negato. Controlla le autorizzazioni del browser (richiesto HTTPS o localhost)."
 }

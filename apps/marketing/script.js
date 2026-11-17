@@ -31,7 +31,7 @@
   if (isLocal) {
     const appHosts = {
       'auth.askpico.app': 'auth.localhost:5173',
-      'chat.askpico.app': 'chat.localhost:5173',
+      'go.askpico.app': 'chat.localhost:5173',
     };
     document.querySelectorAll('a[href]').forEach((a) => {
       try {

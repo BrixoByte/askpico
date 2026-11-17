@@ -1,45 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import Toggle from '@components/Toggle';
+import FocusApps from './FocusApps';
 import {
   type AgentFeature,
   hasCapability,
   requestAccess,
-  setShieldRules,
   vaultSet,
 } from '@utils/nativeAgent';
-
-const SHIELD_PRESETS: { id: string; label: string }[] = [
-  { id: 'com.instagram.android', label: 'Instagram' },
-  { id: 'com.google.android.youtube', label: 'YouTube' },
-  { id: 'com.zhiliaoapp.musically', label: 'TikTok' },
-  { id: 'com.facebook.katana', label: 'Facebook' },
-];
 
 const CAPABILITIES: { id: AgentFeature; label: string; help: string }[] = [
   { id: 'usage', label: 'Usage access', help: 'Lets the shield detect which app is open.' },
   { id: 'overlay', label: 'Display over other apps', help: 'Lets the shield cover blocked apps.' },
-  { id: 'phone', label: 'Phone calls', help: 'Lets Pico place calls after you confirm.' },
+  { id: 'microphone', label: 'Microphone', help: 'Lets Pico hear your voice.' },
 ];
 
 const VAULT_KINDS = ['contact', 'note', 'credential'] as const;
 type VaultKind = (typeof VAULT_KINDS)[number];
 
-const SHIELD_KEY = 'pico-shield';
 const VAULT_REFS_KEY = 'pico-vault-refs';
-
-interface ShieldState {
-  enabled: boolean;
-  packages: string[];
-}
-
-const readShield = (): ShieldState => {
-  try {
-    const raw = localStorage.getItem(SHIELD_KEY);
-    return raw ? (JSON.parse(raw) as ShieldState) : { enabled: false, packages: [] };
-  } catch {
-    return { enabled: false, packages: [] };
-  }
-};
 
 interface VaultRef {
   id: string;
@@ -62,8 +39,6 @@ const randomRef = (): string => {
 };
 
 export const AgentSettings = () => {
-  const [shield, setShield] = useState<ShieldState>(readShield);
-  const [shieldError, setShieldError] = useState<string | null>(null);
   const [, setRefreshTick] = useState(0);
   const [vaultKind, setVaultKind] = useState<VaultKind>('contact');
   const [vaultLabel, setVaultLabel] = useState('');
@@ -76,24 +51,6 @@ export const AgentSettings = () => {
     window.addEventListener('focus', onFocus);
     return () => window.removeEventListener('focus', onFocus);
   }, []);
-
-  const applyShield = (next: ShieldState) => {
-    const ok = setShieldRules(next);
-    if (!ok) {
-      setShieldError('Shield rules could not be saved.');
-      return;
-    }
-    setShieldError(null);
-    setShield(next);
-    localStorage.setItem(SHIELD_KEY, JSON.stringify(next));
-  };
-
-  const togglePackage = (pkg: string) => {
-    const packages = shield.packages.includes(pkg)
-      ? shield.packages.filter((p) => p !== pkg)
-      : [...shield.packages, pkg];
-    applyShield({ ...shield, packages });
-  };
 
   const saveVault = () => {
     const label = vaultLabel.trim();
@@ -122,6 +79,7 @@ export const AgentSettings = () => {
 
   return (
     <div className='flex flex-col gap-6'>
+      <FocusApps />
       <div className='border-b border-gray-100 pb-6 dark:border-zinc-800'>
         <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>Permissions</h4>
         <p className='mt-0.5 text-xs text-gray-500 dark:text-zinc-400'>
@@ -142,7 +100,7 @@ export const AgentSettings = () => {
                   <button
                     type='button'
                     onClick={() => requestAccess(cap.id)}
-                    className='rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800'
+                    className='relative rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-100 after:absolute after:-inset-2 after:content-[""] dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800'
                   >
                     Grant
                   </button>
@@ -151,36 +109,6 @@ export const AgentSettings = () => {
             );
           })}
         </ul>
-      </div>
-
-      <div className='border-b border-gray-100 pb-6 dark:border-zinc-800'>
-        <h4 className='text-sm font-semibold text-gray-900 dark:text-white'>Distraction shield</h4>
-        <p className='mt-0.5 text-xs text-gray-500 dark:text-zinc-400'>
-          Cover the apps you pick with a screen that sends you back to Pico.
-        </p>
-        <div className='mt-4'>
-          <Toggle
-            label='Enable shield'
-            isChecked={shield.enabled}
-            setIsChecked={() => applyShield({ ...shield, enabled: !shield.enabled })}
-          />
-        </div>
-        <ul className='mt-3 flex flex-col gap-2'>
-          {SHIELD_PRESETS.map((preset) => (
-            <li key={preset.id}>
-              <label className='flex items-center gap-2 text-sm text-gray-700 dark:text-zinc-300'>
-                <input
-                  type='checkbox'
-                  checked={shield.packages.includes(preset.id)}
-                  onChange={() => togglePackage(preset.id)}
-                  className='h-4 w-4 accent-brand-600'
-                />
-                {preset.label}
-              </label>
-            </li>
-          ))}
-        </ul>
-        {shieldError && <p className='mt-2 text-xs text-red-500'>{shieldError}</p>}
       </div>
 
       <div>
@@ -193,7 +121,7 @@ export const AgentSettings = () => {
             <select
               value={vaultKind}
               onChange={(e) => setVaultKind(e.target.value as VaultKind)}
-              className='rounded-lg border border-gray-300 bg-surface px-2 py-2 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white'
+              className='min-h-[48px] rounded-lg border border-gray-300 bg-surface px-2 py-2 text-sm text-gray-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white'
             >
               {VAULT_KINDS.map((k) => (
                 <option key={k} value={k}>
@@ -207,7 +135,7 @@ export const AgentSettings = () => {
               maxLength={40}
               onChange={(e) => setVaultLabel(e.target.value)}
               placeholder='Label, e.g. Mom'
-              className='flex-1 rounded-lg border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-900 placeholder-gray-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white'
+              className='min-h-[48px] flex-1 rounded-lg border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-900 placeholder-gray-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white'
             />
           </div>
           <div className='flex gap-2'>
@@ -218,12 +146,12 @@ export const AgentSettings = () => {
               maxLength={4000}
               onChange={(e) => setVaultValue(e.target.value)}
               placeholder='Value (hidden)'
-              className='flex-1 rounded-lg border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-900 placeholder-gray-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white'
+              className='min-h-[48px] flex-1 rounded-lg border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-900 placeholder-gray-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white'
             />
             <button
               type='button'
               onClick={saveVault}
-              className='rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700'
+              className='min-h-[48px] rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700'
             >
               Save
             </button>
@@ -239,7 +167,7 @@ export const AgentSettings = () => {
               <button
                 type='button'
                 onClick={() => removeVaultRef(ref.id)}
-                className='shrink-0 text-xs text-gray-400 transition-colors hover:text-red-500'
+                className='relative shrink-0 text-xs text-gray-400 transition-colors hover:text-red-500 after:absolute after:-inset-3 after:content-[""]'
               >
                 Remove
               </button>

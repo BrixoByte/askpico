@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
+import i18n from '@src/i18n';
 
 const QrScanner = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -44,7 +45,7 @@ const QrScanner = () => {
         await videoRef.current.play();
         frame = requestAnimationFrame(tick);
       } catch (err) {
-        setError(`Camera access nahi mila: ${(err as Error).message}. Browser permission check karein (HTTPS ya localhost zaroori hai).`);
+        setError(`${String(i18n.t('cameraDenied'))} ${(err as Error).message}`);
         setScanning(false);
       }
     };

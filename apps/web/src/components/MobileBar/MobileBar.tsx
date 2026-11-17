@@ -68,7 +68,7 @@ const MobileBar = () => {
         )}
       </div>
       <button
-        className='-mr-0.5 -mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-ink-muted hover:bg-ink/5 hover:text-ink'
+        className="-mr-0.5 -mt-0.5 relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-ink-muted after:absolute after:-inset-2 after:content-[''] hover:bg-ink/5 hover:text-ink"
         onClick={() => {
           if (!generating) addChat();
         }}

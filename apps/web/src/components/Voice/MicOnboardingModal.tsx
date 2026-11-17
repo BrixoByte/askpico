@@ -5,6 +5,7 @@ import { openAppSettings } from '@utils/nativeAgent';
 
 type Props = {
   onCheckAgain: () => void;
+  onDismiss: () => void;
 };
 
 const STEP_COUNT = 3;
@@ -56,7 +57,7 @@ const AllowScene = () => (
 
 const SCENES = [AddressBarScene, PermissionsScene, AllowScene];
 
-const MicOnboardingModal = ({ onCheckAgain }: Props) => {
+const MicOnboardingModal = ({ onCheckAgain, onDismiss }: Props) => {
   const [step, setStep] = useState(1);
   const Scene = SCENES[step - 1];
   const isLast = step === STEP_COUNT;
@@ -95,9 +96,16 @@ const MicOnboardingModal = ({ onCheckAgain }: Props) => {
             <button
               type='button'
               onClick={onCheckAgain}
-              className='w-full rounded-2xl border border-zinc-200 bg-zinc-100 py-3 text-sm font-medium text-zinc-800 transition-all hover:bg-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800'
+              className="relative w-full rounded-2xl border border-zinc-200 bg-zinc-100 py-3 after:absolute after:-inset-y-0.5 after:content-[''] text-sm font-medium text-zinc-800 transition-all hover:bg-zinc-200 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
             >
               Try Again
+            </button>
+            <button
+              type='button'
+              onClick={onDismiss}
+              className="relative w-full rounded-2xl py-3 after:absolute after:-inset-y-0.5 after:content-[''] text-sm font-medium text-zinc-600 transition-all hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
+            >
+              Use text instead
             </button>
           </div>
         </div>

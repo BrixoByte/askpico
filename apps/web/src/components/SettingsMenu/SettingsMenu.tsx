@@ -36,6 +36,7 @@ import AuthModal from '@components/Auth/AuthModal';
 import LockBadge from '@components/Auth/LockBadge';
 import ReferralHub from '@components/ReferralHub';
 import { gateSignedIn, useIsSignedIn } from '@utils/authGate';
+import { marketingOrigin } from '@utils/authRoutes';
 
 type SettingsSection =
   | 'general'
@@ -317,8 +318,6 @@ export const SettingsPopup = ({
     { id: 'memory', label: 'Memory', icon: <BrainIcon /> },
     ...(isNativeApp() ? [{ id: 'agent' as SettingsSection, label: 'Agent', icon: <CpuIcon /> }] : []),
     { id: 'advanced', label: 'Advanced', icon: <CpuIcon /> },
-    { id: 'integrations', label: 'Integrations', icon: <BlocksIcon /> },
-    { id: 'data', label: 'Data Controls', icon: <DatabaseIcon /> },
     { id: 'account', label: 'Account', icon: <PersonIcon /> },
   ];
 
@@ -366,7 +365,7 @@ export const SettingsPopup = ({
               key={item.id}
               type='button'
               onClick={() => setSection(item.id)}
-              className={`flex shrink-0 items-center justify-start gap-2.5 whitespace-nowrap rounded-md border px-2.5 py-1.5 text-left text-sm transition-all duration-200 ease-in-out ${
+              className={`flex min-h-[48px] shrink-0 items-center justify-start gap-2.5 whitespace-nowrap rounded-md border px-2.5 py-1.5 text-left text-sm transition-all duration-200 ease-in-out ${
                 section === item.id
                   ? 'border-gray-200 bg-white font-medium text-[#5a9400] shadow-sm dark:border-transparent dark:bg-zinc-800/80 dark:text-[#9EFF00] dark:shadow-none'
                   : 'border-transparent text-zinc-700 hover:border-emerald-500/40 hover:bg-transparent hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'
@@ -392,7 +391,7 @@ export const SettingsPopup = ({
         <main className='relative flex-1 overflow-y-auto p-4 sm:p-8'>
           <button
             type='button'
-            className='absolute right-4 top-4 z-30 rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-zinc-800 dark:hover:text-white'
+            className='absolute right-4 top-4 z-30 rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-900 after:absolute after:-inset-2 after:content-[""] dark:hover:bg-zinc-800 dark:hover:text-white'
             onClick={close}
             aria-label='close settings'
           >
@@ -801,6 +800,30 @@ export const SettingsPopup = ({
                   </button>
                 </div>
               )}
+              <div className='rounded-xl border border-gray-200 p-4 dark:border-zinc-800'>
+                <SectionHeading
+                  title='Legal'
+                  subtitle='Privacy policy, terms, and data deletion requests'
+                />
+                <div className='mt-3 flex flex-col gap-1'>
+                  <a
+                    className='inline-flex min-h-[48px] items-center text-sm text-brand-600 underline hover:text-brand-700 dark:text-[#9EFF00]'
+                    href={`${marketingOrigin()}/privacy.html`}
+                    target='_blank'
+                    rel='noreferrer'
+                  >
+                    Privacy Policy
+                  </a>
+                  <a
+                    className='inline-flex min-h-[48px] items-center text-sm text-brand-600 underline hover:text-brand-700 dark:text-[#9EFF00]'
+                    href={`${marketingOrigin()}/terms.html`}
+                    target='_blank'
+                    rel='noreferrer'
+                  >
+                    Terms of Service
+                  </a>
+                </div>
+              </div>
               <div className='rounded-xl border border-red-200 p-4 dark:border-red-900/50'>
                 <SectionHeading
                   title='Delete account'
@@ -838,13 +861,17 @@ export const SettingsPopup = ({
               onClick={() => !deletingAccount && setConfirmDeleteAccount(false)}
             >
               <div
+                role='alertdialog'
+                aria-modal='true'
+                aria-labelledby='delete-account-title'
+                aria-describedby='delete-account-desc'
                 className='w-full max-w-sm rounded-2xl bg-surface p-6 shadow-2xl dark:bg-zinc-950'
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3 className='text-base font-semibold text-gray-900 dark:text-white'>
+                <h3 id='delete-account-title' className='text-base font-semibold text-gray-900 dark:text-white'>
                   Delete your account?
                 </h3>
-                <p className='mt-2 text-sm leading-relaxed text-gray-500 dark:text-zinc-400'>
+                <p id='delete-account-desc' className='mt-2 text-sm leading-relaxed text-gray-500 dark:text-zinc-400'>
                   This permanently deletes your account, chats, memory and settings. This cannot be undone.
                 </p>
                 {deleteError && <p className='mt-3 text-sm text-red-600'>{deleteError}</p>}
@@ -876,13 +903,17 @@ export const SettingsPopup = ({
               onClick={() => setConfirmClearMemory(false)}
             >
               <div
+                role='alertdialog'
+                aria-modal='true'
+                aria-labelledby='clear-memory-title'
+                aria-describedby='clear-memory-desc'
                 className='w-full max-w-sm rounded-2xl bg-surface p-6 shadow-2xl dark:bg-zinc-950'
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3 className='text-base font-semibold text-gray-900 dark:text-white'>
+                <h3 id='clear-memory-title' className='text-base font-semibold text-gray-900 dark:text-white'>
                   Clear all memory?
                 </h3>
-                <p className='mt-2 text-sm leading-relaxed text-gray-500 dark:text-zinc-400'>
+                <p id='clear-memory-desc' className='mt-2 text-sm leading-relaxed text-gray-500 dark:text-zinc-400'>
                   This permanently deletes every stored memory. Pico will stop
                   personalizing answers based on them.
                 </p>
@@ -933,7 +964,7 @@ const SettingsMenu = () => {
   return (
     <>
       <a
-        className='relative flex py-2.5 px-3 items-center gap-3 rounded-lg hover:bg-gray-100/80 transition-colors text-ink cursor-pointer text-sm dark:hover:bg-neutral-800'
+        className="relative flex py-2.5 px-3 items-center gap-3 rounded-lg hover:bg-gray-100/80 transition-colors text-ink cursor-pointer text-sm dark:hover:bg-neutral-800 after:absolute after:-inset-y-1 after:content-['']"
         onClick={() => {
           void gateSignedIn('Sign in to open settings.', () => setIsModalOpen(true));
         }}

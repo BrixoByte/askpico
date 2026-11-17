@@ -122,7 +122,7 @@ const ModeSelector = ({ currentMode, onModeChange, placement = 'up' }: ModeSelec
     <div className='relative inline-block' ref={rootRef}>
       <button
         type='button'
-        className='relative flex h-9 cursor-pointer items-center gap-2 rounded-full border border-zinc-700/80 bg-zinc-900/80 px-3 text-sm font-medium text-white transition-all duration-200 ease-in-out hover:border-emerald-500/50'
+        className="relative flex h-9 cursor-pointer items-center gap-2 rounded-full border border-zinc-700/80 bg-zinc-900/80 px-3 text-sm font-medium text-white transition-all duration-200 ease-in-out after:absolute after:-inset-2 after:content-[''] hover:border-emerald-500/50"
         onClick={onTriggerClick}
         aria-label='model selector'
         aria-haspopup='listbox'
@@ -201,7 +201,7 @@ const ModeSelector = ({ currentMode, onModeChange, placement = 'up' }: ModeSelec
             >
               <button
                 type='button'
-                className='absolute right-5 top-5 rounded-lg p-1 text-zinc-400 transition-colors hover:text-zinc-600'
+                className="absolute right-5 top-5 rounded-lg p-1 text-zinc-400 transition-colors after:absolute after:-inset-2 after:content-[''] hover:text-zinc-600"
                 onClick={() => setWarning(false)}
                 aria-label='dismiss warning'
               >

@@ -43,7 +43,7 @@ Sensitive data never reaches the AI model, logs, or Pico's servers. It flows thr
 
 ```
 Kotlin shell
- ├── WebView (loads chat.askpico.app over HTTPS)
+ ├── WebView (loads go.askpico.app over HTTPS)
  │    └── Pico web build (React + Vite)
  ├── Native layer
  │    ├── SpeechRecognizer bridge (voice input)
@@ -63,7 +63,7 @@ Kotlin shell
 
 **Rules**
 
-- The app loads `https://chat.askpico.app` over HTTPS. It does not bundle the web build, so web fixes ship without an app update.
+- The app loads `https://go.askpico.app` over HTTPS. It does not bundle the web build, so web fixes ship without an app update.
 - The WebView is locked to `*.askpico.app`. External links open in the device browser.
 - All LLM and data calls go to `api.askpico.app`, same as the web. No API keys in the app binary.
 - Native features are exposed to the web app through a JavaScript bridge with an allow-list of methods. The web app must work fully when the bridge is absent (desktop browser).
@@ -181,7 +181,7 @@ The vault is Pico's privacy boundary — the `.env` file for the AI. Functions c
 
 ## 10. Deep links and referral
 
-- Intent filter for `https://askpico.app/*` and `https://chat.askpico.app/*`.
+- Intent filter for `https://askpico.app/*` and `https://go.askpico.app/*`.
 - A `?ref=<code>` link opened on the device routes into the app and pre-fills the referral code at signup, matching the web flow.
 - Weekly Pass and coupon checkout always opens the web checkout page in the device browser — server-validated, Stripe-style sessions — never inside the app's WebView, so a modded app build cannot fake purchase state.
 

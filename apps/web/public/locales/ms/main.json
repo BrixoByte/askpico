@@ -1,4 +1,4 @@
-﻿{
+{
   "save": "Simpan",
   "generate": "Hasilkan",
   "cancel": "Batal",
@@ -42,5 +42,9 @@
   "cloneChat": "Buat salinan perbualan ini",
   "cloned": "Dicipta",
   "enterToSubmit": "Tekan Enter untuk hantar",
-  "submitPlaceholder": "Taip mesej atau klik [/] untuk arahan..."
+  "submitPlaceholder": "Taip mesej atau klik [/] untuk arahan...",
+  "attachTooLarge": "Fail melebihi 10 MB",
+  "attachNotText": "Bukan fail teks",
+  "attachReadFail": "Tidak dapat membaca fail",
+  "cameraDenied": "Akses kamera ditolak. Semak kebenaran pelayar (HTTPS atau localhost diperlukan)."
 }

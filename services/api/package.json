@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node --env-file=.env src/server.js",
-    "dev": "node --env-file=.env src/server.js",
-    "dev:watch": "node --watch-path=./src --env-file=.env src/server.js",
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "dev": "node --env-file-if-exists=.env src/server.js",
+    "dev:watch": "node --watch-path=./src --env-file-if-exists=.env src/server.js",
     "test": "node --test"
   },
   "dependencies": {
@@ -16,6 +16,7 @@
     "msedge-tts": "^2.1.1",
     "pdf-parse": "^1.1.1",
     "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.1",
+    "zod": "^4.6.7"
   }
 }

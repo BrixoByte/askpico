@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import JsBarcode from 'jsbarcode';
+import { saveBlob } from '@utils/saveBlob';
 
 const Barcode = () => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -19,12 +20,7 @@ const Barcode = () => {
   const download = () => {
     if (!svgRef.current) return;
     const xml = new XMLSerializer().serializeToString(svgRef.current);
-    const url = URL.createObjectURL(new Blob([xml], { type: 'image/svg+xml' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'barcode.svg';
-    link.click();
-    URL.revokeObjectURL(url);
+    saveBlob(new Blob([xml], { type: 'image/svg+xml' }), 'barcode.svg');
   };
 
   return (

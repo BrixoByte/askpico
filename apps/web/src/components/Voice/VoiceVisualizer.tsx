@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import useStore from '@store/store';
 import useVoiceStore from '@store/voice-store';
 import { selectOrCreateChat } from '@hooks/useAddChat';
-import { gateSignedIn } from '@utils/authGate';
+import { gateVoiceStart } from '@voice/guestVoiceGate';
 import { isSignedInSession } from '@api/supabase';
 import { currentLevel, currentMicStream, stopMicLevel } from '@voice/audioLevel';
 import { isNativeMobileApp } from '@utils/device';
@@ -65,8 +65,24 @@ const VoiceVisualizer = () => {
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  const startVoice = () => {
-    void gateSignedIn('Sign in to use voice mode.', () => {
+  // Microphone permission is requested at the moment the user starts voice (mic tap),
+  // never at launch. Returns true when voice can start now.
+  const microphoneReadyOrPrompt = async (): Promise<boolean> => {
+    if (isNativeMobileApp()) {
+      if (hasCapability('microphone')) return true;
+      setMicAccess('prompt');
+      return false;
+    }
+    const access = await queryMicPermission();
+    if (access === 'granted') return true;
+    if (access === 'denied') setMicAccess('denied');
+    else window.dispatchEvent(new Event('pico:mic-prompt'));
+    return false;
+  };
+
+  const startVoice = (permissionChecked = false) => {
+    void gateVoiceStart(async () => {
+      if (!permissionChecked && !(await microphoneReadyOrPrompt())) return;
       selectOrCreateChat();
       const state = useStore.getState();
       const chatId = state.chats?.[state.currentChatIndex]?.id ?? null;
@@ -75,24 +91,18 @@ const VoiceVisualizer = () => {
     });
   };
 
+  // PermissionPrompt (web) reports the browser answer; Allow starts voice straight away.
   useEffect(() => {
-    let active = true;
-    const autoStart = async () => {
-      if (!(await isSignedInSession())) return;
-      // Native app: the Android permission is the source of truth. The WebView often lacks
-      // navigator.permissions, which made the query return 'unknown' and show the modal on launch.
-      const access = isNativeMobileApp() && hasCapability('microphone') ? 'granted' : await queryMicPermission();
-      PicoLogger.info('Permissions', 'Mount permission check', access);
-      if (!active || useVoiceStore.getState().voiceMode) return;
-      if (access === 'granted') {
-        // Voice never starts on launch; the user starts it with a tap (see AUTO_START_VOICE_ON_LAUNCH).
-        if (AUTO_START_VOICE_ON_LAUNCH) startVoice();
-      } else if (access === 'prompt' || access === 'denied') setMicAccess(access);
-      // 'unknown': no reliable state, so stay silent. The modal appears only when the user taps the mic.
+    const onGranted = () => {
+      setMicAccess(null);
+      startVoice(true);
     };
-    void autoStart();
+    const onDenied = () => setMicAccess('denied');
+    window.addEventListener('pico:mic-granted', onGranted);
+    window.addEventListener('pico:mic-denied', onDenied);
     return () => {
-      active = false;
+      window.removeEventListener('pico:mic-granted', onGranted);
+      window.removeEventListener('pico:mic-denied', onDenied);
     };
   }, []);
 
@@ -162,7 +172,7 @@ const VoiceVisualizer = () => {
     if (isNativeMobileApp()) {
       if (!hasCapability('microphone')) return setMicAccess('denied');
       setMicAccess(null);
-      startVoice();
+      startVoice(true);
       return;
     }
     try {
@@ -172,7 +182,7 @@ const VoiceVisualizer = () => {
       stream.getTracks().forEach((track) => track.stop());
       PicoLogger.info('ModalState', 'Dismissing mic modal and starting voice mode');
       setMicAccess(null);
-      startVoice();
+      startVoice(true);
     } catch (error) {
       const name = (error as Error).name;
       PicoLogger.error('MediaStream', `getUserMedia FAILED: ${name} - ${(error as Error).message}`, error);
@@ -183,7 +193,7 @@ const VoiceVisualizer = () => {
         // Not a denial (that is NotAllowedError): permission is granted but the hardware was busy.
         PicoLogger.info('ModalState', `${name} but OS permission is allowed, dismissing modal and starting voice mode`);
         setMicAccess(null);
-        startVoice();
+        startVoice(true);
       } else {
         PicoLogger.info('ModalState', 'Transient error, showing allow prompt');
         setMicAccess('prompt');
@@ -217,7 +227,7 @@ const VoiceVisualizer = () => {
     <div className='fade-in flex w-full flex-col items-center gap-6 px-6 py-8'>
       <button
         type='button'
-        onClick={startVoice}
+        onClick={() => startVoice()}
         aria-label='Start voice mode'
         className='flex h-16 items-center gap-1.5 rounded-xl'
       >
@@ -238,7 +248,7 @@ const VoiceVisualizer = () => {
         {voiceError && (
           <button
             type='button'
-            onClick={startVoice}
+            onClick={() => startVoice()}
             className='rounded-full border border-zinc-700 px-4 py-1 text-xs text-[#9EFF00] transition-colors hover:bg-zinc-800'
           >
             Retry
@@ -251,6 +261,10 @@ const VoiceVisualizer = () => {
           onCheckAgain={() => {
             PicoLogger.action('MicModal', "User clicked 'Try Again'");
             void handleCheckMicAgain();
+          }}
+          onDismiss={() => {
+            PicoLogger.action('MicModal', "User clicked 'Use text instead'");
+            useVoiceStore.getState().exitVoiceHome();
           }}
         />
       )}

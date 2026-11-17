@@ -1,7 +1,4 @@
-import { useEffect, useState } from 'react';
 import useStore from '@store/store';
-import { StudioItemInterface } from '@store/image-slice';
-import { getImage } from '@utils/imageStore';
 
 const CodeIcon = ({ className }: { className?: string }) => (
   <svg viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='1.8' strokeLinecap='round' strokeLinejoin='round' className={className} aria-hidden='true'>
@@ -21,32 +18,6 @@ const SparkleGlyph = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const StudioThumb = ({ item }: { item: StudioItemInterface }) => {
-  const [url, setUrl] = useState<string>('');
-
-  useEffect(() => {
-    if (!item.imageId) return;
-    let objectUrl: string | undefined;
-    let cancelled = false;
-    getImage(item.imageId).then((blob) => {
-      if (cancelled || !blob) return;
-      objectUrl = URL.createObjectURL(blob);
-      setUrl(objectUrl);
-    });
-    return () => {
-      cancelled = true;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-      setUrl('');
-    };
-  }, [item.imageId]);
-
-  return url ? (
-    <img src={url} alt={item.prompt} className='aspect-square w-full object-cover' />
-  ) : (
-    <div className='aspect-square w-full animate-pulse bg-surface-muted' />
-  );
-};
-
 const SectionHeader = ({ title, count }: { title: string; count: number }) => (
   <div className='mb-4 flex items-center gap-2'>
     <h2 className='text-sm font-semibold text-ink'>{title}</h2>
@@ -59,7 +30,6 @@ const SectionHeader = ({ title, count }: { title: string; count: number }) => (
 const ProjectPage = () => {
   const chats = useStore((state) => state.chats) ?? [];
   const artifacts = useStore((state) => state.artifacts);
-  const studioItems = useStore((state) => state.studioItems);
   const setCurrentChatIndex = useStore((state) => state.setCurrentChatIndex);
   const setImageMode = useStore((state) => state.setImageMode);
   const openArtifactPanel = useStore((state) => state.openArtifactPanel);
@@ -73,8 +43,6 @@ const ProjectPage = () => {
     }))
     .filter((entry) => entry.artifactList.length > 0);
 
-  const studioImages = studioItems.filter((item) => item.status === 'done' && item.imageId);
-
   const openWebProject = (index: number, artifactId: string) => {
     setImageMode(false);
     setCurrentChatIndex(index);
@@ -82,18 +50,14 @@ const ProjectPage = () => {
     setProjectMode(false);
   };
 
-  const openStudio = () => {
-    setImageMode(true);
-  };
-
-  const isEmpty = webProjects.length === 0 && studioImages.length === 0;
+  const isEmpty = webProjects.length === 0;
 
   return (
     <div className='flex h-full min-h-0 w-full flex-1 flex-col bg-surface text-ink'>
       <header className='flex items-center justify-between gap-4 border-b border-surface-line px-8 py-4'>
         <div className='min-w-0'>
           <h1 className='text-base font-semibold text-ink'>Projects</h1>
-          <p className='text-xs text-ink-muted'>Web apps you built in chat and images you generated in Studio</p>
+          <p className='text-xs text-ink-muted'>Web apps you built in chat</p>
         </div>
         <button
           type='button'
@@ -114,7 +78,7 @@ const ProjectPage = () => {
               </span>
               <p className='text-sm font-semibold text-ink dark:text-zinc-100'>No projects yet</p>
               <p className='max-w-sm text-xs text-ink-muted dark:text-zinc-400'>
-                Web apps you build in chat and images you generate in Studio will show up here.
+                Web apps you build in chat will show up here.
               </p>
             </div>
           )}
@@ -148,27 +112,7 @@ const ProjectPage = () => {
             </section>
           )}
 
-          {studioImages.length > 0 && (
-            <section>
-              <SectionHeader title='Studio' count={studioImages.length} />
-              <div className='grid gap-4 sm:grid-cols-3 lg:grid-cols-4'>
-                {studioImages.map((item) => (
-                  <button
-                    key={item.id}
-                    type='button'
-                    onClick={openStudio}
-                    className='group flex flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-surface text-left shadow-card transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:border-emerald-500/40 hover:shadow-soft'
-                  >
-                    <StudioThumb item={item} />
-                    <div className='flex flex-col gap-1 p-3'>
-                      <span className='line-clamp-2 text-xs text-ink-soft'>{item.prompt}</span>
-                      <span className='text-[11px] text-ink-muted'>{item.provider}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
+          {/* Image Studio is out of the beta scope — entry hidden, code kept (see round30). */}
         </div>
       </div>
     </div>

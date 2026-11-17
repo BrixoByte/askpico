@@ -22,11 +22,18 @@ export const createDesktopAppZip = async (files: { path: string; content: string
 
 export const saveDesktopAppZip = (blob: Blob) => {
   const url = URL.createObjectURL(blob);
+  const picoDownload = (window as unknown as {
+    PicoDownload?: { saveBlobUrl?: (o: string, u: string, n: string, m: string) => boolean };
+  }).PicoDownload;
+  if (picoDownload?.saveBlobUrl?.(location.origin, url, ZIP_NAME, blob.type)) {
+    setTimeout(() => URL.revokeObjectURL(url), 30_000);
+    return;
+  }
   const link = document.createElement('a');
   link.href = url;
   link.download = ZIP_NAME;
   document.body.appendChild(link);
   link.click();
   link.remove();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
 };

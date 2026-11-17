@@ -1,0 +1,39 @@
+22:51:55.937 CONSOLE[log] ⚡ [PICO-ACTION][STT] User Action: %cStarting speech input background: #9EFF00; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px; Object
+22:51:55.940 CONSOLE[log] 🟢 [PICO-INFO][STT]: Invoking PicoBridge.startVoiceInput 
+22:51:58.476 CONSOLE[log] [VoiceDebug] store Object
+22:52:19.470 CONSOLE[error] 🔴 [PICO-ERROR][STT]: Native recognizer error code 7:  
+22:52:19.471 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+22:52:19.473 CONSOLE[log] 🟢 [PICO-INFO][STT]: No final result in window; re-arming listening Object
+22:52:23.319 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native speech detected (onSpeechStart) 
+22:52:23.819 CONSOLE[log] [VoiceDebug] partial Object
+22:52:24.000 CONSOLE[log] [VoiceDebug] partial Object
+22:52:24.054 CONSOLE[log] [VoiceDebug] partial Object
+22:52:24.359 CONSOLE[log] [VoiceDebug] partial Object
+22:52:24.413 CONSOLE[log] [VoiceDebug] partial Object
+22:52:24.603 CONSOLE[log] [VoiceDebug] partial Object
+22:52:24.655 CONSOLE[log] [VoiceDebug] partial Object
+22:52:24.714 CONSOLE[log] [VoiceDebug] partial Object
+22:52:24.774 CONSOLE[log] [VoiceDebug] partial Object
+22:52:24.960 CONSOLE[log] [VoiceDebug] partial Object
+22:52:25.076 CONSOLE[log] [VoiceDebug] partial Object
+22:52:25.323 CONSOLE[log] [VoiceDebug] partial Object
+22:52:25.395 CONSOLE[log] [VoiceDebug] partial Object
+22:52:25.573 CONSOLE[log] [VoiceDebug] partial Object
+22:52:25.649 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native final result: "What time is it in Wilton right now" 
+22:52:25.669 CONSOLE[log] [VoiceDebug] utterance Object
+22:52:25.669 CONSOLE[log] 🟢 [PICO-INFO][STT]: Native recognizer ended Object
+22:52:25.670 CONSOLE[log] [VoiceDebug] partial Object
+22:52:25.671 CONSOLE[log] [VoiceDebug] store Object
+22:52:25.718 CONSOLE[log] [VoiceDebug] submit turn Object
+22:52:25.718 CONSOLE[log] 🎤 [Voice Debug] Audio chunk sent at: 38107.10ms
+22:52:25.724 CONSOLE[log] [VoiceDebug] store Object
+22:52:25.725 CONSOLE[log] [VoiceDebug] store Object
+22:52:25.744 REQ OPTIONS /api/chat
+22:52:25.762 REQ POST /api/chat
+22:52:25.790 RESP /api/chat status=204 ttfb_ms=46
+22:52:27.098 RESP /api/chat status=429 ttfb_ms=1336
+22:52:27.100 CONSOLE[log] [VoiceDebug] store Object
+22:52:27.101 CONSOLE[log] [VoiceDebug] store Object
+22:52:27.101 CONSOLE[log] 🟢 [PICO-INFO][Session]: Resuming listening (reply finished) Object
+22:52:27.102 CONSOLE[log] ⚡ [PICO-ACTION][STT] User Action: %cStarting speech input background: #9EFF00; color: #000; font-weight: bold; padding: 2px 4px; border-radius: 3px; Object
+22:52:27.107 CONSOLE[log] 🟢 [PICO-INFO][STT]: Invoking PicoBridge.startVoiceInput 

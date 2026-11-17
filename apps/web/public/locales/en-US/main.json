@@ -1,4 +1,4 @@
-﻿{
+{
   "save": "Save",
   "generate": "Generate",
   "cancel": "Cancel",
@@ -42,5 +42,9 @@
   "cloneChat": "Clone Chat",
   "cloned": "Cloned",
   "enterToSubmit": "Enter to submit",
-  "submitPlaceholder": "Type a message or click [/] for prompts..."
+  "submitPlaceholder": "Type a message or click [/] for prompts...",
+  "attachTooLarge": "File is larger than 10 MB",
+  "attachNotText": "Not a text file",
+  "attachReadFail": "Couldn't read the file",
+  "cameraDenied": "Camera access denied. Check browser permissions (HTTPS or localhost required)."
 }

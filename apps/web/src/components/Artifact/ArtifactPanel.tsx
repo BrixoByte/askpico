@@ -78,7 +78,7 @@ const ArtifactPanel = () => {
           <DocumentExport title={activeArtifact.title} content={activeArtifact.content} />
         )}
         <button
-          className='icon-btn !h-8 !w-8 !border-transparent !bg-transparent'
+          className='icon-btn relative !h-8 !w-8 !border-transparent !bg-transparent after:absolute after:-inset-2'
           onClick={closeArtifactPanel}
           aria-label='close artifact panel'
         >

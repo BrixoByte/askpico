@@ -5,6 +5,7 @@ import useStore from '@store/store';
 import { ArtifactInterface } from '@type/artifact';
 import { highlightToLines } from '@utils/highlightLines';
 import { getArtifactLabel, getArtifactPath } from '@utils/artifactTree';
+import { saveBlob } from '@utils/saveBlob';
 
 import CopyIcon from '@icon/CopyIcon';
 
@@ -42,13 +43,7 @@ const CodeViewer = ({
   };
 
   const handleDownload = () => {
-    const blob = new Blob([artifact.content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(url);
+    saveBlob(new Blob([artifact.content], { type: 'text/plain;charset=utf-8' }), fileName);
   };
 
   return (

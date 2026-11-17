@@ -22,7 +22,7 @@ const LandscapeSidebar = () => {
         type='button'
         aria-label='open sidebar'
         onClick={() => setHideSideMenu(false)}
-        className='fixed left-2 top-[calc(0.75rem+env(safe-area-inset-top))] z-[998] flex h-11 w-11 items-center justify-center rounded-md bg-ink/5 text-ink-muted hover:bg-ink/10'
+        className="fixed left-2 top-[calc(0.75rem+env(safe-area-inset-top))] z-[998] flex h-11 w-11 items-center justify-center rounded-md bg-ink/5 text-ink-muted hover:bg-ink/10 after:absolute after:-inset-0.5 after:content-['']"
       >
         <PanelLeftIcon className='h-5 w-5' />
       </button>

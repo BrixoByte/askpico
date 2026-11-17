@@ -85,7 +85,7 @@ const agentTasks: Partial<Record<AgentToolId, AgentTaskProps>> = {
   },
 };
 
-const toolLabels: Record<AgentToolId, string> = {
+export const toolLabels: Record<AgentToolId, string> = {
   pomodoro: 'Pomodoro',
   scratchpad: 'Scratchpad',
   reminders: 'Reminders',
@@ -126,8 +126,8 @@ const toolLabels: Record<AgentToolId, string> = {
   markdown_pdf: 'Markdown to PDF',
 };
 
-const AgentTools = ({ agentId }: { agentId?: AgentId }) => {
-  const [activeTool, setActiveTool] = useState<AgentToolId | null>(null);
+const AgentTools = ({ agentId, initialTool }: { agentId?: AgentId; initialTool?: AgentToolId }) => {
+  const [activeTool, setActiveTool] = useState<AgentToolId | null>(initialTool ?? null);
   const [query, setQuery] = useState<string>('');
 
   const scopedAgents = agentId ? agents.filter((a) => a.id === agentId) : agents;

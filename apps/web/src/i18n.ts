@@ -18,11 +18,21 @@ i18n
       loadPath: 'locales/{{lng}}/{{ns}}.json',
     },
     fallbackLng: {
+      // `locales/yue` is a stub pointer to zh-HK (Cantonese); yue itself has no
+      // files, so fall back to zh-HK before English.
+      yue: ['zh-HK', 'en'],
       default: ['en'],
     },
     ns: namespace,
     defaultNS: 'main',
-    load: 'languageOnly',
+    interpolation: {
+      // React already escapes rendered values; leaving this on turns '/' into '&#x2F;'.
+      escapeValue: false,
+    },
+    // 'all' keeps regional codes (zh-CN/zh-TW/zh-HK) so their files load; the
+    // flattened stubs (zh, yue, en-GB, fr-FR) then act as harmless 404s in the
+    // middle of the chain instead of dead ends.
+    load: 'all',
   });
 
 export default i18n;

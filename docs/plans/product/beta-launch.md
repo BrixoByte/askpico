@@ -1,6 +1,7 @@
 # Beta Launch Plan
 
 **Status:** Planning
+**Changelog 2025-11-17 (Round 38):** Focus apps replaces the whole-app shield; call uses ACTION_DIAL; Chibi visual removed; guest voice trial (2 minutes) replaces the signed-in-only voice rule in sections 4.1 and 11.
 **Owner:** Pico product team
 **Platforms:** Web (browser) and Mobile (Android, Kotlin WebView)
 **Related:** [Feature catalog](feature-catalog.md) · [Roadmap](roadmap.md) · [Beta test plan](beta-testing.md) · [Voice mode](../modules/voice-mode.md) · [Agent persona](../modules/agent-persona.md) · [Pico character](../modules/pico-character.md) · [Memory system](../modules/memory-system.md) · [Authentication](../engineering/authentication.md) · [Branching strategy](../engineering/branching-strategy.md)
@@ -39,7 +40,7 @@ The web and mobile apps have different page sets. Both are built from the same R
 |---|---|---|---|
 | **Landing** | `askpico.app` | Explain the product and drive sign-up | Hero, feature highlights, voice and persona preview, plan summary, sign-in and "Try as guest" buttons |
 | **Auth** | `auth.askpico.app` | Sign in or create an account | Email and password sign-up and sign-in form, guest continuation, legal links (privacy policy, terms) |
-| **Chat** | `chat.askpico.app` | Main product screen | Sidebar (new chat, history, agents), greeting and orb, composer with mic, account card |
+| **Chat** | `go.askpico.app` | Main product screen (no separate chat host; `chat.askpico.app` has no DNS) | Sidebar (new chat, history, agents), greeting and orb, composer with mic, account card |
 
 ### 3.2 Mobile (3 pages)
 
@@ -60,7 +61,7 @@ The Android app is a Kotlin WebView shell. Full build plan: [Android app](../eng
 
 ### 3.4 Marketing site (`askpico.app`)
 
-A separate static site (HTML, CSS, and JS). It has no app logic and no login. Its CTAs link to `auth.askpico.app` and `chat.askpico.app`.
+A separate static site (HTML, CSS, and JS). It has no app logic and no login. Its CTAs link to `go.askpico.app`.
 
 | Page | File | Purpose | Key elements |
 |---|---|---|---|
@@ -316,7 +317,7 @@ Finish and test each item fully before moving to the next. The chat pipeline is 
 - **Branches:** beta work is merged into `release` after review. Only `release` is deployed to beta. See [Branching strategy](../engineering/branching-strategy.md).
 - **Deployments:** the web side has two deployments, both built from this repository.
   - **Marketing site** at `askpico.app`: home, features, pricing, and other marketing content. Static HTML/CSS/JS (or an SSG such as Astro), deployed separately so marketing changes carry no risk to the app.
-  - **App** at `chat.askpico.app` and `auth.askpico.app`: one deployment of `apps/web`; the page is chosen by `window.location.hostname` (chat → app, auth → login/signup). A session cookie with `Domain=.askpico.app` is shared across the subdomains.
+  - **App** at `go.askpico.app` (the only app host; `chat.askpico.app` has no DNS): one deployment of `apps/web`; the page is chosen by path and `window.location.hostname` (`/auth` → login/signup, `/verify` → email link, otherwise app). A session cookie with `Domain=.askpico.app` is shared across the subdomains.
   - **Backend** at `api.askpico.app` (or the backend host's domain): hosted separately; CORS allows only the three web origins.
 - **Android:** Google Play internal testing track for beta testers, then closed testing before public release. A new personal developer account must run a closed test with at least 12 opted-in testers for 14 days before production is unlocked.
 - **Rollback:** Redeploy the previous `release` commit. Revert the backend environment flag first when the cause is a feature flag, such as Edge TTS.
@@ -329,14 +330,14 @@ Local development mirrors the production subdomain layout so hostname-based rout
 |---|---|---|
 | `chat.localhost:5173` | Chat app (`apps/web`) | Working — page is chosen by hostname check |
 | `auth.localhost:5173` | Auth page (same `apps/web` dev server) | Working |
-| `chama.localhost:5174` | Admin (`apps/admin`) | Needs `host: true` in the admin `vite.config.ts` so Vite accepts the subdomain host |
+| `chama.localhost:5174` | Admin (`apps/admin`) | Needs `host: true` in the admin `vite.config.ts` so Vite accepts the subdomain host. Dev-only alias — the production admin host is `admin.askpico.app` (`chama.askpico.app` does not resolve) |
 | `api.localhost:3001` | Backend (`services/api`) | Works automatically; CORS must allow all `*.localhost` dev origins |
 | `localhost:5173` (apex) | Marketing site | `marketingOnApex` middleware in the web `vite.config.ts` serves `apps/marketing` files on the apex host — mirrors `askpico.app` in production |
 
 **Rules**
 
-- **CORS:** the backend allowlist includes the three web origins (`chat.`, `auth.`, `chama.` on `localhost`) in development, matching the production rule of allowing only the app origins.
-- **Session sharing:** Supabase stores its session in `localStorage`, which is per-origin, so `auth.localhost` and `chat.localhost` do not share a session. On the auth → chat redirect the session tokens are passed in the URL hash; `detectSessionInUrl` (already enabled in the Supabase client) picks them up and persists the session on the chat origin. The same pattern applies to `auth.askpico.app` → `chat.askpico.app` if the shared `.askpico.app` session cookie is not used.
+- **CORS:** the backend allowlist includes the three web origins (`chat.`, `auth.`, `chama.` on `localhost`) in development, matching the production rule of allowing only the app origins. In production the admin origin is `https://admin.askpico.app`; the `chama.` name survives only as the localhost dev alias in `apps/web/vite.config.ts` and `services/api/src/security.js` (code rename pending, out of scope).
+- **Session sharing:** Supabase stores its session in `localStorage`, which is per-origin, so `auth.localhost` and `chat.localhost` do not share a session. On the auth → chat redirect the session tokens are passed in the URL hash; `detectSessionInUrl` (already enabled in the Supabase client) picks them up and persists the session on the chat origin. The same pattern applies to `auth.askpico.app` → `go.askpico.app` if the shared `.askpico.app` session cookie is not used.
 - **Marketing:** served on the apex host (`localhost:5173`) by the `marketingOnApex` middleware in `apps/web/vite.config.ts`, which reads files from `apps/marketing`. It carries no app logic; app paths on the apex host (for example `/auth` and Vite internals) still fall through to the normal dev server. The standalone `apps/marketing/server.mjs` remains available on port 5175 if needed.
 
 **Google Play requirements (mandatory for launch)**
@@ -391,7 +392,7 @@ Checked against the codebase. Items marked `[ ]` are not yet found in code.
 
 ### Persona and character
 - [x] Persona system with per-agent persona and mood tags
-- [ ] Chibi character and animation
+- [ ] Chibi character visual removed by owner decision; mood labels and emotions only
 - [x] Reduced motion support
 
 ### Referral
@@ -444,8 +445,8 @@ Checked against the codebase. Items marked `[ ]` are not yet found in code.
 ### Android
 - [x] WebView shell and native voice bridge
 - [x] Share and open-in-browser bridge
-- [x] Intent actions (place call with confirm, open app, share-to-WhatsApp prefilled, alarms/timers, open URLs) — code complete, device testing pending
-- [x] Whole-app distraction shield (usage access + overlay, Back to Pico) — code complete, device testing pending
+- [x] Intent actions (call via ACTION_DIAL with masked-number confirm, open app, share-to-WhatsApp prefilled with share-sheet fallback, alarms/timers, open URLs) — device-tested in Round 35; CALL_PHONE removed in Round 37
+- [x] Focus apps (opt-in per app, Usage access and Display over other apps, passcode, strength levels, emergency, natural end): device-tested in Round 33 (17/17)
 - [x] Pico Vault v1, strictly local (encrypted store, on-device ref resolution) — code complete, device testing pending
 - [x] Agent settings in web app (permissions, shield presets, private details), shown only inside the Android app
 - [x] Native bridge wrapper with `PicoAction.onResult` listener (`utils/nativeAgent.ts`)
@@ -495,9 +496,9 @@ Tick each item after it passes on the target device or browser. Scenario IDs ref
 - [ ] S12: bad news gets empathetic reply, mood changes to concerned, mood tag hidden
 - [ ] S13: sincere "are you a real person?" gets AI disclosure
 - [ ] Same question in two moods gets two tones
-- [ ] Chibi character reacts to each mood (not built yet)
+- [ ] Chibi character visual removed by owner decision; mood labels and emotions only
 - [ ] S17: reduced motion stops orb and character animation, content stays readable
-- [ ] Animation pauses when tab is hidden (not built yet)
+- [ ] Animation pauses when tab is hidden — character visual removed; orb animation only
 
 ### 12.5 Web: Memory and Referral
 
@@ -533,27 +534,31 @@ Tick each item after it passes on the target device or browser. Scenario IDs ref
 - [ ] A2: guest and magic-link sign-in work inside the app
 - [ ] A3: `share`, `openExternal`, `getAppVersion` work from the web app
 - [ ] A4: spoken input lands in composer, permission denial shows typed fallback
-- [ ] S3: first launch shows Auth screen
+- [x] S3: first launch shows Auth screen (testing/round35/TALKBACK.md — signed-out state shows the auth page)
 - [ ] S16: account deletion works inside the app
-- [ ] S18: low-memory device disables heavy features with a message, chat and voice still work
-- [ ] No network: error screen offers Retry and Open in browser
+- [x] S18: low-memory device disables heavy features with a message, chat and voice still work (testing/round35/LOWMEM.md)
+- [x] No network: error screen offers Retry and Open in browser (testing/round35/OFFLINE.md)
 
 ### 12.9 Android: Agent Layer
 
-- [ ] Settings > Agent section appears only in the Android app
-- [ ] Permission status in Settings matches real state after Grant (refreshes on return)
-- [ ] `call`: confirm dialog shows masked number, Cancel returns `cancelled`, Call with denied permission returns `denied`
-- [ ] `open_app`: allow-listed app opens, non-listed package returns `invalid`
-- [ ] `open_url`: https link opens in browser, `javascript:` or `file:` rejected
-- [ ] `set_alarm` and `set_timer` create entries in the clock app
-- [ ] `share_whatsapp`: prefilled WhatsApp composer opens, falls back to share sheet when WhatsApp is missing
-- [ ] Vault: saved value survives app restart and is not shown in the web UI
-- [ ] Vault: ref in action args resolves on-device and action returns status only
-- [ ] Vault: no secret value in logcat, network requests, or screenshots
-- [ ] Shield: enabling with Usage access and Display over other apps blocks Instagram or YouTube within about 1 second
-- [ ] Shield: "Back to Pico" returns to the app, Pico itself is never blocked
-- [ ] Shield: disabling a preset removes the block without restart
-- [ ] Shield: missing permission leaves the shield off and shows a clear state
+- [x] Settings > Agent section appears only in the Android app (testing/round35)
+- [x] Permission status in Settings matches real state after Grant (refreshes on return) (testing/round38/AGENT_PERMISSIONS.md)
+- [x] `call`: opens the dialer with ACTION_DIAL after masked-number confirmation; Cancel returns `cancelled`. CALL_PHONE is not requested. (testing/round35/CHAT_ACTIONS.md + testing/round37/FINAL_REPORT_AC.md)
+- [x] `open_app`: allow-listed app opens, non-listed package returns `invalid` (testing/round35/INTENT_ACTIONS.md)
+- [x] `open_url`: https link opens in browser, `javascript:` or `file:` rejected (testing/round35/INTENT_ACTIONS.md)
+- [x] `set_alarm` and `set_timer` create entries in the clock app (testing/round31/INTENT_ACTIONS.md)
+- [x] `share_whatsapp`: prefilled WhatsApp composer opens, falls back to share sheet when WhatsApp is missing (testing/round35/CHAT_ACTIONS.md + testing/round38/PROGRESS.md)
+- [x] Vault: saved value survives app restart and is not shown in the web UI (testing/round35/VAULT.md)
+- [x] Vault: ref in action args resolves on-device and action returns status only (testing/round35/VAULT.md)
+- [x] Vault: no secret value in logcat, network requests, or screenshots (testing/round35/VAULT.md)
+- [x] Focus apps: disclosure shown before any permission prompt (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: overlay appears on a chosen app within about 1 second; "Back to Pico" returns (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: Pico and the dialer are never overlaid (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: strength levels and early-unblock limits enforced (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: emergency needs passcode plus 60-second wait (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: session ends naturally at end time with no action (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: exiting through system Settings works (testing/round33/FOCUS_APPS.md)
+- [x] Focus apps: missing permission shows "Needs permissions" (testing/round33/FOCUS_APPS.md)
 
 ## 13. Diagrams and Cache Checklist
 

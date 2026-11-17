@@ -1,12 +1,12 @@
-﻿{
+{
   "save": "Lagre",
   "generate": "Generere",
   "cancel": "Avbryt",
   "confirm": "Bekreft",
   "warning": "Advarsel",
-  "clearMessageWarning": "VÃ¦r oppmerksom pÃ¥ at ved Ã¥ sende inn denne meldingen, vil alle pÃ¥fÃ¸lgende meldinger bli slettet!",
-  "clearConversationWarning": "VÃ¦r oppmerksom pÃ¥ at ved Ã¥ bekrefte denne handlingen, vil alle meldinger bli slettet!",
-  "clearConversation": "TÃ¸m samtale",
+  "clearMessageWarning": "Vær oppmerksom på at ved å sende inn denne meldingen, vil alle påfølgende meldinger bli slettet!",
+  "clearConversationWarning": "Vær oppmerksom på at ved å bekrefte denne handlingen, vil alle meldinger bli slettet!",
+  "clearConversation": "Tøm samtale",
   "import": "Importer",
   "export": "Eksporter",
   "author": "Laget av Jing Hua",
@@ -19,7 +19,7 @@
   "system": "System",
   "newChat": "Ny Chat",
   "lightMode": "Lys Modus",
-  "darkMode": "MÃ¸rk Modus",
+  "darkMode": "Mørk Modus",
   "setting": "Innstillinger",
   "image": "Bilde",
   "autoTitle": "Auto generer tittel",
@@ -28,19 +28,23 @@
   "prompt": "Oppgave",
   "promptLibrary": "Oppgavebibliotek",
   "name": "Navn",
-  "search": "SÃ¸k",
+  "search": "Søk",
   "total": "Totalt",
   "resetCost": "Tilbakestill kostnader",
   "countTotalTokens": "Tell totale token",
   "morePrompts": "Du kan finne flere oppgaver her: ",
-  "clearPrompts": "TÃ¸m oppgave",
+  "clearPrompts": "Tøm oppgave",
   "postOnShareGPT": {
-    "title": "Innlegg pÃ¥ ShareGPT",
-    "warning": "VÃ¦r oppmerksom pÃ¥ at ved Ã¥ poste samtalen din pÃ¥ ShareGPT, vil den bli offentlig tilgjengelig og synlig for alle. NÃ¥r den er postet, kan samtalen ikke skjules eller slettes, og den kan bli arkivert eller delt av andre. Vi anbefaler deg Ã¥ tenke nÃ¸ye gjennom og unngÃ¥ Ã¥ dele sensitiv eller privat informasjon pÃ¥ denne plattformen."
+    "title": "Innlegg på ShareGPT",
+    "warning": "Vær oppmerksom på at ved å poste samtalen din på ShareGPT, vil den bli offentlig tilgjengelig og synlig for alle. Når den er postet, kan samtalen ikke skjules eller slettes, og den kan bli arkivert eller delt av andre. Vi anbefaler deg å tenke nøye gjennom og unngå å dele sensitiv eller privat informasjon på denne plattformen."
   },
   "newFolder": "Ny mappe",
   "cloneChat": "Klone chat",
   "cloned": "Klonet",
-  "enterToSubmit": "Trykk enter for Ã¥ sende",
-  "submitPlaceholder": "Skriv en melding eller klikk pÃ¥ [/] for oppgave..."
+  "enterToSubmit": "Trykk enter for å sende",
+  "submitPlaceholder": "Skriv en melding eller klikk på [/] for oppgave...",
+  "attachTooLarge": "Filen er større enn 10 MB",
+  "attachNotText": "Ikke en tekstfil",
+  "attachReadFail": "Kunne ikke lese filen",
+  "cameraDenied": "Kameratilgang nektet. Sjekk nettlesertillatelser (HTTPS eller localhost kreves)."
 }

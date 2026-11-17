@@ -10,7 +10,7 @@
 - **Guest identity:** `apps/web/src/store/profile-store.ts` shows "Guest" when no name is set. No real user account exists yet.
 - **Google login:** `apps/web/src/store/cloud-auth-store.ts` stores Google access and refresh tokens, used only for Google Drive sync. It is not an app login.
 - **Backend identity:** `services/api/src/server.js` uses an anonymous `anonId` for agent routes. There are no user accounts, sessions, or subscription checks.
-- **Backend storage:** `services/api/src/agentStore.js` uses `node:sqlite` for agent messages. It is a good base for the user database, but it stores agent chat only.
+- **Backend storage:** `services/api/src/agentStore.js` stores agent messages in the Supabase `agent_messages` table (the earlier `node:sqlite` file was removed). It is a good base for the user database, but it stores agent chat only.
 - **Home screen (reference screenshot):** a sidebar with New Chat, Explore, Library, Project, and Studio; the greeting "Hello, Guest" with "How can I assist you today?"; a glowing purple orb; a chat input with Deeper Research, web, zoom, Image, mic, Saved prompts, and Attach file; a bottom-left account card showing "Guest, Free plan" with a logout icon.
 
 ## 2. Goals
@@ -26,7 +26,7 @@
 
 | Decision | Options | Recommendation |
 |---|---|---|
-| Database | SQLite (`node:sqlite`, already used) or Postgres (Supabase, Neon) | SQLite for the MVP on one server. Move to Postgres before running multiple servers or scaling. See [Database](database.md) |
+| Database | Postgres (Supabase, in use since the early rounds; `node:sqlite` was removed) | Supabase is the database for all server data. See [Database](database.md) |
 | Login method | Email and password, Google OAuth, guest only | Google OAuth first (already in the project), email magic link second |
 | Session | JWT in a cookie, or a server session ID in an HttpOnly cookie | Server session ID in an HttpOnly, SameSite cookie. Easier to revoke |
 | Payments | JazzCash, EasyPaisa, cards (see [Feature catalogue](../product/feature-catalog.md), section 3) | Decide before Phase 4. `isPaid` depends on this |

@@ -1,6 +1,8 @@
 import { getAccessToken } from './supabase';
 
-const apiUrl = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
+// Deployed panel defaults to the production API; set VITE_API_URL
+// (e.g. http://localhost:3001) only for local backend development.
+const apiUrl = (import.meta.env.VITE_API_URL as string | undefined) ?? 'https://api.askpico.app';
 
 export class ApiError extends Error {
   status: number;

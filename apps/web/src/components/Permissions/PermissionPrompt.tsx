@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MicIcon } from '@icon/ui';
 
 const PROMPTED_KEY = 'pico-permissions-prompted';
 
-// Branded first-visit permission prompt. It appears before the browser's native
-// permission dialog; "Allow Access" then calls getUserMedia so the browser asks
-// for the microphone (browsers always require their own confirmation for mic).
+// Microphone explanation shown when the user starts voice (never at launch). It appears
+// before the browser's native permission dialog; "Allow Access" calls getUserMedia so
+// the browser asks for the microphone, then voice starts (pico:mic-granted).
 const PermissionPrompt = () => {
-  const [open, setOpen] = useState<boolean>(() => {
-    try {
-      return !localStorage.getItem(PROMPTED_KEY);
-    } catch {
-      return false;
-    }
-  });
+  const [open, setOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const show = () => setOpen(true);
+    window.addEventListener('pico:mic-prompt', show);
+    return () => window.removeEventListener('pico:mic-prompt', show);
+  }, []);
   const [busy, setBusy] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,10 +39,13 @@ const PermissionPrompt = () => {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       stream.getTracks().forEach((track) => track.stop());
       finish();
+      window.dispatchEvent(new Event('pico:mic-granted'));
     } catch (err: unknown) {
       const name = (err as DOMException).name;
       if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
-        setError('Microphone access was blocked. Please enable it in browser settings.');
+        finish();
+        window.dispatchEvent(new Event('pico:mic-denied'));
+        return;
       }
     } finally {
       setBusy(false);

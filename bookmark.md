@@ -9,7 +9,7 @@ Scope of this review:
 
 ## Project context
 
-Pico is **proprietary** (see `LICENSE`). Stack: React + Vite web app, Express API with SQLite, Supabase for auth and sync, Android WebView shell planned.
+Pico is **proprietary** (see `LICENSE`). Stack: React + Vite web app, Express API with Supabase (Postgres) for auth, data and sync, Android WebView shell planned.
 
 Rules applied:
 - **Permissive (MIT, Apache-2.0, BSD, ISC):** can be used commercially with attribution. Apache-2.0 requires keeping the NOTICE file.

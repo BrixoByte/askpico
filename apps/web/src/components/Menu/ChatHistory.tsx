@@ -1,61 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { create } from 'zustand';
 
 import ChatIcon from '@icon/ChatIcon';
 import CrossIcon from '@icon/CrossIcon';
 import TickIcon from '@icon/TickIcon';
 import useStore from '@store/store';
-import { clearArtifactState } from '@utils/artifactState';
 import { ChatInterface } from '@type/chat';
-
-// Shared selection set for Ctrl+click multi-select across all chat rows
-// (rows render in both ChatHistoryList and ChatFolder).
-interface ChatSelectionState {
-  selectedIds: Set<string>;
-  toggle: (id: string) => void;
-  clear: () => void;
-}
-
-const useChatSelection = create<ChatSelectionState>((set) => ({
-  selectedIds: new Set<string>(),
-  toggle: (id) =>
-    set((state) => {
-      const next = new Set(state.selectedIds);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return { selectedIds: next };
-    }),
-  clear: () => set({ selectedIds: new Set<string>() }),
-}));
-
-const deleteChatIds = (
-  ids: string[],
-  setChats: (chats: ChatInterface[]) => void,
-  setCurrentChatIndex: (index: number) => void
-) => {
-  const state = useStore.getState();
-  if (!state.chats || ids.length === 0) return;
-
-  const idSet = new Set(ids);
-  const prevActiveId = state.chats[state.currentChatIndex]?.id;
-
-  const updatedChats = state.chats
-    .filter((chat) => {
-      const remove = idSet.has(chat.id);
-      if (remove) clearArtifactState(chat.id);
-      return !remove;
-    })
-    .map((chat) => JSON.parse(JSON.stringify(chat)));
-
-  if (updatedChats.length > 0) {
-    const newIndex = updatedChats.findIndex((chat) => chat.id === prevActiveId);
-    setCurrentChatIndex(newIndex === -1 ? 0 : newIndex);
-    setChats(updatedChats);
-  } else {
-    setCurrentChatIndex(-1);
-    setChats([]);
-  }
-};
+import ChatRowMenu from './ChatRowMenu';
+import { deleteChatIds, useChatSelection } from './chatSelection';
 
 const ChatHistoryClass = {
   normal:
@@ -64,50 +15,88 @@ const ChatHistoryClass = {
     'flex py-1 px-2 max-md:py-2.5 max-md:px-3 items-center gap-2 relative rounded-lg break-all pr-14 bg-surface border border-surface-line text-ink shadow-soft group transition-all',
 };
 
+const LONG_PRESS_MS = 500;
+
 const ChatHistory = React.memo(
   ({ title, chatIndex }: { title: string; chatIndex: number }) => {
     const setCurrentChatIndex = useStore((state) => state.setCurrentChatIndex);
     const setChats = useStore((state) => state.setChats);
     const active = useStore((state) => state.currentChatIndex === chatIndex);
     const generating = useStore((state) => state.generating);
+    const chat = useStore((state) => state.chats?.[chatIndex]);
 
     const [isEdit, setIsEdit] = useState<boolean>(false);
     const [_title, _setTitle] = useState<string>(title);
+    const [menuOpen, setMenuOpen] = useState<boolean>(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const longPressTimer = useRef<number | null>(null);
+    const suppressClick = useRef<boolean>(false);
 
-    const chatId = useStore((state) => state.chats?.[chatIndex]?.id);
+    const chatId = chat?.id;
     const isSelected = useChatSelection((state) =>
       chatId ? state.selectedIds.has(chatId) : false
     );
     const toggleSelect = useChatSelection((state) => state.toggle);
     const clearSelection = useChatSelection((state) => state.clear);
 
+    const cancelLongPress = () => {
+      if (longPressTimer.current !== null) {
+        window.clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    };
+
     const editTitle = () => {
+      const next = _title.trim();
+      if (!next || next === title) {
+        setIsEdit(false);
+        _setTitle(title);
+        return;
+      }
       const updatedChats = JSON.parse(
         JSON.stringify(useStore.getState().chats)
       );
-      updatedChats[chatIndex].title = _title;
+      updatedChats[chatIndex].title = next;
       setChats(updatedChats);
       setIsEdit(false);
+    };
+
+    const startRename = () => {
+      _setTitle(title);
+      setIsEdit(true);
+    };
+
+    const handleDelete = (ids: string[]) => {
+      clearSelection();
+      deleteChatIds(ids, setChats, setCurrentChatIndex);
     };
 
     const handleContextMenu = (e: React.MouseEvent<HTMLAnchorElement>) => {
       e.preventDefault();
       if (generating) return;
-      if (isSelected && chatId) {
-        const ids = Array.from(useChatSelection.getState().selectedIds);
-        clearSelection();
-        deleteChatIds(ids, setChats, setCurrentChatIndex);
-      } else {
-        clearSelection();
-        if (chatId) deleteChatIds([chatId], setChats, setCurrentChatIndex);
-      }
+      setMenuOpen(true);
     };
+
+    const handlePointerDown = () => {
+      if (generating) return;
+      cancelLongPress();
+      longPressTimer.current = window.setTimeout(() => {
+        longPressTimer.current = null;
+        suppressClick.current = true;
+        setMenuOpen(true);
+      }, LONG_PRESS_MS);
+    };
+
+    const handlePointerUpOrCancel = () => cancelLongPress();
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
         e.preventDefault();
         editTitle();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setIsEdit(false);
+        _setTitle(title);
       }
     };
 
@@ -118,6 +107,7 @@ const ChatHistory = React.memo(
 
     const handleCross = () => {
       setIsEdit(false);
+      _setTitle(title);
     };
 
     const handleDragStart = (e: React.DragEvent<HTMLAnchorElement>) => {
@@ -125,6 +115,10 @@ const ChatHistory = React.memo(
         e.dataTransfer.setData('chatIndex', String(chatIndex));
       }
     };
+
+    useEffect(() => {
+      return cancelLongPress;
+    }, []);
 
     useEffect(() => {
       if (inputRef && inputRef.current) inputRef.current.focus();
@@ -145,6 +139,10 @@ const ChatHistory = React.memo(
         }`}
         onClick={(e) => {
           if (generating) return;
+          if (suppressClick.current) {
+            suppressClick.current = false;
+            return;
+          }
           if (e.ctrlKey || e.metaKey) {
             e.preventDefault();
             if (chatId) toggleSelect(chatId);
@@ -156,11 +154,12 @@ const ChatHistory = React.memo(
         onContextMenu={handleContextMenu}
         onDoubleClick={(e) => {
           e.preventDefault();
-          if (!generating) {
-            _setTitle(title);
-            setIsEdit(true);
-          }
+          if (!generating) startRename();
         }}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUpOrCancel}
+        onPointerLeave={handlePointerUpOrCancel}
+        onPointerCancel={handlePointerUpOrCancel}
         draggable
         onDragStart={handleDragStart}
       >
@@ -202,6 +201,18 @@ const ChatHistory = React.memo(
               <CrossIcon />
             </button>
           </div>
+        )}
+        {!isEdit && (
+          <ChatRowMenu
+            chat={chat as ChatInterface | undefined}
+            chatIndex={chatIndex}
+            title={title}
+            open={menuOpen}
+            onOpenChange={setMenuOpen}
+            onRename={startRename}
+            onDelete={handleDelete}
+            disabled={generating}
+          />
         )}
       </a>
     );

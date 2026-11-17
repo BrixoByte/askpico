@@ -3,7 +3,7 @@ import { normalizeProjectPaths } from '@utils/artifactPaths';
 
 export const FENCE_REGEX = /```([^\n`]*)\n([\s\S]*?)(?:```|$)/g;
 
-const PREVIEW_LANGUAGES = ['html', 'jsx', 'tsx'];
+const PREVIEW_LANGUAGES = ['html', 'jsx', 'tsx', 'mermaid'];
 
 const DOCUMENT_LANGUAGES = ['document', 'doc'];
 

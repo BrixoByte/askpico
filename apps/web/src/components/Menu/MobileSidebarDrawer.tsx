@@ -4,6 +4,7 @@ import useStore from '@store/store';
 import SidebarHeader from './SidebarHeader';
 import ChatHistoryList from './ChatHistoryList';
 import ProfileCard from './ProfileCard';
+import GuestVoiceTrialRow from './GuestVoiceTrialRow';
 
 import CrossIcon2 from '@icon/CrossIcon2';
 import SunIcon from '@icon/SunIcon';
@@ -62,8 +63,9 @@ const MobileSidebarDrawer = () => {
         <div className='flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&_img]:!h-14 [&_img]:!max-w-full'>
           <SidebarHeader hideCollapse />
           <ChatHistoryList fillHeight={false} />
-          <MobileThemeToggle />
         </div>
+        <GuestVoiceTrialRow />
+        <MobileThemeToggle />
         <ProfileCard />
         <button
           type='button'

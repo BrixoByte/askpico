@@ -1,11 +1,11 @@
-﻿{
+{
   "save": "Gem",
   "generate": "Generere",
   "cancel": "Annuller",
-  "confirm": "BekrÃ¦ft",
+  "confirm": "Bekræft",
   "warning": "Advarsel",
-  "clearMessageWarning": "VÃ¦r opmÃ¦rksom pÃ¥, at ved at indsende denne besked vil alle efterfÃ¸lgende beskeder blive slettet!",
-  "clearConversationWarning": "VÃ¦r opmÃ¦rksom pÃ¥, at ved at bekrÃ¦fte denne handling vil alle beskeder blive slettet!",
+  "clearMessageWarning": "Vær opmærksom på, at ved at indsende denne besked vil alle efterfølgende beskeder blive slettet!",
+  "clearConversationWarning": "Vær opmærksom på, at ved at bekræfte denne handling vil alle beskeder blive slettet!",
   "clearConversation": "Ryd samtale",
   "import": "Importer",
   "export": "Eksporter",
@@ -19,7 +19,7 @@
   "system": "System",
   "newChat": "Ny chat",
   "lightMode": "Lys tilstand",
-  "darkMode": "MÃ¸rk tilstand",
+  "darkMode": "Mørk tilstand",
   "setting": "Indstillinger",
   "image": "Billede",
   "autoTitle": "Auto generer titel",
@@ -28,19 +28,23 @@
   "prompt": "Opgave",
   "promptLibrary": "Opgavebibliotek",
   "name": "Navn",
-  "search": "SÃ¸g",
+  "search": "Søg",
   "total": "Total",
   "resetCost": "Nulstil Omkostninger",
-  "countTotalTokens": "TÃ¦l totale tokens",
+  "countTotalTokens": "Tæl totale tokens",
   "morePrompts": "Du kan finde flere opgaver her: ",
   "clearPrompts": "Ryd prompter",
   "postOnShareGPT": {
-    "title": "IndlÃ¦g pÃ¥ ShareGPT",
-    "warning": "VÃ¦r opmÃ¦rksom pÃ¥, at ved at poste din samtale pÃ¥ ShareGPT, vil den blive offentligt tilgÃ¦ngelig og synlig for alle. NÃ¥r den er postet, kan samtalen ikke skjules eller slettes og kan blive arkiveret eller delt af andre. Vi rÃ¥der dig til at overveje nÃ¸je og undgÃ¥ at dele fÃ¸lsomme eller private oplysninger pÃ¥ denne platform."
+    "title": "Indlæg på ShareGPT",
+    "warning": "Vær opmærksom på, at ved at poste din samtale på ShareGPT, vil den blive offentligt tilgængelig og synlig for alle. Når den er postet, kan samtalen ikke skjules eller slettes og kan blive arkiveret eller delt af andre. Vi råder dig til at overveje nøje og undgå at dele følsomme eller private oplysninger på denne platform."
   },
   "newFolder": "Ny mappe",
   "cloneChat": "Klon Chat",
   "cloned": "Klonet",
   "enterToSubmit": "Tryk Enter for at sende",
-  "submitPlaceholder": "Skriv en besked eller klik pÃ¥ [/] for opgave..."
+  "submitPlaceholder": "Skriv en besked eller klik på [/] for opgave...",
+  "attachTooLarge": "Filen er større end 10 MB",
+  "attachNotText": "Ikke en tekstfil",
+  "attachReadFail": "Kunne ikke læse filen",
+  "cameraDenied": "Kameraadgang nægtet. Tjek browserens tilladelser (HTTPS eller localhost påkrævet)."
 }

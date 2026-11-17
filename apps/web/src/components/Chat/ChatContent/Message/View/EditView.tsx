@@ -7,10 +7,13 @@ import useVoiceStore from '@store/voice-store';
 import useSubmit from '@hooks/useSubmit';
 import { selectOrCreateChat } from '@hooks/useAddChat';
 import { extractAttachmentText } from '@api/api';
+import i18n from '@src/i18n';
 import LockBadge from '@components/Auth/LockBadge';
 import VoiceWaveIcon from '@components/Voice/VoiceWaveIcon';
 import ModeSelector from '@components/Chat/ModeSelector';
 import { gateSignedIn, useIsSignedIn } from '@utils/authGate';
+import { gateVoiceStart } from '@voice/guestVoiceGate';
+import useGuestVoiceStore from '@store/guest-voice-store';
 import { tryDeviceIntent } from '@utils/agentIntents';
 import { attachmentBlockReason } from '@constants/attachments';
 import {
@@ -61,10 +64,10 @@ const readAsText = (file: File) =>
     const reader = new FileReader();
     reader.onload = () => {
       const text = String(reader.result ?? '');
-      if (text.includes('\u0000') || text.includes('\uFFFD')) reject(new Error('text file nahi hai'));
+      if (text.includes('\u0000') || text.includes('\uFFFD')) reject(new Error(String(i18n.t('attachNotText'))));
       else resolve(text);
     };
-    reader.onerror = () => reject(new Error('file parh nahi saki'));
+    reader.onerror = () => reject(new Error(String(i18n.t('attachReadFail'))));
     reader.readAsText(file);
   });
 
@@ -72,7 +75,7 @@ const readAsBase64 = (file: File) =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result ?? '').split(',')[1] ?? '');
-    reader.onerror = () => reject(new Error('file parh nahi saki'));
+    reader.onerror = () => reject(new Error(String(i18n.t('attachReadFail'))));
     reader.readAsDataURL(file);
   });
 
@@ -148,6 +151,7 @@ const EditView = ({
   const voiceMode = useVoiceStore((state) => state.voiceMode);
   const voiceSupported = sttSupported();
   const signedIn = useIsSignedIn();
+  const isGuest = useGuestVoiceStore((state) => state.isGuest);
   const speech = useSpeechRecognition({
     onFinal: (text) =>
       _setContent((prev) => (prev.trim() === '' ? text : `${prev.trimEnd()} ${text}`)),
@@ -369,7 +373,7 @@ const EditView = ({
 
     setAttachments((prev) => [...prev, { id, name: file.name, status: 'loading', file }]);
     try {
-      if (file.size > ATTACH_MAX_BYTES) throw new Error('10 MB se bari hai');
+      if (file.size > ATTACH_MAX_BYTES) throw new Error(String(t('attachTooLarge')));
       if (file.type.startsWith('image/')) {
         update({ status: 'ready', isImage: true });
         return;
@@ -551,7 +555,7 @@ const EditView = ({
                   onClick={() =>
                     voiceMode
                       ? useVoiceStore.getState().setVoiceMode(false)
-                      : gateSignedIn('Sign in to use voice mode.', () => {
+                      : gateVoiceStart(() => {
                           const state = useStore.getState();
                           useVoiceStore
                             .getState()
@@ -562,7 +566,7 @@ const EditView = ({
                   title='Voice to voice mode'
                 >
                   <VoiceWaveIcon />
-                  {!signedIn && <LockBadge />}
+                  {!signedIn && !isGuest && <LockBadge />}
                 </button>
               ) : (
                 <button
