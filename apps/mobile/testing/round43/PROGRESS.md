@@ -1,0 +1,11 @@
+# Round 43 — voice-vs-token quota fix
+- [trace] /api/chat token cap at server.js:171-186 applies to ALL requests incl. requestType='voice' → 429 QUOTA_EXHAUSTED (matches round42 evidence).
+- [trace] recordRequest (server.js:93) → log_request RPC increments profiles.tokens_used_today for every call incl. feature='voice' → voice turns inflate token counter.
+- [trace] Marker requestType:'voice' already sent by client (useSubmit.ts:189 pendingVoiceTurn → api.ts:214) and read at server.js:157. Voice-seconds gate already exists (line 188, blockVoiceTurnOverQuota).
+- [trace] Voice vs token counters fully separate (voice_seconds_used_today vs tokens_used_today). Guest 30/day counts request_logs rows → row insert must be preserved.
+- [plan] No-SQL fix: skip cap check when requestType==='voice'; recordRequest sends p_tokens=0 for feature='voice' keeping real p_cost_usd (ai_usage keeps real counts via logLlmCall). Client unchanged. stt.ts/MainActivity untouched.
+- [status] TRACE.md + FIX_PLAN.md written. STOPPED — waiting for owner approval to apply.
+- [apply] Approved diff applied: tokenQuotaPolicy.js (+shouldCheckTokenCap, +requestLogTokens), server.js (cap check gated, recordRequest uses helper). No SQL/schema/stt.ts/MainActivity/guest changes.
+- [tests] voiceTokenCap.test.js new — 6/6 pass. Web: tsc 0, 380/380, build ok. API npm test: 298 = 295 pass / 1 fail (pre-existing env-dependent imageProviders) / 2 todo.
+- [verify-local] Local API vs production DB (read-only checks): tokens 11445→11445 after voice turn (HTTP 200, was 429), voice seconds 0→30 after heartbeat, text request still 429 QUOTA_EXHAUSTED.
+- [cleanup] Local API stopped, adb forward removed, temp token files deleted. FINAL_FIX.md written. Nothing committed/pushed/deployed.

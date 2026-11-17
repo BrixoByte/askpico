@@ -46,7 +46,7 @@ import {
 } from './voiceQuotaPolicy.js';
 import { voiceTurnQuotaCheck } from './voiceTurnGate.js';
 import { clientIp, hashGuestIp, hashSignal } from './guestTrialIp.js';
-import { dailyTokenLimit, isDailyTokenCapReached } from './tokenQuotaPolicy.js';
+import { dailyTokenLimit, isDailyTokenCapReached, requestLogTokens, shouldCheckTokenCap } from './tokenQuotaPolicy.js';
 import { adminRouter, getSystemFlag, getUserLimitState } from './admin/routes.js';
 import { startAdminWorkers } from './workers/index.js';
 import { classifyIntent } from './workers/intentClassifier.js';
@@ -91,13 +91,16 @@ const estimateCostUsd = (promptTokens, completionTokens) =>
 // log_request() also trips the circuit_breaker_active flag server-side
 // once the daily budget is crossed.
 const recordRequest = ({ userId, mode, feature, promptTokens, completionTokens, intentTag = null }) => {
+  // Voice turns are billed in voice seconds: the request_logs row and real cost
+  // still land, but p_tokens stays 0 so tokens_used_today only grows on text.
+  const counted = requestLogTokens(feature, promptTokens, completionTokens);
   supabase
     .rpc('log_request', {
       p_user_id: userId,
       p_mode: mode ?? null,
       p_feature: feature,
-      p_prompt_tokens: Math.max(0, Math.round(promptTokens)),
-      p_completion_tokens: Math.max(0, Math.round(completionTokens)),
+      p_prompt_tokens: counted.promptTokens,
+      p_completion_tokens: counted.completionTokens,
       p_cost_usd: estimateCostUsd(promptTokens, completionTokens),
       p_intent_tag: intentTag,
     })
@@ -172,7 +175,7 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     const plan = await getUserPlan(user.id);
     const { data: tokensToday, error: tokensErr } = await supabase.rpc('roll_daily_tokens', { p_user_id: user.id });
     if (tokensErr) throw new Error(tokensErr.message);
-    if (isDailyTokenCapReached(plan, Number(tokensToday ?? 0))) {
+    if (shouldCheckTokenCap(requestType) && isDailyTokenCapReached(plan, Number(tokensToday ?? 0))) {
       return res.status(429).json({
         error: 'QUOTA_EXHAUSTED',
         message: 'Daily token limit reached. Upgrade or share your referral link to keep chatting today.',
