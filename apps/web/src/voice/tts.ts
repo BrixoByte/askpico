@@ -12,6 +12,7 @@
 
 import { backendUrl } from '@api/api';
 import { getAccessToken } from '@api/supabase';
+import { devLaptopTtsUrl } from './devLaptopTts';
 import { detectSpeechLang, toSpeakableText } from './sentenceChunker';
 import { sharedAudioContext } from './sharedAudio';
 import { voiceLatency } from './VoiceDebugLogger';
@@ -257,14 +258,17 @@ export class Speaker {
     const timer = setTimeout(() => controller.abort(new Error('tts timeout')), SERVER_TTS_TIMEOUT_MS);
     return (async () => {
       try {
-        const token = await getAccessToken().catch(() => null);
-        const response = await fetch(TTS_ENDPOINT, {
+        const laptopUrl = devLaptopTtsUrl();
+        const token = laptopUrl ? null : await getAccessToken().catch(() => null);
+        const response = await fetch(laptopUrl ?? TTS_ENDPOINT, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ text, lang }),
+          // The laptop service speaks the server-side schema: it wants `voice`,
+          // not `lang`. Extra fields are ignored by both endpoints.
+          body: JSON.stringify(laptopUrl ? { text, voice: 'en-US-AriaNeural' } : { text, lang }),
           signal: controller.signal,
         });
         if (!response.ok) {
