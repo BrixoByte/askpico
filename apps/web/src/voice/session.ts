@@ -12,7 +12,7 @@ import useStore from '@store/store';
 import useVoiceStore from '@store/voice-store';
 import { selectOrCreateChat } from '@hooks/useAddChat';
 import { ChatInterface } from '@type/chat';
-import { SpeechInput, sttSupported, SttHandlers } from './stt';
+import { ANDROID_REARM_CAP_MESSAGE, SpeechInput, sttSupported, SttHandlers } from './stt';
 import { Speaker } from './tts';
 import { SentenceChunker } from './sentenceChunker';
 import { notifyVoiceSessionComplete } from '@api/api';
@@ -142,7 +142,13 @@ export class VoiceSession {
   }
 
   start() {
-    if (this.active) return;
+    if (this.active) {
+      // Post-cap (or any non-fatal stop) the session is active but the recognizer is
+      // dead. A tap must re-arm it: stt.start() resets the re-arm counter and calls
+      // PicoBridge.startVoiceInput. startStt() itself guards a live window.
+      if (!this.listening && !this.sttPaused && !this.awaitingReply) this.startStt();
+      return;
+    }
     const voice = useVoiceStore.getState();
     voice.setSttSupported(sttSupported());
     if (!sttSupported()) {
@@ -365,10 +371,12 @@ export class VoiceSession {
     this.listening = false;
     useVoiceStore.getState().setError(message);
     useVoiceStore.getState().setInterim('');
-    if (fatal) {
+    if (fatal || message === ANDROID_REARM_CAP_MESSAGE) {
       // Surface the dead session in the UI: turn the toggle off so the user
       // can re-enable voice mode (mic button) instead of staring at an
-      // active-looking but dead session.
+      // active-looking but dead session. The re-arm cap takes the same path:
+      // without it, voiceMode stays true and the next tap is a no-op because
+      // session.start() only runs on a voiceMode transition.
       this.active = false;
       this.awaitingReply = false;
       useVoiceStore.getState().setVoiceMode(false);
