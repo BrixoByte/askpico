@@ -27,7 +27,12 @@ export interface SttHandlers {
   // Live interim text (not yet finalized).
   onPartial?: (text: string) => void;
   // A finalized utterance — fired on silence timeout or end-of-speech.
-  onUtterance?: (text: string) => void;
+  // lowConfidence marks an interim result flushed at window end (Android),
+  // where the engine never produced a final transcript.
+  onUtterance?: (text: string, meta?: { lowConfidence?: boolean }) => void;
+  // Optional veto for the Android partial-flush: return false to drop a
+  // trailing partial (e.g. echo of the reply, or inside the barge-in grace).
+  mayFlushPartial?: (text: string) => boolean;
   // User started speaking — used for barge-in while TTS is playing.
   onSpeechStart?: () => void;
   // message is user-facing and already generic (never raw engine errors).
@@ -158,6 +163,14 @@ export class SpeechInput {
   // Bumped on every start(); deferred callbacks compare against it.
   private session = 0;
   private usingAndroid = false;
+  // Android: the last interim text of the current recognizer window. If the
+  // window ends without a final result it is flushed as a low-confidence
+  // utterance instead of being dropped (B1).
+  private pendingPartial: string | null = null;
+  // Identifies the current recognizer window; a window whose partial was
+  // already flushed ignores a late final for the same utterance.
+  private androidWindow = 0;
+  private flushedWindow = -1;
 
   static isSupported = sttSupported;
 
@@ -199,6 +212,8 @@ export class SpeechInput {
     this.heardAudio = false;
     this.finals = '';
     this.interim = '';
+    this.pendingPartial = null;
+    this.flushedWindow = -1;
 
     PicoLogger.action('STT', 'Starting speech input', {
       id: this.id,
@@ -227,6 +242,7 @@ export class SpeechInput {
       this.attachAndroid();
       try {
         PicoLogger.info('STT', 'Invoking PicoBridge.startVoiceInput');
+        this.androidWindow += 1;
         picoBridge()!.startVoiceInput!(options.lang ?? navigator.language ?? 'en-US');
       } catch (error) {
         PicoLogger.error('STT', 'PicoBridge.startVoiceInput threw', error);
@@ -541,11 +557,22 @@ export class SpeechInput {
         if (stale()) return;
         this.idleRestarts = 0;
         this.heardAudio = true;
+        if (text.trim() !== '') this.pendingPartial = text;
         this.handlers.onPartial?.(text);
       },
       onResult: (text) => {
         PicoLogger.info('STT', `Native final result: "${text}"`);
         if (stale() || !this.wantRunning) return;
+        // A late final for a window whose trailing partial already flushed is
+        // the same utterance — submitting it again would double-send.
+        if (this.flushedWindow === this.androidWindow) {
+          PicoLogger.info('STT', 'Ignoring late final: window already flushed its partial', {
+            id: this.id,
+            window: this.androidWindow,
+          });
+          return;
+        }
+        this.pendingPartial = null;
         this.retryCount = 0;
         this.idleRestarts = 0;
         this.androidRearms = 0;
@@ -585,8 +612,27 @@ export class SpeechInput {
         });
         if (stale()) return;
         // A window that ends while still wanted has no final result (a final result clears
-        // wantRunning first), whether or not partial speech was heard. Re-arm it, capped.
+        // wantRunning first). If it holds interim text, submit it as a low-confidence
+        // utterance through the same handler a real final takes — the session's echo
+        // and barge-in guards still apply downstream. Never the full text in logs.
         if (this.wantRunning) {
+          const pending = this.pendingPartial;
+          this.pendingPartial = null;
+          const words = pending?.split(/\s+/).filter(Boolean).length ?? 0;
+          if (pending && words >= 2 && (this.handlers.mayFlushPartial?.(pending) ?? true)) {
+            this.flushedWindow = this.androidWindow;
+            PicoLogger.info('STT', 'Window ended with partial only; flushing last partial', {
+              id: this.id,
+              window: this.androidWindow,
+              words,
+              lowConfidence: true,
+            });
+            const onUtterance = this.handlers.onUtterance;
+            this.closeListeningWindow();
+            onUtterance?.(pending, { lowConfidence: true });
+            this.finish(true);
+            return;
+          }
           if (this.androidRearms < ANDROID_REARM_MAX) {
             this.androidRearms += 1;
             PicoLogger.info('STT', 'No final result in window; re-arming listening', {
@@ -601,6 +647,7 @@ export class SpeechInput {
               if (rearmSession !== this.session || !this.wantRunning) return;
               this.heardAudio = false;
               try {
+                this.androidWindow += 1;
                 picoBridge()?.startVoiceInput?.(this.options.lang ?? navigator.language ?? 'en-US');
               } catch (error) {
                 PicoLogger.error('STT', 'Re-arm startVoiceInput threw', error);

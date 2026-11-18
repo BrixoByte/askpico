@@ -9,3 +9,4 @@
 - [tests] voiceTokenCap.test.js new — 6/6 pass. Web: tsc 0, 380/380, build ok. API npm test: 298 = 295 pass / 1 fail (pre-existing env-dependent imageProviders) / 2 todo.
 - [verify-local] Local API vs production DB (read-only checks): tokens 11445→11445 after voice turn (HTTP 200, was 429), voice seconds 0→30 after heartbeat, text request still 429 QUOTA_EXHAUSTED.
 - [cleanup] Local API stopped, adb forward removed, temp token files deleted. FINAL_FIX.md written. Nothing committed/pushed/deployed.
+- [deploy] Commit 89a7e0a pushed (normal push, origin==HEAD). Frontend deployed to askpico-app: prev f6148d55 -> new d582701c (identical bundle, 0 files uploaded). Curls / /auth /verify all 200; guest anonymous chat HTTP 200. NOTE: services/api fix committed but NOT deployed (Railway untouched) — production still runs old quota code.

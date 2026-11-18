@@ -373,6 +373,11 @@ export const startGuestVoice = (): Promise<GuestVoiceResult> => guestVoiceReques
 export const sendGuestVoiceHeartbeat = (seconds: number, reason?: 'beat' | 'pause' | 'end'): Promise<GuestVoiceResult> =>
   guestVoiceRequest('/api/voice/heartbeat', { seconds, reason });
 
+// Signed-in users: the route debits a fixed HEARTBEAT_SECONDS per call, so the
+// `seconds` claim is guest-only and deliberately omitted. `reason` is a log label.
+export const sendVoiceHeartbeat = (reason?: 'beat' | 'pause' | 'end'): Promise<GuestVoiceResult> =>
+  guestVoiceRequest('/api/voice/heartbeat', { reason });
+
 // Null when the balance cannot be read; the sidebar row then stays hidden rather than guessing.
 export const fetchGuestVoiceTrial = async (): Promise<number | null> => {
   const response = await fetch(`${backendUrl}/api/voice/trial`, { headers: await authHeaders() });

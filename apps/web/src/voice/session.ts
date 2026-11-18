@@ -27,8 +27,13 @@ const WAKE_LEVEL = 0.01;
 const WAKE_SUSTAIN_MS = 300;
 const WAKE_TICK_MS = 100;
 // Speech onsets this soon after a reply sentence starts are ignored: the recognizer can pick up
-// the reply's own audio, which must not cut the reply off.
-const BARGE_IN_GRACE_MS = 1000;
+// the reply's own audio, which must not cut the reply off. An onset only ARMS a barge-in —
+// stopping playback requires >=2 recognized non-echo words, so beeps/transients can't cut in.
+const BARGE_IN_GRACE_MS = 400;
+// Post-reply listening bound: after the last TTS chunk ends the mic listens for this long.
+// Silence past the window ends the session at idle — it replaces the unbounded silent
+// re-arming that kept the recognizer (and its start-beep) cycling for minutes.
+const FOLLOW_UP_MS = 8000;
 const WAKE_LOG_EVERY_TICKS = 20;
 const MIC_RETRY_MS = 2000;
 
@@ -121,6 +126,22 @@ export class VoiceSession {
   private recorder = new CallRecorder();
   private unsubscribeVoice: (() => void) | null = null;
   private speakingSince = 0;
+  // Text of the reply sentence currently playing — used to reject our own
+  // TTS audio when the recognizer hears it back during barge-in listening.
+  private speakingText = '';
+  private lastSpokenText = '';
+  // The question that produced the current reply — its audio tail can surface
+  // as a late partial right after playback starts and must not barge it in.
+  private lastUserText = '';
+  // Timestamp of a speech onset seen during playback; set by onSpeechStart and
+  // confirmed into a real barge-in only by >=2 non-echo words in a later result.
+  private bargeCandidateAt = 0;
+  // Bounded post-reply listening: absolute deadline + timer + whether any
+  // recognized words arrived in the window (beep-only onsets don't count).
+  private followUpEndsAt = 0;
+  private followUpTimer: ReturnType<typeof setTimeout> | null = null;
+  private heardWords = false;
+  private lastWordsAt = 0;
 
   // Streamed-reply tracking: which assistant message we're reading and how
   // much of it has already been fed to the chunker.
@@ -178,8 +199,12 @@ export class VoiceSession {
       onError: (message, fatal) => this.onSttError(message, fatal),
       onEnd: () => this.onSttEnd(),
     };
-    if (isNativeMobileApp()) this.startStt();
-    else this.startWakeWatch();
+    if (isNativeMobileApp()) {
+      this.startStt();
+      // The initial listen is bounded like a follow-up window: if nothing is said,
+      // the session drops to idle instead of silently re-arming forever.
+      this.openFollowUpWindow();
+    } else this.startWakeWatch();
   }
 
   stop() {
@@ -197,6 +222,11 @@ export class VoiceSession {
     this.clearLease();
     stopMicLevel();
     this.clearMergeTimer();
+    this.closeFollowUpWindow();
+    this.bargeCandidateAt = 0;
+    this.speakingText = '';
+    this.lastSpokenText = '';
+    this.lastUserText = '';
     this.pendingText = '';
     this.replyKey = '';
     this.replyOffset = 0;
@@ -224,6 +254,19 @@ export class VoiceSession {
     if (!this.active) return;
     const trimmed = text.trim();
     if (trimmed === '') return;
+    this.heardWords = true;
+    this.lastWordsAt = Date.now();
+
+    const speaking = this.speaker.isSpeaking || this.pendingSpeech > 0;
+    if (speaking && STOP_PHRASES.test(trimmed)) {
+      // "stop" during playback keeps working exactly as before.
+      this.interruptOutput();
+      return;
+    }
+
+    // A final can arrive during playback without a prior partial: treat it as
+    // a barge-in the same way (>=2 words, not our own reply audio echoed back).
+    if (speaking && !this.confirmBargeIn(trimmed)) return;
 
     if (SWITCH_TO_CHAT_PHRASES.test(trimmed)) {
       this.switchToChat();
@@ -263,8 +306,13 @@ export class VoiceSession {
       this.interruptOutput();
     }
     this.pushUserMessage(text);
+    this.lastUserText = text;
     this.awaitingReply = true;
     this.generationSeen = false;
+    // The recognizer pauses while the turn is submitted and the reply generates —
+    // a late partial must not double-submit. Playback resumes it in enqueueSpeech
+    // so barge-in can fire while Pico is speaking.
+    this.closeFollowUpWindow();
     this.pauseStt();
     console.log('[VoiceDebug] submit turn', { textLen: text.length });
     useVoiceStore.getState().setPhase('thinking');
@@ -274,6 +322,15 @@ export class VoiceSession {
 
   private onPartial(text: string) {
     console.log('[VoiceDebug] partial', { text, switchMatch: SWITCH_TO_CHAT_PHRASES.test(text) });
+    if (text.trim() !== '') {
+      this.heardWords = true;
+      this.lastWordsAt = Date.now();
+    }
+    // Barge-in confirmation: an onset was armed during playback; >=2 non-echo
+    // words in the interim text make it real and cut the reply immediately.
+    if (this.bargeCandidateAt > 0 && (this.speaker.isSpeaking || this.pendingSpeech > 0)) {
+      this.confirmBargeIn(text.trim());
+    }
     useVoiceStore.getState().setInterim(text);
     if (this.active && SWITCH_TO_CHAT_PHRASES.test(text)) this.switchToChat();
     if (this.active && this.isShortTrigger(text) && RESUME_PHRASES.test(text)) {
@@ -348,18 +405,51 @@ export class VoiceSession {
   }
 
   private onSpeechStart() {
-    // Barge-in trigger: any detected speech onset during output stops audio
-    // immediately. The following utterance (if any) drives the next turn.
-    if (Date.now() - this.speakingSince < BARGE_IN_GRACE_MS) return;
-    if (this.speaker.isSpeaking || this.pendingSpeech > 0) {
-      this.audioGen += 1;
-      this.speaker.stop();
-      useVoiceStore.getState().setPhase('listening');
+    // Speech onset during playback only ARMS a barge-in candidate. The reply's
+    // own audio and recognizer start-beeps also produce onsets, so playback is
+    // cut only when a >=2-word non-echo result follows (see confirmBargeIn).
+    const speaking = this.speaker.isSpeaking || this.pendingSpeech > 0;
+    if (!speaking) return;
+    if (Date.now() - this.speakingSince < BARGE_IN_GRACE_MS) {
+      PicoLogger.info('BargeIn', 'Ignored speech onset: inside post-TTS-start grace window');
+      return;
     }
+    this.bargeCandidateAt = Date.now();
+    PicoLogger.info('BargeIn', 'Speech onset during playback; waiting for >=2 non-echo words');
+  }
+
+  // Returns true when the text confirms a barge-in (TTS cut, turn continues);
+  // false when it should be ignored (echo of our own reply, or too few words).
+  private confirmBargeIn(text: string): boolean {
+    const words = text.split(/\s+/).filter(Boolean);
+    if (words.length < 2) {
+      PicoLogger.info('BargeIn', 'Ignored onset: fewer than 2 recognized words', { text });
+      return false;
+    }
+    if (this.isEchoOfReply(text)) {
+      PicoLogger.info('BargeIn', 'Ignored onset: matches Pico reply audio or the just-submitted question', { text });
+      return false;
+    }
+    PicoLogger.info('BargeIn', 'Barge-in confirmed; stopping reply playback', { text });
+    this.bargeCandidateAt = 0;
+    this.interruptOutput();
+    return true;
+  }
+
+  // The recognizer hears Pico's own TTS output through the mic while it listens
+  // for a barge-in, and a paused-then-resumed recognizer can also flush a late
+  // partial made of the just-submitted question's audio tail. A result whose
+  // words all come from either source is that audio coming back, not the user.
+  private isEchoOfReply(text: string): boolean {
+    const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    const spoken = ` ${norm(`${this.speakingText} ${this.lastSpokenText} ${this.lastUserText}`)} `;
+    if (!spoken.trim()) return false;
+    return norm(text).split(' ').every((w) => spoken.includes(` ${w} `));
   }
 
   private interruptOutput() {
     this.audioGen += 1;
+    this.bargeCandidateAt = 0;
     this.speaker.stop();
     if (useStore.getState().generating) {
       useStore.getState().setGenerating(false);
@@ -416,7 +506,9 @@ export class VoiceSession {
     this.sttPaused = true;
     this.listening = false;
     this.clearMergeTimer();
+    this.closeFollowUpWindow();
     this.pendingText = '';
+    this.bargeCandidateAt = 0;
     this.stt.abort();
   }
 
@@ -550,7 +642,9 @@ export class VoiceSession {
     const gen = this.audioGen;
     console.log('[VoiceDebug] enqueue', { chars: sentence.length, gen, current: this.audioGen, active: this.active });
     PicoLogger.info('Reply', 'Enqueue reply sentence for TTS', { chars: sentence.length, gen, current: this.audioGen, active: this.active });
-    this.pauseStt();
+    // Keep the recognizer live during playback so the user can barge in.
+    // Self-trigger is guarded by the grace window + >=2 non-echo words.
+    this.resumeStt();
     if (!useVoiceStore.getState().aiMuted) this.speaker.prefetch(sentence);
     this.pendingSpeech += 1;
     this.ttsQueue = this.ttsQueue
@@ -558,10 +652,13 @@ export class VoiceSession {
         try {
           if (gen === this.audioGen && this.active && !useVoiceStore.getState().aiMuted) {
             this.speakingSince = Date.now();
+            this.speakingText = sentence;
             await this.speaker.speak(sentence);
           }
         } finally {
           this.pendingSpeech -= 1;
+          this.lastSpokenText = this.speakingText;
+          this.speakingText = '';
           this.maybeReturnToListening(useStore.getState());
         }
       })
@@ -603,10 +700,75 @@ export class VoiceSession {
     if (this.pendingSpeech === 0 && !state.generating && !this.speaker.isSpeaking) {
       PicoLogger.info('Session', 'Resuming listening (reply finished)', { pendingSpeech: this.pendingSpeech });
       this.resumeStt();
+      this.openFollowUpWindow();
       if (voice.phase === 'speaking' || voice.phase === 'thinking') {
         voice.setPhase('listening');
       }
     }
+  }
+
+  // ── Bounded follow-up window (B2) ──────────────────────────────────────
+
+  // Opens the absolute 8-second listening window: after TTS drains (and at
+  // session start). Inside the window the recognizer re-arms as usual; at
+  // expiry the session goes idle instead of silently cycling forever.
+  private openFollowUpWindow() {
+    if (!this.active) return;
+    this.clearFollowUpTimer();
+    this.heardWords = false;
+    this.followUpEndsAt = Date.now() + FOLLOW_UP_MS;
+    this.followUpTimer = setTimeout(() => this.onFollowUpExpired(), FOLLOW_UP_MS);
+  }
+
+  private closeFollowUpWindow() {
+    this.clearFollowUpTimer();
+    this.followUpEndsAt = 0;
+    this.heardWords = false;
+  }
+
+  private clearFollowUpTimer() {
+    if (this.followUpTimer) clearTimeout(this.followUpTimer);
+    this.followUpTimer = null;
+  }
+
+  private onFollowUpExpired() {
+    this.followUpTimer = null;
+    if (!this.active) return;
+    // A real turn in flight (words heard, generation, or playback) is never cut —
+    // the window only closes on genuine silence.
+    const busy =
+      this.sttPaused ||
+      this.awaitingReply ||
+      this.pendingSpeech > 0 ||
+      this.speaker.isSpeaking ||
+      useStore.getState().generating;
+    if (busy) {
+      PicoLogger.info('Session', 'Follow-up window expired while a turn was in flight; staying active');
+      return;
+    }
+    // Words heard very recently = the user is mid-utterance. Give the forming
+    // turn one short grace instead of cutting it; a stale stray word cannot
+    // hold the window open forever.
+    if (this.heardWords && Date.now() - this.lastWordsAt < 2000) {
+      PicoLogger.info('Session', 'Follow-up window expired mid-speech; one grace recheck');
+      this.followUpTimer = setTimeout(() => this.onFollowUpExpired(), 2000);
+      return;
+    }
+    PicoLogger.info('Session', 'follow-up window expired');
+    // Same teardown as the re-arm cap path minus the error message: the session
+    // goes fully idle so the next tap cleanly starts a fresh listening window.
+    this.listening = false;
+    this.active = false;
+    this.awaitingReply = false;
+    this.stt.abort();
+    this.unsubscribe?.();
+    this.unsubscribe = null;
+    this.unsubscribeVoice?.();
+    this.unsubscribeVoice = null;
+    this.stopRecording();
+    this.clearLease();
+    useVoiceStore.getState().setInterim('');
+    useVoiceStore.getState().setVoiceMode(false);
   }
 
   private startRecording() {
