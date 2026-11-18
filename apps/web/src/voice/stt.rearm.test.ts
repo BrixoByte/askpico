@@ -40,9 +40,10 @@ const startSession = () => {
   input.start(handlers as never, { lang: 'en-US' });
 };
 
-// One listening window that hears partial speech but ends without a final result.
+// One listening window that hears a short partial (below the 2-word flush
+// threshold, so it still re-arms) and ends without a final result.
 const partialOnlyWindow = () => {
-  voice().onPartial('what time');
+  voice().onPartial('hmm');
   voice().onEnd();
   vi.advanceTimersByTime(REARM_MS);
 };
@@ -73,9 +74,9 @@ describe('Android voice re-arm (H1 + H8)', () => {
     expect(native().startVoiceInput).toHaveBeenLastCalledWith('en-US');
   });
 
-  it('re-arms after a partial-only window (speech heard, no final result)', () => {
+  it('re-arms after a 1-word partial window (below the flush threshold)', () => {
     startSession();
-    voice().onPartial('what time');
+    voice().onPartial('hmm');
     voice().onEnd();
     expect(native().startVoiceInput).toHaveBeenCalledTimes(1);
     vi.advanceTimersByTime(REARM_MS);
@@ -95,7 +96,7 @@ describe('Android voice re-arm (H1 + H8)', () => {
     for (let i = 0; i < 3; i++) partialOnlyWindow();
     expect(native().startVoiceInput).toHaveBeenCalledTimes(4);
 
-    voice().onPartial('what time');
+    voice().onPartial('hmm');
     voice().onEnd();
     vi.advanceTimersByTime(REARM_MS * 5);
     expect(native().startVoiceInput).toHaveBeenCalledTimes(4);
