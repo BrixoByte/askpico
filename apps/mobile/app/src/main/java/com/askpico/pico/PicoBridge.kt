@@ -57,18 +57,6 @@ class PicoBridge(private val activity: Activity) {
     }
 
     @JavascriptInterface
-    fun speak(token: String?, id: String, text: String, lang: String) {
-        if (!ok(token)) return
-        (activity as? MainActivity)?.speakNative(id, text, lang)
-    }
-
-    @JavascriptInterface
-    fun stopSpeaking(token: String?) {
-        if (!ok(token)) return
-        (activity as? MainActivity)?.stopNativeSpeech()
-    }
-
-    @JavascriptInterface
     fun logMessage(token: String?, msg: String) {
         if (ok(token)) Log.d("PICO_JS_LOG", msg)
     }
@@ -216,17 +204,5 @@ class PicoBridge(private val activity: Activity) {
                     controller.isAppearanceLightNavigationBars = !darkBackground
                 }
         }
-    }
-
-    @JavascriptInterface
-    fun startVoiceInput(token: String?, language: String) {
-        if (!ok(token)) return
-        (activity as? MainActivity)?.startVoiceInput(language)
-    }
-
-    @JavascriptInterface
-    fun stopVoiceInput(token: String?) {
-        if (!ok(token)) return
-        (activity as? MainActivity)?.stopVoiceInput()
     }
 }

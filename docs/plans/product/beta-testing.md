@@ -43,7 +43,7 @@ The spine. Scenarios S1, S6, S8, S19, plus checklists 12.3 and 12.7.
 - [ ] **S1 — Guest start:** open Landing (apex `localhost:5173`), click "Try as guest". Expected: guest session created, Chat opens with "Hello, Guest" and the Free label.
 - [ ] **S2 — Guest to account:** sign up with email and password. Expected: guest chats shown after sign-in; user is asked before chats are merged.
 - [ ] **Auth redirect:** sign in at `auth.localhost:5173`. Expected: lands on `chat.localhost:5173` already signed in (session handed over through the URL hash).
-- [ ] **Sign-in gating:** as a guest, try a locked feature (voice, attachments, web search). Expected: lock badge and auth gate modal.
+- [ ] **Sign-in gating:** as a guest, try a locked feature (attachments, web search). Expected: lock badge and auth gate modal.
 
 ### 1.2 Model routing
 
@@ -80,16 +80,9 @@ Scenario S21, checklist 12.5.
 - [ ] **Secrets filter:** try to save a fake password `mera password hunter2 hai`. Expected: it is not stored as a fact, or is stripped.
 - [ ] **Non-blocking writes:** save a memory during an active reply. Expected: the reply does not pause or restart.
 
-## 3. Phase 3: Voice Quota (Step 5)
+## 3. Phase 3: Voice Quota
 
-Scenarios S4, S5, checklist 12.2. Voice Steps 1–4 and 6 are already built; this phase tests enforcement.
-
-- [ ] **S4 — Daily cap:** sign in as a Free user, use voice until 10 minutes. Expected: voice stops at the cap with a clear message; typing still works.
-- [ ] **Heartbeat tracking:** watch the Network tab during a voice session. Expected: a heartbeat every ~30 seconds; `voice_seconds_used_today` increments in Supabase.
-- [ ] **S5 — Client tamper:** change the client timer or localStorage counter, then start voice. Expected: server rejects the session or ignores the client value; the Supabase counter is unchanged.
-- [ ] **Reset:** set `last_reset_timestamp` to yesterday in Supabase. Expected: the counter resets on the next request.
-- [ ] **Guest voice:** try voice as a guest. Expected: server returns 403; typed fallback offered.
-- [ ] **Referral minutes:** after a valid referral reward, expected: the bonus minutes apply to the quota (enforcement, not just the record).
+Voice mode removed (text-only beta, round 63). See docs/plans/modules/voice-mode.md for the archived design.
 
 ## 4. Phase 4: Response Cache
 
@@ -99,23 +92,15 @@ Scenario S23, checklist 13. Requires section 4.9 to be built first.
 - [ ] **Cache miss on variation:** ask `What is photosynthesis?` then `What is photosynthesis for class 8?`. Expected: two provider calls — the key includes normalized text, not a substring match.
 - [ ] **Mode/agent keying:** ask the same question on Quick then Deep. Expected: two provider calls — mode is part of the key.
 - [ ] **No personal data:** ask a question with memory active (saved fact present), and a question with an attachment. Expected: neither response is cached; the second call still hits the provider.
-- [ ] **Voice excluded:** ask the same question by voice. Expected: no caching on voice requests.
 - [ ] **TTL expiry:** set a cache entry's timestamp older than 24 hours directly in the store. Expected: the next identical request calls the provider.
 - [ ] **Auth still applies:** sign out, try the same question as a guest. Expected: normal auth/rate-limit rules run; a signed-in user's cached answer is not served to a different account.
 - [ ] **Quota counts:** a cache hit still increments the daily quota counter.
 
 ## 5. Phase 5: Voice Loop and Fallback Chain
 
-Scenarios S9, S10, S11, checklist 12.2.
+Voice mode removed (text-only beta, round 63). See docs/plans/modules/voice-mode.md for the archived design.
 
-- [ ] **Mic insert:** press the mic, speak, expected: text inserts into the composer without auto-send.
-- [ ] **Silence timeout:** speak, then stay quiet. Expected: listening stops after the timeout with a clear message.
-- [ ] **S9 — Unsupported browser:** test on Firefox. Expected: mic button hidden; type-and-hear works.
-- [ ] **S10 — Network drop:** start a voice reply, toggle offline mid-playback. Expected: playback stops, retry message shown, no stuck recognition session (check the voice state returns to idle).
-- [ ] **S11 — Barge-in:** speak "ruk" / "stop" during a reply. Expected: playback stops within 1 second.
-- [ ] **TTS fallback chain:** disable Edge TTS via the flag/env. Expected: the chain moves to the laptop TTS service, then `speechSynthesis` — voice never goes fully silent.
-- [ ] **Mood tags:** a reply containing `[mood: happy]` never shows the tag on screen or speaks it aloud.
-- [ ] **Android bridge:** inside the app, press the mic. Expected: Android `SpeechRecognizer` produces text; permission denial shows the typed fallback.
+- [ ] **Mood tags:** a reply containing `[mood: happy]` never shows the tag on screen.
 
 ## 6. Phase 6: Persona, Character, and Diagrams
 
@@ -150,7 +135,7 @@ Scenarios S14, S15, S20, checklist 12.3 and 12.5.
 - [ ] **S14 — Manual upgrade:** submit a fake payment proof for a test account. Expected: plan stays Free until the server writes the subscription; then the plan label and Deep mode update.
 - [ ] **S20 — Coupon exhaustion:** redeem the same early-buyer code twice, and redeem after all 26 are used. Expected: rejection with a clear message; no discount applied.
 - [ ] **S15 — Self-referral:** sign up with your own `?ref=` code; create a second account using the first account's code. Expected: zero reward; both events recorded.
-- [ ] **Referral reward timing:** reward only fires after real activity (email verified or first voice session), not on signup.
+- [ ] **Referral reward timing:** reward only fires after real activity (email verified), not on signup.
 - [ ] **S16 — Account deletion:** delete the account on web and inside the Android app. Expected: user, sessions, and linked data removed; logged out; login fails afterwards.
 
 ## 8. Phase 8: Android Beta
@@ -161,12 +146,12 @@ Scenarios S3, S16, S18, checklists 12.8 and 12.9.
 - [ ] **Intent actions:** from chat or Settings, trigger call, open app, share-to-WhatsApp, alarm/timer, open URL. Expected: each works per checklist 12.9, with confirm dialogs where required.
 - [ ] **Shield:** enable a preset, grant usage access and overlay, open Instagram or YouTube. Expected: blocked within ~1 second; "Back to Pico" returns; Pico itself is never blocked.
 - [ ] **Vault:** save a value, restart the app. Expected: value survives; ref resolves on-device; no secret in logcat, network, or screenshots.
-- [ ] **S18 — Low-memory device:** run on a low-RAM device. Expected: heavy features disabled with a message; chat and voice still work.
+- [ ] **S18 — Low-memory device:** run on a low-RAM device. Expected: heavy features disabled with a message; chat still works.
 - [ ] **Offline:** airplane mode, open the app. Expected: error screen with Retry and Open in browser.
 
 ## 9. Launch Readiness Sweep
 
-- [ ] All scenarios S1–S23 pass on Chrome and Edge desktop, Chrome on Android, and one iPhone (voice fallback check).
+- [ ] All scenarios S1–S23 pass on Chrome and Edge desktop, Chrome on Android, and one iPhone.
 - [ ] Privacy policy lists every stored field; account deletion link works from the store listing URL.
 - [ ] Marketing pages load without JavaScript.
 - [ ] Backend tests for routing, quota, and auth pass.

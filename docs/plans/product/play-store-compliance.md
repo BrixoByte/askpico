@@ -18,8 +18,8 @@ This document maps Google Play Developer Program Policies to Pico's features. It
 | Ads | No ads are planned in the beta | None now. If ads are added, review Ads, Families, and Inappropriate Ads policies | Not applicable |
 | AI-Generated Content | Text chat, image generation, and artifacts are AI-generated content | In-app report or flag on every AI output. Restricted-content prevention. See section 5 | Not in beta docs |
 | Content Ratings | Mandatory IARC questionnaire. AI output can change the rating | Answer honestly in Play Console. Repeat the questionnaire when AI or artifact features change | Not started |
-| SDK Requirements | Supabase, FCM, Google sign-in and Drive sync, Android `SpeechRecognizer`, and `esbuild-wasm` | Each SDK's data use must match the Data safety form. See section 6 | Not started |
-| Permissions | Microphone for voice. Usage access and overlay for the whole-app shield | In-app disclosure before mic use. Confirm the Play permission declaration for usage access and overlay in Play Console | Verify |
+| SDK Requirements | Supabase, FCM, Google sign-in and Drive sync, and `esbuild-wasm` | Each SDK's data use must match the Data safety form. See section 6 | Not started |
+| Permissions | Usage access and overlay for the whole-app shield. Microphone (`RECORD_AUDIO`) removed in round 63 (text-only beta) — remove the Play permission declaration if present | Confirm the Play permission declaration for usage access and overlay in Play Console | Verify |
 | Device and Network Abuse, Unauthorized Use or Imitation of System Functionality | Whole-app shield draws overlays over other apps | Overlay must be dismissible and must not imitate system UI. Confirm the rules in Play Console | Verify |
 | Impersonation and Intellectual Property | Chibi character is original | Do not copy existing anime characters (already in beta scope) | OK |
 | Deceptive Behavior and Misrepresentation | Early-buyer coupons and pricing claims | Store listing must match in-app prices and offers. No "unlimited" claims that the plan does not give | Review |
@@ -110,7 +110,7 @@ Keep this list in sync with the Play Console Data safety form.
 - [ ] Restricted-content filters in place and tested.
 - [ ] IARC questionnaire complete.
 - [ ] Data safety form matches section 6.
-- [ ] Permission declarations complete for microphone, usage access, and overlay.
+- [ ] Permission declarations complete for usage access and overlay.
 - [ ] Shield and other bridge stubs either finished or hidden.
 - [ ] Store listing prices and offer claims match the app.
 - [ ] Privacy policy and web account deletion link live.
@@ -123,8 +123,8 @@ Summary of the policies that cover user data, permissions, and special access. C
 | Policy | Pico impact | Required action | Status |
 |---|---|---|---|
 | Persistent identifiers | No IMEI, SSAID, or Advertising ID is needed. No analytics or ads SDK is planned | Never link a persistent device ID to a user account or personal data. Review whether the FCM token is linked to accounts | Verify |
-| Personal and sensitive user data | Account, chat content, memory, voice, and the app list used by the shield are all sensitive | Collect only what each feature needs. Never sell or share for ads | Open |
-| Prominent disclosure and consent | Needed before the mic (voice), usage access, overlay, and notification permissions | In-app disclosure shown before each system prompt. Consent by an affirmative tap. Do not treat back or home as consent. No auto-dismiss | Open |
+| Personal and sensitive user data | Account, chat content, memory, and the app list used by the shield are all sensitive | Collect only what each feature needs. Never sell or share for ads | Open |
+| Prominent disclosure and consent | Needed before the usage access, overlay, and notification permissions | In-app disclosure shown before each system prompt. Consent by an affirmative tap. Do not treat back or home as consent. No auto-dismiss | Open |
 | Restricted permissions | Shield uses `PACKAGE_USAGE_STATS` (special access) and `SYSTEM_ALERT_WINDOW` (settings page) | Honour a decline. Give a non-blocking fallback. Explain each permission in context | Open |
 | Intent actions (calls) | Direct call needs `CALL_PHONE`, a dangerous permission with a runtime request | Prefer `ACTION_DIAL`, which needs no permission and lets the user confirm. See decision D5 | Decision |
 | Alarms and timers | Timers can use the system clock app through an intent | Do not declare `USE_EXACT_ALARM` or `SCHEDULE_EXACT_ALARM`. Pico's core is not alarms | Planned |

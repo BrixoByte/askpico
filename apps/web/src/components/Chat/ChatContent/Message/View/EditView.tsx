@@ -2,18 +2,14 @@ import React, { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useStore from '@store/store';
 import useDraftStore from '@store/draft-store';
-import useVoiceStore from '@store/voice-store';
 
 import useSubmit from '@hooks/useSubmit';
 import { selectOrCreateChat } from '@hooks/useAddChat';
 import { extractAttachmentText } from '@api/api';
 import i18n from '@src/i18n';
 import LockBadge from '@components/Auth/LockBadge';
-import VoiceWaveIcon from '@components/Voice/VoiceWaveIcon';
 import ModeSelector from '@components/Chat/ModeSelector';
 import { gateSignedIn, useIsSignedIn } from '@utils/authGate';
-import { gateVoiceStart } from '@voice/guestVoiceGate';
-import useGuestVoiceStore from '@store/guest-voice-store';
 import { tryDeviceIntent } from '@utils/agentIntents';
 import { attachmentBlockReason } from '@constants/attachments';
 import {
@@ -29,9 +25,6 @@ import {
 } from '@utils/attachmentStore';
 
 import PopupModal from '@components/PopupModal';
-import { speechRecognitionSupported } from '@utils/speech';
-import useSpeechRecognition from '@hooks/useSpeechRecognition';
-import { sttSupported } from '@voice/stt';
 import { isMobileDevice } from '@utils/device';
 
 import SendIcon from '@icon/SendIcon';
@@ -147,17 +140,7 @@ const EditView = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
-  const [voiceSend, setVoiceSend] = useState(false);
-  const voiceMode = useVoiceStore((state) => state.voiceMode);
-  const voiceSupported = sttSupported();
   const signedIn = useIsSignedIn();
-  const isGuest = useGuestVoiceStore((state) => state.isGuest);
-  const speech = useSpeechRecognition({
-    onFinal: (text) =>
-      _setContent((prev) => (prev.trim() === '' ? text : `${prev.trimEnd()} ${text}`)),
-    onError: (message) => setError(message),
-    onEnd: () => setVoiceSend(true),
-  });
   const outgoingContent = [
     _content.trim(),
     ...attachments
@@ -183,47 +166,11 @@ const EditView = ({
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
 
-  // Page-wide spacebar shortcut for voice typing: toggles without focusing
-  // the composer, but stays out of the way of real typing (inputs/textareas),
-  // focused buttons/links, and doesn't double-fire on the composer itself.
-  useEffect(() => {
-    if (!sticky || !speech.supported) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== ' ' || e.repeat) return;
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      if (
-        target.closest(
-          'input, textarea, select, [contenteditable="true"], button, a'
-        )
-      )
-        return;
-      if (_content.trim() !== '' && !speech.listening) return;
-      e.preventDefault();
-      speech.toggle();
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [sticky, speech, _content]);
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const isMobile =
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|playbook|silk/i.test(
         navigator.userAgent
       );
-
-    // Space toggles voice typing: only when the box is empty (so normal
-    // spaces while typing still work) or while listening (to stop).
-    if (
-      e.key === ' ' &&
-      sticky &&
-      speech.supported &&
-      (_content.trim() === '' || speech.listening)
-    ) {
-      e.preventDefault();
-      speech.toggle();
-      return;
-    }
 
     if (e.key === 'Enter' && !isMobile && !e.shiftKey) {
       e.preventDefault();
@@ -331,7 +278,6 @@ const EditView = ({
     setAttachments([]);
     resetTextAreaHeight();
     setChats(updatedChats);
-    if (useVoiceStore.getState().voiceMode) useVoiceStore.getState().exitVoiceHome();
     // Device intents (open app/link, call, timer…) are answered natively —
     // no LLM round trip. Flag-gated; returns null on desktop / non-match.
     const deviceReply = await tryDeviceIntent(content);
@@ -357,14 +303,6 @@ const EditView = ({
       handleSubmit();
     }
   };
-
-  // Voice flow: transcript is inserted during listening, then sent once
-  // recognition ends (runs after the _content state has flushed).
-  useEffect(() => {
-    if (!voiceSend) return;
-    setVoiceSend(false);
-    if (_content.trim() !== '') handleGenerate();
-  }, [voiceSend]);
 
   const addAttachment = async (file: File) => {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -544,73 +482,42 @@ const EditView = ({
                 </div>
               )}
               {sticky && <span className='mx-2 my-auto h-5 w-[1px] bg-gray-200 dark:bg-zinc-800/80' />}
-              {sticky && voiceSupported && !generating && _content.trim() === '' && attachments.length === 0 ? (
-                <button
-                  type='button'
-                  className={`relative flex h-9 w-9 items-center justify-center rounded-full shadow-soft transition-all after:absolute after:-inset-1.5 after:content-[''] ${
-                    voiceMode
-                      ? 'bg-red-500 text-white hover:bg-red-600'
-                      : 'bg-brand-500 text-white hover:bg-brand-600 dark:bg-[#9EFF00] dark:text-black dark:hover:bg-[#86D900]'
-                  }`}
-                  onClick={() =>
-                    voiceMode
-                      ? useVoiceStore.getState().setVoiceMode(false)
-                      : gateVoiceStart(() => {
-                          const state = useStore.getState();
-                          useVoiceStore
-                            .getState()
-                            .enterVoiceHome(state.chats?.[state.currentChatIndex]?.id ?? null);
-                        })
-                  }
-                  aria-label={voiceMode ? 'turn voice mode off' : 'turn voice mode on'}
-                  title='Voice to voice mode'
-                >
-                  <VoiceWaveIcon />
-                  {!signedIn && !isGuest && <LockBadge />}
-                </button>
-              ) : (
-                <button
-                  type='button'
-                  className={`relative flex h-9 w-9 items-center justify-center rounded-full shadow-soft transition-all after:absolute after:-inset-1.5 after:content-[''] ${
-                    generating
-                      ? 'bg-red-500 text-white hover:bg-red-600'
-                      : 'bg-brand-500 text-white hover:bg-brand-600 dark:bg-[#9EFF00] dark:text-black dark:hover:bg-[#86D900]'
-                  }`}
-                  onClick={
-                    generating
-                      ? () => useStore.getState().setGenerating(false)
-                      : handleGenerate
-                  }
-                  aria-label={generating ? 'stop generating' : 'send message'}
-                >
-                  {generating ? (
-                    <svg
-                      stroke='currentColor'
-                      fill='none'
-                      strokeWidth='1.5'
-                      viewBox='0 0 24 24'
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      className='h-3 w-3'
-                      height='1em'
-                      width='1em'
-                      xmlns='http://www.w3.org/2000/svg'
-                    >
-                      <rect x='3' y='3' width='18' height='18' rx='2' ry='2'></rect>
-                    </svg>
-                  ) : (
-                    <SendIcon />
-                  )}
-                </button>
-              )}
+              <button
+                type='button'
+                className={`relative flex h-9 w-9 items-center justify-center rounded-full shadow-soft transition-all after:absolute after:-inset-1.5 after:content-[''] ${
+                  generating
+                    ? 'bg-red-500 text-white hover:bg-red-600'
+                    : 'bg-brand-500 text-white hover:bg-brand-600 dark:bg-[#9EFF00] dark:text-black dark:hover:bg-[#86D900]'
+                }`}
+                onClick={
+                  generating
+                    ? () => useStore.getState().setGenerating(false)
+                    : handleGenerate
+                }
+                aria-label={generating ? 'stop generating' : 'send message'}
+              >
+                {generating ? (
+                  <svg
+                    stroke='currentColor'
+                    fill='none'
+                    strokeWidth='1.5'
+                    viewBox='0 0 24 24'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    className='h-3 w-3'
+                    height='1em'
+                    width='1em'
+                    xmlns='http://www.w3.org/2000/svg'
+                  >
+                    <rect x='3' y='3' width='18' height='18' rx='2' ry='2'></rect>
+                  </svg>
+                ) : (
+                  <SendIcon />
+                )}
+              </button>
             </div>
           </div>
           </div>
-          {sticky && !speech.supported && (
-            <div className='border-t border-surface-line px-4 py-1.5 text-[11px] text-ink-muted'>
-              Voice typing is not supported in this browser — type and send works fine.
-            </div>
-          )}
 
         </div>
       </div>

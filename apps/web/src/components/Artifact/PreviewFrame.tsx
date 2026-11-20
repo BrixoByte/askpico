@@ -49,7 +49,7 @@ const PreviewFrame = ({
   const [entryOverride, setEntryOverride] = useState<string | null>(null);
   const generating = useStore((state) => state.generating);
   // The Android shell latches this after a low-memory trim — previews stay
-  // unmounted so the WebView keeps the memory for chat and voice.
+  // unmounted so the WebView keeps the memory for chat.
   const lowMemory = useSyncExternalStore(subscribeLowMemory, isLowMemoryMode, () => false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const sourcesRef = useRef(sources);

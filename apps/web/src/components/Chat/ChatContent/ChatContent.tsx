@@ -6,11 +6,8 @@ import ScrollToBottomButton from './ScrollToBottomButton';
 import Message from './Message';
 import EmptyState from './EmptyState';
 import MobileHomeLayout from './MobileHomeLayout';
-import VoiceStatus from '@components/Voice/VoiceStatus';
 import AgentRouteBadge from './AgentRouteBadge';
 import QuotaBanner from './QuotaBanner';
-import VoiceVisualizer from '@components/Voice/VoiceVisualizer';
-import useVoiceStore from '@store/voice-store';
 import { isMobileDevice, isNativeMobileApp } from '@utils/device';
 
 import { shallow } from 'zustand/shallow';
@@ -42,33 +39,6 @@ const ChatContent = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const voiceHome = useVoiceStore((state) => state.voiceHome);
-  const voiceMode = useVoiceStore((state) => state.voiceMode);
-  const voiceThreadId = useVoiceStore((state) => state.voiceThreadId);
-  const activeChatId = chats ? chats[currentChatIndex]?.id ?? null : null;
-  const inVoiceHome =
-    voiceHome &&
-    (voiceMode || !hasMessages || (voiceThreadId !== null && voiceThreadId === activeChatId));
-
-  if (inVoiceHome) {
-    return (
-      <div className='flex h-full min-h-0 flex-1 flex-col overflow-y-auto'>
-        <div className='fade-in mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-4 py-2'>
-          <EmptyState showDivider={false} />
-          <VoiceVisualizer />
-        </div>
-        {error && (
-          <div className='mx-auto mb-2 max-w-3xl rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600'>
-            {error}
-          </div>
-        )}
-        <div className='mx-auto w-full max-w-3xl'>
-          <VoiceStatus />
-        </div>
-      </div>
-    );
-  }
-
   if (!hasMessages) {
     return (
       <div className='flex h-full min-h-0 flex-1 flex-col overflow-y-auto'>
@@ -91,9 +61,6 @@ const ChatContent = () => {
             {error}
           </div>
         )}
-        <div className='mx-auto w-full max-w-3xl'>
-          <VoiceStatus />
-        </div>
       </div>
     );
   }
@@ -150,9 +117,6 @@ const ChatContent = () => {
             {error}
           </div>
         )}
-        <div className='mx-auto w-full max-w-3xl'>
-          <VoiceStatus />
-        </div>
         <div ref={messagesEndRef} />
       </div>
     </div>

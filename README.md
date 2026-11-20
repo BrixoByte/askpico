@@ -77,7 +77,7 @@ Pico is an all-in-one AI workspace with three core components:
 
 - The browser never receives provider API keys. All keys live in `services/api/.env`.
 - Storage is Supabase (Postgres). Agent conversation history is in the `agent_messages` table, and the backend has no local database file. The browser also keeps chat history and settings in localStorage.
-- Guests (anonymous "Continue as guest" sessions) get a lifetime 2-minute voice trial, enforced on the server in `guest_voice_usage`. Text chat stays available after the trial ends.
+- Voice mode removed (text-only beta, round 63). See docs/plans/modules/voice-mode.md for the archived design.
 - Tools that need a third-party API are called through the backend, so keys stay server-side.
 
 ## Repository Structure
@@ -208,14 +208,14 @@ To report a vulnerability, open a private security advisory on GitHub rather tha
 Planning documents live in [`docs/`](docs/README.md):
 
 - [Beta launch](docs/plans/product/beta-launch.md), [feature catalog](docs/plans/product/feature-catalog.md), and [roadmap](docs/plans/product/roadmap.md)
-- [Modules](docs/plans/modules/): Pico character, agent persona, voice mode, Pico vault
+- [Modules](docs/plans/modules/): Pico character, agent persona, voice mode (archived), Pico vault
 - [Engineering](docs/plans/engineering/): agent development, authentication, database, testing guide, branching strategy
 
 ## Roadmap
 
 - [ ] Kotlin Android app (`apps/mobile/`)
 - [ ] Electron desktop app with low-spec PC support
-- [ ] Voice input and output (see `docs/plans/modules/voice-mode.md`)
+- [x] ~~Voice input and output~~ — removed (text-only beta, round 63); archived in `docs/plans/modules/voice-mode.md`
 - [ ] Artifact page-swap navigation for multi-page generated sites
 - [ ] Accounts, subscriptions, and referrals (see `docs/plans/engineering/authentication.md`)
 

@@ -123,7 +123,6 @@ class ShieldService : Service() {
     private fun showOverlay(blockedPackage: String) {
         hideOverlay()
         requestShieldAudioFocus()
-        MainActivity.current?.silenceForShield()
         val wm = windowManager ?: return
         val view = buildOverlayView(blockedPackage)
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

@@ -8,7 +8,7 @@
 
 This catalogue lists every planned Pico feature, the platform it runs on, where its logic executes, its cost profile, and its effort estimate. Its goal is to keep cost low: work that a user's device can perform runs on the device, and only language-model work reaches the cloud.
 
-Costly, complex, or legally sensitive features are tracked in the [Roadmap](roadmap.md). Voice features are specified in [Voice mode](../modules/voice-mode.md).
+Costly, complex, or legally sensitive features are tracked in the [Roadmap](roadmap.md). Voice features were removed (text-only beta, round 63); the archived spec is [Voice mode](../modules/voice-mode.md).
 
 ## 2. Platforms
 
@@ -22,26 +22,25 @@ Costly, complex, or legally sensitive features are tracked in the [Roadmap](road
 
 | Plan | Price (PKR) | Limits |
 |---|---|---|
-| Free | 0 | 30 min/day voice, referral rewards |
-| Weekly Pass | 299 / week | 2 hr/day voice, all Pro features for 7 days |
-| Monthly Pro | 1,499 / month | 2 hr/day voice, priority AI |
-| Ultra (post-beta) | TBD / month | No daily voice limit, exclusive moods and skins |
+| Free | 0 | Referral rewards |
+| Weekly Pass | 299 / week | All Pro features for 7 days |
+| Monthly Pro | 1,499 / month | Priority AI |
+| Ultra (post-beta) | TBD / month | Exclusive moods and skins |
 
 - **Payments:** JazzCash, EasyPaisa, and local cards are required. International cards alone would exclude most Pakistani users.
 - **iOS (future):** iOS is not in the current plan. Digital purchases on iOS must use Apple In-App Purchase (commission applies). Verify the current Apple policy before any iOS work.
-- **Revenue estimate:** 67 Pro users at PKR 1,499 is about PKR 100k MRR. 1,000 Pro users is about PKR 15 lakh MRR. Infrastructure cost (free Edge TTS, guest local LLM, low-cost text LLM) can stay near PKR 15–30k per month.
+- **Revenue estimate:** 67 Pro users at PKR 1,499 is about PKR 100k MRR. 1,000 Pro users is about PKR 15 lakh MRR. Infrastructure cost (guest local LLM, low-cost text LLM) can stay near PKR 15–30k per month.
 
-## 4. Voice Roadmap (Copyright-Safe)
+## 4. Voice Roadmap
 
-- **Phase 1 (current):** Edge TTS with a filter layer. Specified in [Voice mode](../modules/voice-mode.md).
-- **Phase 2 (after revenue):** Record 1–2 hours of clean audio from a professional voice artist under a written contract. Fine-tune an open-source TTS model (F5-TTS, Coqui, or Bark) into a branded "Pico Voice". This avoids licensing risk and gives the same voice on every platform.
+Voice mode removed (text-only beta, round 63). See docs/plans/modules/voice-mode.md for the archived design.
 
 ## 5. Growth and Cost Controls
 
 ### Viral growth
 
 - **Shareable cards:** Each strong response, PDF summary, or code output can be exported as an image with the app logo and link.
-- **Referral loop:** Voice minutes are rewarded for joining, for daily activity, and for upgrades (Feature 30, [Voice mode](../modules/voice-mode.md)).
+- **Referral loop:** Rewards are credited after real activity, with anti-abuse rules (see [Beta launch](beta-launch.md) section 4.5).
 - **No credit card required:** Google sign-in or one-click guest session. Rate limits are required to prevent guest abuse.
 
 ### Cost controls
@@ -229,14 +228,14 @@ On-device processing is permitted when the user is informed and consents. Before
 
 ## 11. Next Steps
 
-1. Build the quick client-side tools first, because their cost is lowest. Build voice features using [Voice mode](../modules/voice-mode.md).
+1. Build the quick client-side tools first, because their cost is lowest. (Voice features removed — text-only beta, round 63; archived in [Voice mode](../modules/voice-mode.md).)
 2. Set up the backend proxy and rate limits.
 3. Measure cost per query for each feature and update this document with real numbers.
 4. Review costly and complex features in the [Roadmap](roadmap.md).
 
 ## 12. Feature Index
 
-Features 0 to 57 are grouped by category in section 14. Features that are costly or complex are listed in the [Roadmap](roadmap.md). Voice features (4, 24, 25, 26, 29, 30) are in [Voice mode](../modules/voice-mode.md).
+Features 0 to 57 are grouped by category in section 14. Features that are costly or complex are listed in the [Roadmap](roadmap.md). Voice features (4, 24, 25, 26, 29, 30) were removed (text-only beta, round 63); archived in [Voice mode](../modules/voice-mode.md).
 
 ## 13. Features by Platform
 
@@ -339,7 +338,7 @@ Features 0 to 57 are grouped by category in section 14. Features that are costly
 - **Gold rate:** No official free API has been found. Label it "Beta / verify".
 - **Commercial use:** Check the terms of Open-Meteo, TMDb, CoinGecko, and Wolfram before a paid launch.
 - **Browser blocking:** Feature 44 works only inside the app. Blocking other websites requires Electron, an extension, or native permissions.
-- **Pro plan:** Free users have daily limits on quizzes, Vault downloads, and LLM tools. Referral unlocks are in [Voice mode](../modules/voice-mode.md).
+- **Pro plan:** Free users have daily limits on quizzes, Vault downloads, and LLM tools. Referral unlocks were specified in the archived [Voice mode](../modules/voice-mode.md).
 - **Duplicates:** Text tools (14, 15, 16) already exist. Do not build duplicates.
 
 ## 14. Development Time Estimate (AI-Assisted)
@@ -408,9 +407,8 @@ Estimates assume a developer using an AI coding assistant. They cover coding, ba
 | Quick-to-build features (feature catalogue) | 148 | About 19 |
 | Costly and complex features (roadmap) | 145 | About 18 |
 | **Non-voice features (0–57)** | **293** | **About 37** |
-| Voice features ([Voice mode](../modules/voice-mode.md)) | 69 | About 9 |
 
-These are estimates. They exclude real-device testing, bug fixing, and API approval. The largest risks are Features 27 and 32. Voice estimates are in [Voice mode](../modules/voice-mode.md).
+These are estimates. They exclude real-device testing, bug fixing, and API approval. The largest risks are Features 27 and 32. Voice features were removed (text-only beta, round 63); archived estimates are in [Voice mode](../modules/voice-mode.md).
 
 ## 15. Website Quick Features
 
@@ -489,7 +487,7 @@ These features always run with the core chat, not inside one agent:
 - Anime suggestions (new mini feature)
 - Game suggestions (new mini feature)
 - Free games (38, roadmap)
-- Voice features (4, 24, 25, 26, 29, 30), specified in [Voice mode](../modules/voice-mode.md)
+- Voice features (4, 24, 25, 26, 29, 30) — removed (text-only beta, round 63); archived in [Voice mode](../modules/voice-mode.md)
 
 Sources: AniList or Jikan for anime (free), TMDb for movies, RAWG for games (free key). Verify each source's terms.
 
@@ -549,7 +547,7 @@ Features built on permissively licensed open-source projects. Each row credits t
 | 63 | Live web search with cited AI answers | ItzCrazyKns (`ItzCrazyKns/Vane`, formerly Perplexica) | MIT | Web, PC, Mobile | External service; Pico backend calls `POST /api/search` | Provider cost per query; search engines are free | Hacker, Study | Run SearXNG unmodified as a separate service. SearXNG is AGPL-3.0, so modifying it requires publishing that source |
 | 64 | Science skills (chemistry, physics, biology) | K-Dense-AI (`K-Dense-AI/scientific-agent-skills`) | MIT | Web, PC, Mobile | LLM with selected skill prompts | LLM tokens | Study | Overlaps features 46 to 48. Port only the skills that add value |
 | 65 | Image to 3D model | img2threejs (`img2threejs/img2threejs`) | Apache-2.0 | Web | To be verified | To be verified | Creative | Keep the Apache NOTICE file. Runtime not verified yet |
-| 66 | Voice input and output | Leonxlnx (`Leonxlnx/earshot`) | MIT | Web, PC, Mobile | Device (CPU-only) | Device | Core | Part of voice mode (v2+). See [Voice mode](../modules/voice-mode.md). Not verified yet |
+| 66 | Voice input and output | Leonxlnx (`Leonxlnx/earshot`) | MIT | Web, PC, Mobile | Device (CPU-only) | Device | Core | Removed (text-only beta, round 63). Archived in [Voice mode](../modules/voice-mode.md). Not verified |
 | 67 | Web lookup and page scraping | D4Vinci (`D4Vinci/Scrapling`) | BSD-3-Clause | Web | External Python service | Server compute | Live, Study | Respect robots.txt and site terms. Keep the BSD notice |
 | 68 | AI slide deck generator | Presenton (`presenton/presenton`) | Apache-2.0 | Web | External service | LLM tokens and server compute | Office | Keep the Apache NOTICE file |
 | 69 | Free public API directory | public-apis (`public-apis/public-apis`) | MIT | Web | Static data source for the catalogue of free APIs | Zero | Live | Reference data. Verify each API's terms before use |
@@ -587,7 +585,7 @@ These help build Pico. They do not ship in the app. Track them here so the team 
 - **`tashfeenahmed/freellmapi`** (MIT code): README says personal use only. Provider terms likely forbid resale.
 - **`ace-step/ACE-Step-1.5`** (MIT code): model weights license must be checked first.
 - **`TauricResearch/TradingAgents`, `bilawalsidhu/gods-eye-view`, `google-research/timesfm`, `omacom/omarchy`, `rehan-remade/universal-modder`, `robbietilton/compositor`, `expo/skills`**: not relevant to Pico.
-- **`OpenWhispr/openwhispr`** (MIT): desktop dictation app. Reference for voice mode design only (see feature 66).
+- **`OpenWhispr/openwhispr`** (MIT): desktop dictation app. Was a reference for voice mode design only (see feature 66); voice removed round 63.
 - **`letta-ai/letta`** (Apache-2.0): agent memory server. Heavy and overlaps feature 78. Not built.
 - **`Deci-AI/super-gradients` (YOLO-NAS)**: code is Apache-2.0, but pretrained weights have separate terms. Not used until those are checked.
 - **`LLMRouter`, `Nanobot`**: not verified on GitHub. Not included until their licenses are confirmed.
@@ -611,8 +609,8 @@ Licenses in this section were checked through the GitHub API on the repo's licen
 | 80 | Web task agent (background price check, lookup) | Browser-Use (`browser-use/browser-use`) | MIT | Web | Python service with a headless browser | Server compute | Live, Hacker | Check site terms and robots.txt. Heavy. Pairs with feature 67 |
 | 81 | Document Q&A with local retrieval | txtai (`neuml/txtai`, Apache-2.0) or RAGLite (`superlinear-ai/raglite`, MPL-2.0) | Apache-2.0 / MPL-2.0 | Backend | Python service | Server compute | Study, Office | Maps to roadmap Feature 1 (PDF chat). With MPL-2.0, keep modified RAGLite files open |
 | 82 | Local vector search for app shortcuts | LanceDB (`lancedb/lancedb`) or Chroma (`chroma-core/chroma`) | Apache-2.0 | Device or backend | Device (LanceDB has a JS SDK) | Device | Core | Verify JS support and mobile build size before choosing |
-| 83 | "Hey PICO" wake word | openWakeWord (`dscripka/openWakeWord`) or Porcupine (`Picovoice/porcupine`) | Apache-2.0 | Android, PC | Device | Device | Core | Porcupine needs a Picovoice access key and has free-tier limits. Check commercial terms. Voice mode v2+ |
-| 84 | Natural on-device TTS (option to Edge TTS) | Kokoro (`hexgrad/kokoro`) | Apache-2.0 | Web, PC, Mobile | Device or backend | Device | Core | Voice mode Phase 2 candidate. Verify the model weights license on its model page |
+| 83 | "Hey PICO" wake word | openWakeWord (`dscripka/openWakeWord`) or Porcupine (`Picovoice/porcupine`) | Apache-2.0 | Android, PC | Device | Device | Core | Porcupine needs a Picovoice access key and has free-tier limits. Check commercial terms. Voice mode removed (text-only beta, round 63); see docs/plans/modules/voice-mode.md for the archived design |
+| 84 | Natural on-device TTS (option to Edge TTS) | Kokoro (`hexgrad/kokoro`) | Apache-2.0 | Web, PC, Mobile | Device or backend | Device | Core | Voice mode removed (text-only beta, round 63); archived design in docs/plans/modules/voice-mode.md |
 | 85 | Image and screenshot understanding | Moondream (`vikhyat/moondream`) | Apache-2.0 | Backend first | Backend | Server compute | Creative, Core | Verify the model weights license on its model card before use |
 
 ### 18.1 Notes

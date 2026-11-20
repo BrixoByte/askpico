@@ -18,7 +18,6 @@
         SRV["server.js — routes / middleware"]
         ORCH["orchestrator.js — agent + tools"]
         LLMC["llmClient.js — LLM providers"]
-        TTS["tts.js — voice"]
         MEM["memory.js — Global Brain"]
     end
 
@@ -36,7 +35,6 @@
     Web --> CTX --> SRV
     SRV --> ORCH --> LLMC
     SRV --> MEM --> BRAIN
-    SRV --> TTS
     Web --> MEMSTORE --> FILT
     FILT -->|"GET/PUT /api/memory"| SRV
     Web <--> AUTH
@@ -66,13 +64,11 @@ flowchart LR
         SRV["server.js — routes / middleware"]
         ORCH["orchestrator.js — agent + tools"]
         LLMC["llmClient.js — LLM providers"]
-        TTS["tts.js — voice"]
         MEM["memory.js — Global Brain"]
     end
     %% @node SRV role=api desc="Express routes + middleware" file="services/api/src/server.js" %% TODO: confirm path
     %% @node ORCH role=agent desc="Agent loop and tool dispatch" file="services/api/src/orchestrator.js" %% TODO: confirm path
     %% @node LLMC role=llm desc="LLM provider client" file="services/api/src/llmClient.js" %% TODO: confirm path
-    %% @node TTS role=voice desc="Text to speech" file="services/api/src/tts.js" %% TODO: confirm path
     %% @node MEM role=memory desc="Global Brain, server side" file="services/api/src/memory.js"
 
     subgraph DB["Supabase"]
@@ -94,7 +90,6 @@ flowchart LR
     Web --> CTX --> SRV
     SRV --> ORCH --> LLMC
     SRV --> MEM --> BRAIN
-    SRV --> TTS
     Web --> MEMSTORE --> FILT
     FILT -->|"GET/PUT /api/memory"| SRV
     Web <--> AUTH
@@ -138,13 +133,12 @@ flowchart LR
       string body
     }
 ` },
-    { id: 'state', name: 'State', hint: 'Voice assistant states', code: `stateDiagram-v2
+    { id: 'state', name: 'State', hint: 'Chat request states', code: `stateDiagram-v2
     [*] --> Idle
-    Idle --> Listening : wake word
-    Listening --> Thinking : speech end
-    Thinking --> Speaking : reply ready
-    Speaking --> Idle : done
-    Thinking --> Idle : error
+    Idle --> Sending : user submits
+    Sending --> Streaming : reply starts
+    Streaming --> Idle : done
+    Sending --> Idle : error
 ` },
     { id: 'gantt', name: 'Gantt', hint: 'Release timeline', code: `gantt
     title Release plan
@@ -158,7 +152,6 @@ flowchart LR
     { id: 'mindmap', name: 'Mindmap', hint: 'Idea map', code: `mindmap
   root((Pico))
     Chat
-      Voice
       Memory
     Mobile
       Shield

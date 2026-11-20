@@ -28,7 +28,7 @@ Run `node serve.mjs` in `architecture/`, then open http://localhost:4173. Use Ch
 15. **Async edges.** Change a `-->` edge label to `async`. The edge becomes dashed, and it stops moving if reduced motion is on in the OS.
 
 ## Live sync and handoff
-16. **Live update from disk.** With `serve.mjs` running, edit `diagrams/request-flow.mmd` in another editor and save. The viewer updates, changed nodes flash, and the viewport stays where it was.
+16. **Live update from disk.** With `serve.mjs` running, edit `diagrams/pico-architecture.mmd` in another editor and save. The viewer updates, changed nodes flash, and the viewport stays where it was.
 17. **Conflict banner.** Type an unsaved edit in the viewer, then save a different version of the same file from another editor. A banner appears. "Keep mine" writes the viewer text to disk. "Load disk" replaces the viewer text.
 18. **Lint and fix prompt.** Open the Lint tab. Click an issue to jump to its line. Press "Copy error + fix prompt" and paste it into a chat; it contains the error, the issues, and the rules.
 19. **History and restore.** Press Ctrl+S twice with some change in between. In the History tab, press Diff on an older snapshot, then Restore. The text returns and Ctrl+Z undoes it.

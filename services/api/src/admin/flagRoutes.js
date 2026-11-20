@@ -96,7 +96,7 @@ flagRouter.put('/:key', async (req, res) => {
     }
 
     // Enum-style string flags get a closed set.
-    const ENUMS = { tts_primary: ['edge', 'laptop'], ai_provider_primary: ['openrouter', 'groq', 'gemini'] };
+    const ENUMS = { ai_provider_primary: ['openrouter', 'groq', 'gemini'] };
     if (ENUMS[key] && !ENUMS[key].includes(typed.data)) {
       return res.status(400).json({ error: `${key} must be one of: ${ENUMS[key].join(', ')}` });
     }

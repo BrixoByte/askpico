@@ -25,7 +25,6 @@
       "@api/*": ["./src/api/*"],
       "@components/*": ["./src/components/*"],
       "@utils/*": ["./src/utils/*"],
-      "@voice/*": ["./src/voice/*"],
       "@src/*": ["./src/*"]
     }
   },

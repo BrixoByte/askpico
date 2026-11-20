@@ -163,7 +163,7 @@ These features moved out of the feature catalogue because they need heavy comput
 
 - An expressive head built with Rive, Lottie, or Canvas. Moods (happy, crying, flirty, thinking) are set by `[mood: ...]` tags.
 - Art assets must have a clear license.
-- Mood tags come from the guardrail layer in [Voice mode](../modules/voice-mode.md) (Feature 29).
+- Mood tags come from the guardrail layer (Feature 29; voice mode removed, text-only beta — see the archived [Voice mode](../modules/voice-mode.md) plan).
 - Feature 40 (Pomodoro) depends on this mood state.
 - The character direction is specified in [Agent persona](../modules/agent-persona.md) and [Pico character](../modules/pico-character.md).
 
@@ -217,4 +217,4 @@ These features moved out of the feature catalogue because they need heavy comput
 | `CoursueLauncher/` (C# and Go launcher) | November 2026 | Self-contained .NET executable of about 100 MB. Replaced by `run.bat` and `HOW_TO_RUN.md` in exports | Git history before removal |
 | `apps/web/public/bin/` (Launcher.exe, icon) | November 2026 | Same as above | Git history |
 | Launcher bundling in `desktopPackage.ts` | November 2026 | Fetch logic removed. Zip export is scaffold-only | `apps/web/src/utils/desktopPackage.ts` |
-| Voice input and output (item 5), F24 Pico Voice, F26 Voice-to-Voice, F30 Voice Quota | November 2026 | Voice features grouped into one plan | [Voice mode](../modules/voice-mode.md) |
+| Voice input and output (item 5), F24 Pico Voice, F26 Voice-to-Voice, F30 Voice Quota | Removed — round 63 | Voice mode removed; beta is text-only | Archived: [Voice mode](../modules/voice-mode.md) |

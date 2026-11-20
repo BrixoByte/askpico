@@ -1,5 +1,7 @@
 # Beta Launch Plan
 
+Round 63: voice mode removed; beta is text-only.
+
 **Status:** Planning
 **Changelog 2025-11-17 (Round 38):** Focus apps replaces the whole-app shield; call uses ACTION_DIAL; Chibi visual removed; guest voice trial (2 minutes) replaces the signed-in-only voice rule in sections 4.1 and 11.
 **Owner:** Pico product team
@@ -8,7 +10,7 @@
 
 ## 1. Summary
 
-The beta launches Pico on the web and on Android. It includes the full voice mode, automatic model routing on the backend, a persona system that gives the agent emotions and reactions, and an anime-inspired chibi character for animation.
+The beta launches Pico on the web and on Android. It includes automatic model routing on the backend, a persona system that gives the agent emotions and reactions, and an anime-inspired chibi character for animation.
 
 This document lists only what ships in the beta. Anything not listed here is out of scope.
 
@@ -16,7 +18,7 @@ This document lists only what ships in the beta. Anything not listed here is out
 
 | Area | Notes |
 |---|---|
-| Voice mode (Steps 1–6) | Full voice pipeline. See section 4.1 |
+| Voice mode | Voice mode removed (text-only beta, round 63). See docs/plans/modules/voice-mode.md for the archived design. |
 | Model auto-routing and user-facing modes (Quick, Smart, Deep) | Model names are never shown to users. See section 4.2 |
 | Persona system with emotions and reactions | See [Agent persona](../modules/agent-persona.md) |
 | Anime-style chibi character and animation | See section 4.4 |
@@ -38,9 +40,9 @@ The web and mobile apps have different page sets. Both are built from the same R
 
 | Page | Domain | Purpose | Key elements |
 |---|---|---|---|
-| **Landing** | `askpico.app` | Explain the product and drive sign-up | Hero, feature highlights, voice and persona preview, plan summary, sign-in and "Try as guest" buttons |
+| **Landing** | `askpico.app` | Explain the product and drive sign-up | Hero, feature highlights, persona preview, plan summary, sign-in and "Try as guest" buttons |
 | **Auth** | `auth.askpico.app` | Sign in or create an account | Email and password sign-up and sign-in form, guest continuation, legal links (privacy policy, terms) |
-| **Chat** | `go.askpico.app` | Main product screen (no separate chat host; `chat.askpico.app` has no DNS) | Sidebar (new chat, history, agents), greeting and orb, composer with mic, account card |
+| **Chat** | `go.askpico.app` | Main product screen (no separate chat host; `chat.askpico.app` has no DNS) | Sidebar (new chat, history, agents), greeting and orb, composer, account card |
 
 ### 3.2 Mobile (3 pages)
 
@@ -49,8 +51,8 @@ The Android app is a Kotlin WebView shell. Full build plan: [Android app](../eng
 | Page | Purpose | Key elements |
 |---|---|---|
 | **Auth** | Sign in or continue as guest | Email and password sign-up and sign-in form, guest continuation, legal links |
-| **Chat** | Main product screen | Same as web Chat, with a mobile layout and voice button |
-| **Profile** | Account and settings | Name and avatar, plan, voice minutes used, referral code and reward summary, log out, delete account |
+| **Chat** | Main product screen | Same as web Chat, with a mobile layout |
+| **Profile** | Account and settings | Name and avatar, plan, referral code and reward summary, log out, delete account |
 
 ### 3.3 Page rules
 
@@ -66,7 +68,7 @@ A separate static site (HTML, CSS, and JS). It has no app logic and no login. It
 | Page | File | Purpose | Key elements |
 |---|---|---|---|
 | **Home** | `index.html` | First impression and sign-up | Hero, "Try as guest" and "Sign in" CTAs, feature summary, plan summary |
-| **Features** | `features.html` | Explain each beta feature | Voice mode, agents, artifacts, persona and character |
+| **Features** | `features.html` | Explain each beta feature | Agents, artifacts, persona and character |
 | **Pricing** | `pricing.html` | Show the plans | Free, Weekly Pass, Monthly Pro, Ultra (prices from the [feature catalogue](feature-catalog.md), section 3) |
 | **About** | `about.html` | Mission and team | Pico's purpose for Urdu, Hindi, and Roman Urdu speakers |
 | **Contact** | `contact.html` | Support and business contact | Email address and a short form or mailto link |
@@ -83,26 +85,9 @@ A separate static site (HTML, CSS, and JS). It has no app logic and no login. It
 
 ## 4. Core Beta Features
 
-### 4.1 Voice mode (full)
+### 4.1 Voice mode
 
-Implements the six steps in [Voice mode](../modules/voice-mode.md):
-
-1. Mic button (speech to text, insert only, no auto-send).
-2. Continuous listening with silence timeout and clear errors.
-3. Guardrail and persona layer (sanity fix, mood tags stripped from display).
-4. Speech output (Edge TTS primary behind a flag, laptop TTS service as backup, `speechSynthesis` as the last resort, then audio filters).
-5. Voice quota and referral enforced on the server.
-6. Voice-to-voice loop with sentence-level streaming and barge-in.
-
-**Voice pipeline**
-
-- **Speech-to-text:** the browser `SpeechRecognition` API transcribes on the device. Only the text goes to the backend; audio is never uploaded.
-- **TTS provider abstraction:** a `ttsProvider` config on the backend selects the voice engine so a broken provider is swapped by configuration, not a code change.
-- **TTS fallback chain:** Edge TTS proxy (flagged) → laptop TTS service (`edge-tts` library or Kokoro-82M behind a Cloudflare Tunnel; English only for Kokoro) → client-side `speechSynthesis` in the user's own browser. The client always keeps `speechSynthesis` as the last resort so voice never goes fully silent.
-- **Android app:** the WebView lacks `SpeechRecognition`, so voice input uses a native bridge (Android `SpeechRecognizer` wired into the WebView) or the typed fallback.
-- **Quota tracking:** `voice_seconds_used_today` and `last_reset_timestamp` on the user profile in Supabase. The client sends a heartbeat every 30 seconds while voice mode is on; the server increments usage and ends the session at the daily cap (10 minutes on free). Audio never passes through Supabase, so free-tier egress is untouched.
-
-**Done when:** a spoken question gets a spoken answer on Chrome Android and desktop Chrome or Edge, speaking during an answer stops playback, the quota blocks a free user at the limit, the TTS fallback chain works when a provider is disabled by flag, and the text fallback works on Firefox and inside the Android app.
+Voice mode removed (text-only beta, round 63). See docs/plans/modules/voice-mode.md for the archived design.
 
 ### 4.2 Model auto-routing (backend)
 
@@ -110,9 +95,8 @@ The user chooses an agent or asks in plain language. The backend chooses the mod
 
 **Routing inputs**
 
-- Request type: plain text, attachment, tool request, or voice turn.
+- Request type: plain text, attachment, or tool request.
 - Complexity estimate: message length, number of attachments, and task keywords.
-- Latency priority: voice turns get a lower latency target.
 - Plan tier: caps the highest model tier a user can reach.
 
 **Routing output**
@@ -138,7 +122,7 @@ The user chooses an agent or asks in plain language. The backend chooses the mod
 
 | Mode | Tier | Model ID and provider | Approx pricing per 1M tokens | Used for |
 |---|---|---|---|---|
-| Quick | `fast` | Llama 3.1 8B Instant, Groq | Input $0.05, output $0.08 (free tier $0) | Fast routing, simple Q&A, voice turns |
+| Quick | `fast` | Llama 3.1 8B Instant, Groq | Input $0.05, output $0.08 (free tier $0) | Fast routing, simple Q&A |
 | Smart | `standard` | `deepseek/deepseek-v4.1-flash` or Qwen 2.5 32B, OpenRouter (fallback Groq) | Input $0.15, output $0.60 | Multi-turn Q&A, Studio, data processing |
 | Deep (Fast) | `advanced` | `anthropic/claude-haiku-5.5`, OpenRouter | Input $0.10, output $0.50 | Live artifact and UI preview, HTML/React rendering |
 | Deep (Pro) | `advanced` | `deepseek/deepseek-v4-pro`, OpenRouter | Input $0.66 to $1.32, output $1.98 to $3.96 | Multi-file artifacts, complex logic |
@@ -179,16 +163,15 @@ Defined in [Agent persona](../modules/agent-persona.md). Summary:
 Defined in [Agent persona](../modules/agent-persona.md) (visual style and animation) and [Pico character](../modules/pico-character.md) (layers and state).
 
 - **Style:** Chibi: a large head, a small body, large expressive eyes, minimal line work, and a soft pastel palette. The character is original. Do not copy existing anime characters.
-- **Animation:** Idle breathing, random blinking every 3–5 seconds, smooth mood transitions (200–300 ms), a speaking mouth synced to the voice output, and short reaction animations (bounce for happy, a sweat drop for stress, sparkles for excitement).
+- **Animation:** Idle breathing, random blinking every 3–5 seconds, smooth mood transitions (200–300 ms), a speaking mouth synced to the reply, and short reaction animations (bounce for happy, a sweat drop for stress, sparkles for excitement).
 - **Implementation:** SVG layers and CSS keyframes. No animation library. Respect `prefers-reduced-motion`. Pause animation when the tab is hidden.
 
 **Done when:** the character reacts to every mood in the persona card, runs at 60 fps on a Tier 1 Android device, and stops animating when reduced motion is on.
 
-### 4.5 Referral and voice quota
+### 4.5 Referral
 
 - **Referral code:** optional at signup. A link with `?ref=<code>` fills the code in automatically. Users without a code sign up normally.
-- **Reward:** given only after the referred user completes a real activity (for example, the first completed voice session or email verification). No reward on signup alone.
-- **Voice quota:** a daily voice limit per plan, enforced on the server. Referral rewards add minutes to this quota.
+- **Reward:** given only after the referred user completes a real activity (for example, email verification). No reward on signup alone.
 - **Anti-abuse:** the same account, repeat accounts, and self-referrals give zero reward. All reward events are recorded in the database.
 
 **Done when:** a valid code gives a reward only after activity, and a self-referral gives zero reward.
@@ -243,7 +226,7 @@ Defined in [API security](../security/api-security.md). Every item below ships i
 ### 4.9 Response cache (exact match)
 
 - **Key:** hash of the user ID, the normalized message text, the user-facing mode (Quick, Smart, or Deep), and the agent ID.
-- **Eligible requests:** single-turn text only. Requests with attachments, Global Brain or memory injection, or voice are never cached.
+- **Eligible requests:** single-turn text only. Requests with attachments or Global Brain or memory injection are never cached.
 - **Storage and TTL:** stored on the backend with a 24-hour TTL. Expired entries are never returned.
 - **Quota:** cache hits still pass auth and rate limits, and count toward the daily quota.
 - **Logging:** hit or miss with request ID only. No message text.
@@ -257,21 +240,16 @@ Defined in [API security](../security/api-security.md). Every item below ships i
 | S1 | New visitor on the web opens Landing and clicks "Try as guest" | Guest session created. Chat opens with "Hello, Guest" and the Free plan label | Auth |
 | S2 | Guest signs up or signs in with email and password | Guest chats are shown after sign-in. The user is asked before any chats are merged | Auth |
 | S3 | Mobile user opens the app for the first time | Auth screen first. Guest continuation or email sign-up and sign-in works | Mobile |
-| S4 | Free user uses voice until the daily limit | Voice stops at the limit with a clear message. The limit is enforced by the server | Voice |
-| S5 | Free user changes the client timer or local storage | Quota does not change. Server rejects the voice session | Voice and Auth |
 | S6 | User asks a simple question by text | Routed to the `fast` tier. Reply appears in the chat | Backend |
 | S7 | User uploads a large document and asks for analysis | Routed to `advanced` only if the plan allows it. Otherwise the user sees an upgrade prompt | Backend |
 | S8 | Primary model times out | Fallback model answers. The user sees no error. The log contains a request ID only | Backend |
-| S9 | Speech recognition is unsupported (Firefox, iOS Safari) | Mic button is hidden. Type-and-hear fallback works | Voice |
-| S10 | Network drops during a voice reply | Playback stops. A retry message appears. No recognition session stays active | Voice |
-| S11 | User says "stop" or speaks during a reply | Playback stops within one second | Voice |
 | S12 | Persona reacts to bad news from the user | Empathetic reply with the agent's mood changing to concerned. Mood tag is hidden | Persona |
 | S13 | User asks "are you a real person?" sincerely | The agent says it is an AI assistant. It does not claim to be human | Persona |
 | S14 | Early buyer is upgraded manually after payment is confirmed | Plan label and Deep mode update only after the server writes the subscription | Auth and billing |
 | S15 | Referral link is used by the same account, or by a repeat account | Zero reward. Recorded in the database | Auth |
 | S16 | User deletes the account from Profile | User, sessions, and linked data are removed. User is logged out | Auth |
 | S17 | Reduced motion is enabled | Orb and character animations stop. Content stays readable | UI |
-| S18 | Low-memory Android device | Heavy features are disabled with a message. Chat and voice keep working | Mobile |
+| S18 | Low-memory Android device | Heavy features are disabled with a message. Chat keeps working | Mobile |
 | S19 | User picks Deep on the free plan after the daily limit | Upgrade prompt is shown. Deep is not used | Backend |
 | S20 | Early-buyer coupon is used after the limit is reached | Coupon is rejected with a clear message. No discount is applied | Auth and billing |
 | S21 | User saves a fact in the Memory panel and starts a new chat | The fact is injected into the system prompt. Deleting or clearing memory removes it everywhere | Memory |
@@ -283,10 +261,10 @@ Defined in [API security](../security/api-security.md). Every item below ships i
 | Milestone | Contents | Exit condition |
 |---|---|---|
 | M1: Foundations | Auth Phases 1–2 (guest session, home UI), auto-routing skeleton | S1 and S6 pass |
-| M2: Voice | Voice Steps 1–4 | S9, S10, and S11 pass on Chrome, Edge, and Android Chrome |
-| M3: Accounts and limits | Auth Phases 3–4 (email and password sign-up and sign-in, subscriptions), voice Step 5, memory M-A–M-B (thread window, Global Brain, Memory panel) | S2, S4, S5, S14, S21 pass |
+| M2: Voice | Voice mode removed (text-only beta, round 63). See docs/plans/modules/voice-mode.md for the archived design. | — |
+| M3: Accounts and limits | Auth Phases 3–4 (email and password sign-up and sign-in, subscriptions), memory M-A–M-B (thread window, Global Brain, Memory panel) | S2, S14, S21 pass |
 | M4: Persona and character | Persona system, chibi character, reactions | S12, S13, S17 pass |
-| M5: Voice loop and routing | Voice Step 6, full routing with fallback | S7, S8 pass |
+| M5: Routing | Full routing with fallback | S7, S8 pass |
 | M6: Mobile beta | Kotlin WebView shell, Profile page, Google Play internal testing | S3, S16, S18 pass |
 | M7: Launch readiness | Privacy policy, terms, account deletion, Google Play checklist (section 8), landing page | All scenarios pass. Store review checklist complete |
 
@@ -298,19 +276,17 @@ Finish and test each item fully before moving to the next. The chat pipeline is 
 
 1. **Chat, routing, and API security:** the spine. Scenarios S1, S6, S8, S19 and checklists 12.3 and 12.7 must pass. The unchecked API security items in section 11 (verified session on every user-data route, account-scoped queries, parameterised queries, session cookies) are blockers — fix them before any polish work.
 2. **Memory (Layers 1–2):** injected into every turn, so a memory bug corrupts every reply. Scenarios S21 and checklist 12.5.
-3. **Voice quota (Step 5):** the revenue and anti-abuse control. Scenarios S4 and S5, checklist 12.2.
-4. **Response cache (section 4.9):** protects the monthly budget. Scenario S23 and checklist 13.
-5. **Voice loop and fallback chain:** barge-in and provider fallbacks. Scenarios S10 and S11.
-6. **Persona, character, and Mermaid diagrams:** polish, not the backbone. Scenarios S12, S13, S17, S22. If the launch is tight, these can ship last or be cut.
+3. **Response cache (section 4.9):** protects the monthly budget. Scenario S23 and checklist 13.
+4. **Persona, character, and Mermaid diagrams:** polish, not the backbone. Scenarios S12, S13, S17, S22. If the launch is tight, these can ship last or be cut.
 
 ## 7. Exit Criteria
 
 - All scenarios in section 5 pass on the target devices (Chrome and Edge desktop, Chrome on Android, one iPhone for the web fallback check).
-- No raw personal data appears in outbound requests from the chat, voice, or auth flows.
+- No raw personal data appears in outbound requests from the chat or auth flows.
 - No console errors on the Landing, Auth, and Chat pages.
 - Privacy policy lists every stored field: email, name, plan, referral, and usage counts.
 - Account deletion works end to end.
-- Backend tests (routing, quota, and auth) pass. Frontend tests (voice states, persona mood handling, orb states) pass. See [Testing guide](../engineering/testing-guide.md).
+- Backend tests (routing, quota, and auth) pass. Frontend tests (persona mood handling, orb states) pass. See [Testing guide](../engineering/testing-guide.md).
 
 ## 8. Release Process
 
@@ -320,7 +296,7 @@ Finish and test each item fully before moving to the next. The chat pipeline is 
   - **App** at `go.askpico.app` (the only app host; `chat.askpico.app` has no DNS): one deployment of `apps/web`; the page is chosen by path and `window.location.hostname` (`/auth` → login/signup, `/verify` → email link, otherwise app). A session cookie with `Domain=.askpico.app` is shared across the subdomains.
   - **Backend** at `api.askpico.app` (or the backend host's domain): hosted separately; CORS allows only the three web origins.
 - **Android:** Google Play internal testing track for beta testers, then closed testing before public release. A new personal developer account must run a closed test with at least 12 opted-in testers for 14 days before production is unlocked.
-- **Rollback:** Redeploy the previous `release` commit. Revert the backend environment flag first when the cause is a feature flag, such as Edge TTS.
+- **Rollback:** Redeploy the previous `release` commit. Revert the backend environment flag first when the cause is a feature flag.
 
 ### 8.1 Local development subdomains
 
@@ -347,19 +323,17 @@ Full policy checklist, Play Billing rules, and open decisions: [Play Store compl
 - **Build:** signed Android App Bundle (AAB, not APK) uploaded with Play App Signing, targeting the latest required API level.
 - **Privacy policy:** public URL (`askpico.app/privacy.html`) linked in the store listing and inside the app.
 - **Account deletion:** an in-app delete flow plus a public web link for deletion requests (both are required for apps that create accounts).
-- **Data safety form:** declare collected data: email, name, user content (messages), and usage counts. Voice audio stays on the device in the current pipeline, which keeps this form small.
-- **Permissions:** `INTERNET` and `RECORD_AUDIO`. Mic access needs a prominent in-app disclosure and consent before the first recording, per the user data policy.
+- **Data safety form:** declare collected data: email, name, user content (messages), and usage counts.
+- **Permissions:** `INTERNET` and the agent permissions listed in [Android app](../engineering/android-app.md).
 - **Content rating:** complete the IARC questionnaire. The app is for a general audience; do not mark it as designed for children.
 - **Declarations:** no ads, target audience age, and the app-category declarations in Play Console.
 - **Store listing assets:** app icon (512x512), feature graphic (1024x500), at least 2 screenshots, short description (80 chars), full description, category, and a support email.
-- **Native feature:** a WebView-only app can be rejected. The native voice bridge (Android `SpeechRecognizer`) doubles as the required native functionality.
+- **Native feature:** a WebView-only app can be rejected. The native bridges (agent actions, Focus apps shield, downloads) provide the required native functionality.
 
 ## 9. Risks
 
-- **Browser speech support:** Firefox lacks full speech APIs, and the Android WebView does not support `SpeechRecognition` even when Chrome is installed. Voice input in the app needs a native bridge (Android `SpeechRecognizer` wired into the WebView) or the typed fallback. Keep the text fallback as a first-class flow.
-- **Edge TTS terms:** Unofficial, can break. Keep the fallback chain working: laptop TTS service, then client-side `speechSynthesis`.
 - **Routing cost:** A wrong tier assignment increases cost. Cap `advanced` for free users, and monitor the cost per tier weekly.
-- **Store review:** Google Play rejects submissions over the mandatory items in the section 8 checklist. Common failure points for this app: missing web deletion link, undeclared mic permission, and a WebView with no native feature.
+- **Store review:** Google Play rejects submissions over the mandatory items in the section 8 checklist. Common failure points for this app: missing web deletion link and a WebView with no native feature.
 - **Payments:** No payment provider at beta. The plan popup shows the NayaPay QR code; the buyer pays by QR and messages Pico with proof of payment. The plan is set manually after payment is confirmed. Manual confirmation takes time, so the popup must set expectations on wait time. Fake payment proofs are a risk, so confirmation needs the actual transaction reference.
 
 ## 10. Open Decisions
@@ -377,12 +351,7 @@ Full policy checklist, Play Billing rules, and open decisions: [Play Store compl
 Checked against the codebase. Items marked `[ ]` are not yet found in code.
 
 ### Voice mode
-- [x] Step 1: Mic button, speech-to-text insert
-- [x] Step 2: Continuous listening with silence timeout
-- [x] Step 3: Mood tags stripped from speech and display
-- [x] Step 4: TTS chain (Edge, laptop, speechSynthesis)
-- [ ] Step 5: Server-side voice quota and referral minutes
-- [x] Step 6: Voice-to-voice loop with sentence streaming and barge-in
+Voice mode removed (text-only beta, round 63). See docs/plans/modules/voice-mode.md for the archived design.
 
 ### Routing and limits
 - [x] Auto-routing across fast, standard, and advanced tiers with plan cap and global cap
@@ -397,7 +366,7 @@ Checked against the codebase. Items marked `[ ]` are not yet found in code.
 
 ### Referral
 - [x] Referral link shown in Settings > Account, `?ref=` capture and claim endpoint
-- [x] Reward only after real activity (email verified or first voice session), with self-referral and repeat-account checks and audit log. Bonus minutes are recorded but not yet enforced, since voice quota (Step 5) is pending
+- [x] Reward only after real activity (email verified), with self-referral and repeat-account checks and audit log
 
 ### Memory
 - [x] Layer 2: last 10 messages thread window
@@ -407,15 +376,14 @@ Checked against the codebase. Items marked `[ ]` are not yet found in code.
 ### Auth and billing
 - [x] Guest continuation (anonymous session)
 - [x] Email and password sign-up and sign-in (web; standalone `auth.*` page plus Settings > Account modal, sessions handed to chat via URL hash)
-- [x] Sign-in gating for locked features (settings, model modes, web search, deeper research, voice, live tools, attachments, TTS, image generation) with lock badges and the auth gate modal
-- [x] Voice mode and voice endpoints restricted to signed-in accounts (server 403 for guests)
+- [x] Sign-in gating for locked features (settings, model modes, web search, deeper research, live tools, attachments, image generation) with lock badges and the auth gate modal
 - [x] Account deletion (web, Settings > Account)
 - [x] Account deletion (Android, via in-app WebView Settings > Account)
 - [x] Manual billing popup with NayaPay QR and early-buyer coupons (26 codes, 50% off first 3 months on Pro Monthly, expires Dec 31 2026)
 - [x] Manual plan flag set after payment confirmation (no payment provider at beta)
 
 ### Web and marketing
-- [x] Web Chat page: sidebar, composer with mic, account card
+- [x] Web Chat page: sidebar, composer, account card
 - [x] Marketing site pages (index, features, pricing, about, contact, referral, privacy, terms)
 - [x] Marketing site light/dark theme toggle
 
@@ -440,10 +408,10 @@ Checked against the codebase. Items marked `[ ]` are not yet found in code.
 - [ ] Mermaid rendering in chat with pan and zoom (section 4.8)
 - [ ] Mermaid chunk loads during streaming, with placeholder and code-block fallback
 - [ ] Exact-match response cache with 24-hour TTL (section 4.9)
-- [ ] Cache skips memory, attachment, and voice requests
+- [ ] Cache skips memory and attachment requests
 
 ### Android
-- [x] WebView shell and native voice bridge
+- [x] WebView shell and native bridges
 - [x] Share and open-in-browser bridge
 - [x] Intent actions (call via ACTION_DIAL with masked-number confirm, open app, share-to-WhatsApp prefilled with share-sheet fallback, alarms/timers, open URLs) — device-tested in Round 35; CALL_PHONE removed in Round 37
 - [x] Focus apps (opt-in per app, Usage access and Display over other apps, passcode, strength levels, emergency, natural end): device-tested in Round 33 (17/17)
@@ -470,15 +438,7 @@ Tick each item after it passes on the target device or browser. Scenario IDs ref
 
 ### 12.2 Web: Voice
 
-- [ ] Mic button inserts text, does not auto-send
-- [ ] Continuous listening stops after silence timeout with clear error
-- [ ] TTS chain works when Edge TTS flag is off (laptop TTS, then `speechSynthesis`)
-- [ ] S4: free user stops at 10 minutes per day
-- [ ] S5: changing client timer or storage does not change quota
-- [ ] S9: mic hidden on Firefox and iOS Safari, type-and-hear works
-- [ ] S10: network drop during reply stops playback, shows retry
-- [ ] S11: "stop" or speech during reply stops playback within 1 second
-- [ ] Voice-to-voice loop with barge-in
+Voice mode removed (text-only beta, round 63). See docs/plans/modules/voice-mode.md for the archived design.
 
 ### 12.3 Web: Routing, Limits, Billing
 
@@ -507,7 +467,7 @@ Tick each item after it passes on the target device or browser. Scenario IDs ref
 - [ ] Deleting one memory removes it from store and cache
 - [ ] Clear All Memory wipes brain and memory items
 - [ ] Referral: `?ref=` captured and claimed at signup
-- [ ] Referral reward only after activity (email verified or first voice session)
+- [ ] Referral reward only after activity (email verified)
 - [ ] S15: self-referral and repeat account give zero reward
 
 ### 12.6 Web: Account, Legal, Marketing
@@ -533,10 +493,9 @@ Tick each item after it passes on the target device or browser. Scenario IDs ref
 - [ ] A1: app opens Chat over HTTPS, splash shows, back button behaves (confirm exit on root)
 - [ ] A2: guest and magic-link sign-in work inside the app
 - [ ] A3: `share`, `openExternal`, `getAppVersion` work from the web app
-- [ ] A4: spoken input lands in composer, permission denial shows typed fallback
 - [x] S3: first launch shows Auth screen (testing/round35/TALKBACK.md — signed-out state shows the auth page)
 - [ ] S16: account deletion works inside the app
-- [x] S18: low-memory device disables heavy features with a message, chat and voice still work (testing/round35/LOWMEM.md)
+- [x] S18: low-memory device disables heavy features with a message, chat still works (testing/round35/LOWMEM.md)
 - [x] No network: error screen offers Retry and Open in browser (testing/round35/OFFLINE.md)
 
 ### 12.9 Android: Agent Layer

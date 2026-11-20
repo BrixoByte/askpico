@@ -37,9 +37,9 @@ export const invalidateFlagCache = (key = null) => {
 
 // Global kill switch / maintenance mode. Exempts admin + health so the panel
 // itself can always reach the backend to turn the flags back off.
-// Admin, health, and the machine heartbeat stay reachable during a kill or
-// maintenance window — monitoring must keep working while users are blocked.
-const EXEMPT = /^\/api\/(admin|health)(\/|$)|^\/api\/tts\/heartbeat$/;
+// Admin and health stay reachable during a kill or maintenance window —
+// monitoring must keep working while users are blocked.
+const EXEMPT = /^\/api\/(admin|health)(\/|$)/;
 export const flagMiddleware = async (req, res, next) => {
   if (EXEMPT.test(req.path)) return next();
   try {

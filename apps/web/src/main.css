@@ -562,19 +562,6 @@ html[data-font='mono'] body {
   animation: popoverRise 0.18s ease-out;
 }
 
-/* ── Voice-to-voice trigger wave bars ── */
-@keyframes voiceBar {
-  0%, 100% {
-    transform: scaleY(0.35);
-  }
-  50% {
-    transform: scaleY(1);
-  }
-}
-.animate-voice-bar {
-  animation: voiceBar 1s ease-in-out infinite;
-}
-
 /* ── Reduced motion (S17): honour the OS preference. Decorative motion,
    pulses, blinking dots and transitions are all stopped; content still
    appears, just instantly. ── */

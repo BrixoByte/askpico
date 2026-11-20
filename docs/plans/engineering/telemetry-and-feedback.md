@@ -25,13 +25,13 @@ All of it lands in the admin dashboard. None of it may block a chat request, the
 
 - No advertising ID, IMEI, SSAID, or cross-app tracking.
 - No session replay or screen recording.
-- No capture of chat text, voice audio, vault values, or file contents in telemetry.
+- No capture of chat text, vault values, or file contents in telemetry.
 - No automatic screenshots. Screenshots are added by the user only.
 
 ## 3. Principles
 
 - **Allowlist, not denylist.** Each event name and property is listed here before code emits it. Unknown fields are dropped server-side.
-- **Content is never logged.** This follows [Data protection](../security/data-protection.md) section 2: logs hold IDs, routing tiers, and status codes only. Breadcrumbs record actions (`voice_started`, `mode_changed`), never the text the user typed.
+- **Content is never logged.** This follows [Data protection](../security/data-protection.md) section 2: logs hold IDs, routing tiers, and status codes only. Breadcrumbs record actions (`mode_changed`), never the text the user typed.
 - **Scrub before sending.** The client removes email addresses, phone numbers, bearer tokens, API keys, and URL query strings from every string field. The server runs the same rules again.
 - **Vault data is excluded entirely.** Per [Android app](android-app.md) and [Pico vault](../modules/pico-vault.md), vault data never enters analytics, crash reports, or the backend. Elements marked `data-private` are skipped by the screenshot tool and by breadcrumb text.
 - **Non-blocking and fail-silent.** Tracking runs off the main path: queued in memory, flushed in the background, dropped if the queue is full. A telemetry failure never shows an error to the user.
@@ -61,9 +61,8 @@ All of it lands in the admin dashboard. None of it may block a chat request, the
 |---|---|---|
 | `session_start` / `session_end` | `duration_s` | Session length and daily active users |
 | `screen_view` | `screen` (chat, settings, auth, vault, admin-free) | Navigation paths |
-| `feature_used` | `feature` (voice, image, web_search, file_upload, memory, mode_change) | Adoption |
+| `feature_used` | `feature` (image, web_search, file_upload, memory, mode_change) | Adoption |
 | `message_sent` | `mode`, `has_attachment`, `latency_ms`, `status` | Response quality and speed. No content |
-| `voice_session` | `duration_s`, `end_reason` | Voice drop-off |
 | `shield_triggered` / `shield_dismissed` | `app_package_hash` | Android shield usage. App name is hashed |
 | `paywall_seen` / `upgrade_clicked` | `plan` | Conversion funnel |
 | `permission_prompt` | `permission`, `result` (allowed, denied, dismissed) | Measures the custom permission prompt |
@@ -145,7 +144,7 @@ Admin dashboard: auto-reports are grouped by fingerprint and show count, first s
 
 - A floating button, bottom right, on the chat page. Hidden on auth, marketing, and the vault screen.
 - Same component on web and inside the Android WebView.
-- Visible on every chat screen, but opening it never interrupts an active voice session or a streaming reply.
+- Visible on every chat screen, but opening it never interrupts a streaming reply.
 
 ### 8.2 Form
 

@@ -52,11 +52,6 @@ test('unknown requested value falls back to auto', () => {
   assert.equal(chooseMode({ requested: 'gpt-4', message: 'hi' }), 'quick');
 });
 
-test('voice turns never go above smart for latency', () => {
-  assert.equal(chooseMode({ requestType: 'voice', requested: 'deep', message: 'hi' }), 'smart');
-  assert.equal(chooseMode({ requestType: 'voice', message: longDoc, attachmentCount: 1 }), 'smart');
-});
-
 test('complexity score counts length, attachments and complex keywords', () => {
   assert.equal(estimateComplexity('hi'), 0);
   assert.equal(estimateComplexity('x'.repeat(500)), 1);

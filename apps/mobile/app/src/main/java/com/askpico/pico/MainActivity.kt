@@ -13,9 +13,6 @@ import android.net.Uri
 import android.net.http.SslError
 import android.os.Bundle
 import android.provider.Settings
-import android.speech.RecognitionListener
-import android.speech.RecognizerIntent
-import android.speech.SpeechRecognizer
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.PermissionRequest
@@ -45,9 +42,6 @@ import com.askpico.pico.agent.Capabilities
 import com.askpico.pico.agent.ShieldService
 import com.askpico.pico.agent.VaultStore
 import org.json.JSONObject
-import android.speech.tts.TextToSpeech
-import android.speech.tts.UtteranceProgressListener
-import java.util.Locale
 import java.util.UUID
 
 class MainActivity : AppCompatActivity() {
@@ -57,9 +51,6 @@ class MainActivity : AppCompatActivity() {
         const val LOAD_WATCHDOG_MS = 25_000L
         const val EXTRA_FORCE_ERROR = "pico_force_error"
 
-        // Set while the activity is alive; ShieldService uses it to silence voice when a blocked app opens.
-        @Volatile
-        var current: MainActivity? = null
     }
 
     internal lateinit var webView: WebView
@@ -87,42 +78,6 @@ class MainActivity : AppCompatActivity() {
     // Token that Pico-origin frames get through the document-start script. Null = bridge refuses everything.
     @Volatile private var bridgeToken: String? = null
     private val pendingCaptureRequests = mutableListOf<PermissionRequest>()
-
-    // Voice input (SpeechRecognizer bridge for window.PicoBridge).
-    private var speechRecognizer: SpeechRecognizer? = null
-    private var pendingVoiceLang: String? = null
-    private var voiceWanted = false
-    private var voiceRetries = 0
-    private var idleRestarts = 0
-    private var voiceLang = "en-US"
-    // Offline recognition needs a language pack; turned off for the rest of the app run after a language error.
-    private var preferOffline = true
-
-    // Native reply speech (Android TextToSpeech). WebView often has no window.speechSynthesis.
-    private var tts: TextToSpeech? = null
-    private var ttsReady = false
-    private val ttsProgress = object : UtteranceProgressListener() {
-        override fun onStart(utteranceId: String?) {}
-        override fun onDone(utteranceId: String?) = emitTts(utteranceId)
-        // stop() and QUEUE_FLUSH end an utterance through onStop, not onDone. Without this the web never hears about it.
-        override fun onStop(utteranceId: String?, interrupted: Boolean) = emitTts(utteranceId)
-        override fun onError(utteranceId: String?) {
-            android.util.Log.e("PICO_TTS", "utterance error id=$utteranceId")
-            emitTts(utteranceId)
-        }
-    }
-
-    private val voicePermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        val lang = pendingVoiceLang
-        pendingVoiceLang = null
-        if (granted && lang != null) beginVoiceSession(lang)
-        else if (lang != null) {
-            emitVoice("onError", SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS.toString())
-            emitVoice("onEnd")
-        }
-    }
 
     private var pendingPermissionResult: ((Boolean) -> Unit)? = null
     private val permissionLauncher = registerForActivityResult(
@@ -178,7 +133,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        current = this
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, window.decorView).apply {
@@ -201,10 +155,6 @@ class MainActivity : AppCompatActivity() {
         offline.findViewById<Button>(R.id.open_browser_button).setOnClickListener { openExternal(lastUrl) }
         registerNetworkCallback()
 
-        tts = TextToSpeech(this) { status ->
-            ttsReady = status == TextToSpeech.SUCCESS
-            tts?.setOnUtteranceProgressListener(ttsProgress)
-        }
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         webView = createWebView()
         container.addView(webView, 0)
@@ -398,9 +348,9 @@ class MainActivity : AppCompatActivity() {
     // the raw object or the token; other frames never run this script and have no token.
     private fun bridgeScript(token: String): String {
         val methods = listOf(
-            "share", "openExternal", "speak", "stopSpeaking", "logMessage", "logError", "openAppSettings",
+            "share", "openExternal", "logMessage", "logError", "openAppSettings",
             "hasCapability", "requestAccess", "performAction", "vaultSet", "vaultHas", "setShield",
-            "setSystemBars", "startVoiceInput", "stopVoiceInput",
+            "setSystemBars",
             "focusStatus", "focusSetEnabled", "focusSetupPasscode", "focusStart", "focusBeginWait",
             "focusEarlyUnblock", "focusEmergency", "focusRecover", "focusRequestAccountReset", "listLaunchableApps",
         )
@@ -423,51 +373,6 @@ $wrappers
         add("https://${BuildConfig.ALLOWED_HOST_SUFFIX}")
         add("https://*.${BuildConfig.ALLOWED_HOST_SUFFIX}")
         if (BuildConfig.DEBUG) add("http://localhost:5173")
-    }
-
-    // ── Voice input bridge (window.PicoBridge.startVoiceInput) ────────────
-    // Events are posted to window.PicoVoice.{onPartial,onResult,onError,onEnd,onSpeechStart}.
-
-    fun startVoiceInput(language: String) {
-        runOnUiThread {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) !=
-                PackageManager.PERMISSION_GRANTED
-            ) {
-                pendingVoiceLang = language
-                voicePermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                return@runOnUiThread
-            }
-            beginVoiceSession(language)
-        }
-    }
-
-    fun stopVoiceInput() {
-        runOnUiThread {
-            if (voiceWanted) endVoiceSession() else speechRecognizer?.cancel()
-        }
-    }
-
-    // The session listens continuously until the result, a fatal error, or JS calls stopVoiceInput.
-    // Silence and recognizer timeouts restart the recognizer here, so the mic never goes idle by itself.
-    private fun beginVoiceSession(language: String) {
-        voiceLang = language
-        voiceWanted = true
-        voiceRetries = 0
-        idleRestarts = 0
-        startListening(language)
-    }
-
-    private fun restartListening(delayMs: Long = 300) {
-        webView.postDelayed({ if (voiceWanted) startListening(voiceLang) }, delayMs)
-    }
-
-    private fun endVoiceSession() {
-        voiceWanted = false
-        try {
-            speechRecognizer?.cancel()
-        } catch (_: Exception) {
-        }
-        emitVoice("onEnd")
     }
 
     fun requestPermission(permission: String, onResult: (Boolean) -> Unit) {
@@ -548,168 +453,7 @@ $wrappers
         )
     }
 
-    // Reply speech. Completion is reported to window.PicoTTS.onDone(id) so the web queue can continue.
-    fun speakNative(id: String, text: String, lang: String) {
-        runOnUiThread {
-            val engine = tts
-            if (engine == null || !ttsReady) {
-                emitTts(id)
-                return@runOnUiThread
-            }
-            val locale = Locale.forLanguageTag(lang)
-            val available = engine.isLanguageAvailable(locale)
-            android.util.Log.d("PICO_TTS", "speak lang=$lang availability=$available chars=${text.length}")
-            if (available >= TextToSpeech.LANG_AVAILABLE) engine.language = locale
-            else android.util.Log.w("PICO_TTS", "no TTS voice installed for $lang; install it in Settings > Text-to-speech")
-            val result = engine.speak(text, TextToSpeech.QUEUE_FLUSH, null, id)
-            if (result != TextToSpeech.SUCCESS) {
-                android.util.Log.e("PICO_TTS", "speak() returned $result")
-                emitTts(id)
-            }
-        }
-    }
-
-    fun stopNativeSpeech() {
-        runOnUiThread { tts?.stop() }
-    }
-
-    // Called by ShieldService when a blocked app is in front: ends the mic session and any reply speech.
-    fun silenceForShield() {
-        runOnUiThread {
-            if (voiceWanted) endVoiceSession()
-            tts?.stop()
-            webView.evaluateJavascript("window.speechSynthesis&&window.speechSynthesis.cancel()", null)
-            android.util.Log.i("PICO_SHIELD", "voice silenced for blocked app")
-        }
-    }
-
-    private fun emitTts(id: String?) {
-        runOnUiThread {
-            webView.evaluateJavascript(
-                "window.PicoTTS&&window.PicoTTS.onDone&&window.PicoTTS.onDone(${JSONObject.quote(id ?: "")})",
-                null
-            )
-        }
-    }
-
-    private fun startListening(language: String) {
-        if (!SpeechRecognizer.isRecognitionAvailable(this)) {
-            emitVoice("onError", "-1")
-            endVoiceSession()
-            return
-        }
-        if (speechRecognizer == null) {
-            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).also { rec ->
-                rec.setRecognitionListener(voiceListener)
-            }
-        }
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, language)
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-            putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
-            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, preferOffline)
-        }
-        try {
-            speechRecognizer?.startListening(intent)
-        } catch (_: Exception) {
-            emitVoice("onError", "-1")
-            endVoiceSession()
-        }
-    }
-
-    private val voiceListener = object : RecognitionListener {
-        private val MAX_TRANSIENT_RETRIES = 3
-        private val MAX_IDLE_RESTARTS = 3
-        override fun onReadyForSpeech(params: Bundle?) {}
-        override fun onBeginningOfSpeech() {
-            voiceRetries = 0
-            idleRestarts = 0
-            emitVoice("onSpeechStart")
-        }
-        override fun onRmsChanged(rmsdB: Float) {}
-        override fun onBufferReceived(buffer: ByteArray?) {}
-        override fun onEndOfSpeech() {}
-        override fun onError(error: Int) {
-            if (!voiceWanted) return
-            when (error) {
-                SpeechRecognizer.ERROR_NO_MATCH, SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> {
-                    // Bounded idle restart: silence must not loop the recognizer forever.
-                    if (idleRestarts < MAX_IDLE_RESTARTS) {
-                        idleRestarts++
-                        restartListening(400L * idleRestarts)
-                    } else {
-                        idleRestarts = 0
-                        emitVoice("onError", SpeechRecognizer.ERROR_NO_MATCH.toString())
-                        endVoiceSession()
-                    }
-                }
-                // 12 = ERROR_LANGUAGE_NOT_SUPPORTED, 13 = ERROR_LANGUAGE_UNAVAILABLE (API 31+; literals keep minSdk 24).
-                12, 13 -> if (preferOffline) {
-                    preferOffline = false
-                    android.util.Log.w("PICO_VOICE", "offline language pack missing (error $error); retrying with online recognition")
-                    restartListening()
-                } else fail(error)
-                SpeechRecognizer.ERROR_RECOGNIZER_BUSY,
-                SpeechRecognizer.ERROR_NETWORK,
-                SpeechRecognizer.ERROR_NETWORK_TIMEOUT,
-                SpeechRecognizer.ERROR_SERVER,
-                SpeechRecognizer.ERROR_SERVER_DISCONNECTED,
-                SpeechRecognizer.ERROR_TOO_MANY_REQUESTS,
-                SpeechRecognizer.ERROR_CLIENT -> {
-                    if (voiceRetries++ < MAX_TRANSIENT_RETRIES) restartListening(1000)
-                    else fail(error)
-                }
-                else -> fail(error)
-            }
-        }
-        override fun onResults(results: Bundle?) {
-            if (!voiceWanted) return
-            val text = results
-                ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                ?.firstOrNull()?.trim().orEmpty()
-            if (text.isEmpty()) {
-                if (idleRestarts < MAX_IDLE_RESTARTS) {
-                    idleRestarts++
-                    restartListening(400L * idleRestarts)
-                } else {
-                    idleRestarts = 0
-                    emitVoice("onError", SpeechRecognizer.ERROR_NO_MATCH.toString())
-                    endVoiceSession()
-                }
-                return
-            }
-            voiceRetries = 0
-            idleRestarts = 0
-            voiceWanted = false
-            emitVoice("onResult", JSONObject.quote(text))
-            emitVoice("onEnd")
-        }
-        override fun onPartialResults(partialResults: Bundle?) {
-            if (!voiceWanted) return
-            val text = partialResults
-                ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                ?.firstOrNull()?.trim().orEmpty()
-            if (text.isNotEmpty()) {
-                idleRestarts = 0
-                emitVoice("onPartial", JSONObject.quote(text))
-            }
-        }
-        override fun onEvent(eventType: Int, params: Bundle?) {}
-    }
-
-    private fun fail(error: Int) {
-        emitVoice("onError", error.toString())
-        endVoiceSession()
-    }
-
-    private fun emitVoice(event: String, payload: String? = null) {
-        val call = if (payload == null) "PicoVoice.$event()" else "PicoVoice.$event($payload)"
-        webView.evaluateJavascript("window.PicoVoice&&window.PicoVoice.$event&&$call", null)
-    }
-
     private fun resourceToPermission(resource: String): String? = when (resource) {
-        PermissionRequest.RESOURCE_AUDIO_CAPTURE -> Manifest.permission.RECORD_AUDIO
         PermissionRequest.RESOURCE_VIDEO_CAPTURE -> Manifest.permission.CAMERA
         else -> null
     }
@@ -971,7 +715,7 @@ $wrappers
     }
 
     // Low memory: tell the shield to drop its overlay and the web app to pause
-    // heavy surfaces (artifact preview). Chat and voice are untouched. The flag
+    // heavy surfaces (artifact preview). Chat is untouched. The flag
     // latches until the process restarts — there is no "memory ok again" signal.
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
@@ -1000,7 +744,6 @@ $wrappers
     }
 
     override fun onDestroy() {
-        if (current === this) current = null
         networkCallback?.let {
             try {
                 getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(it)
@@ -1008,15 +751,6 @@ $wrappers
             }
         }
         networkCallback = null
-        try {
-            tts?.shutdown()
-        } catch (_: Exception) {
-        }
-        try {
-            speechRecognizer?.destroy()
-        } catch (_: Exception) {
-        }
-        speechRecognizer = null
         webView.destroy()
         super.onDestroy()
     }

@@ -20,7 +20,6 @@ import ClearConversation from '@components/Menu/MenuOptions/ClearConversation';
 import Toggle from '@components/Toggle';
 import SelectMenu from '@components/SelectMenu/SelectMenu';
 import useMemoryStore from '@store/memory-store';
-import useVoiceStore from '@store/voice-store';
 import type { ReplyLanguage } from '@store/config-slice';
 
 import CrossIcon2 from '@icon/CrossIcon2';
@@ -200,8 +199,6 @@ export const SettingsPopup = ({
   const setMemoryEnabled = useMemoryStore((state) => state.setMemoryEnabled);
   const addMemory = useMemoryStore((state) => state.addMemory);
   const removeMemory = useMemoryStore((state) => state.removeMemory);
-  const sttLang = useVoiceStore((state) => state.sttLang);
-  const setSttLang = useVoiceStore((state) => state.setSttLang);
   const clearMemories = useMemoryStore((state) => state.clearMemories);
 
   const [section, setSection] = useState<SettingsSection>('general');
@@ -270,9 +267,6 @@ export const SettingsPopup = ({
   const tokensUsed = usage?.tokensUsed ?? 0;
   const tokenLimit = usage?.tokenLimit ?? null;
   const tokenPct = tokenLimit ? Math.min(100, Math.round((tokensUsed / tokenLimit) * 100)) : 0;
-  const voiceUsed = usage?.voiceUsedSeconds ?? 0;
-  const voiceLimit = usage?.voiceLimitSeconds ?? null;
-  const voicePct = voiceLimit ? Math.min(100, Math.round((voiceUsed / voiceLimit) * 100)) : 0;
   const planLabel = usage ? `${usage.plan.charAt(0).toUpperCase()}${usage.plan.slice(1)} plan` : '';
 
   const submitMemory = () => {
@@ -409,25 +403,6 @@ export const SettingsPopup = ({
                 <SectionHeading title='Language' subtitle='Choose your interface language' />
                 <div className='mt-3'>
                   <LanguageSelector />
-                </div>
-                <div className='mt-5'>
-                  <SectionHeading
-                    title='Voice input language'
-                    subtitle='Language the mic listens for in voice mode'
-                  />
-                  <div className='mt-3'>
-                    <SelectMenu
-                      ariaLabel='Voice input language'
-                      value={sttLang}
-                      onChange={setSttLang}
-                      options={[
-                        { value: 'auto', label: 'Auto (device language)' },
-                        { value: 'en-US', label: 'English' },
-                        { value: 'ur-PK', label: 'Urdu (اردو)' },
-                        { value: 'hi-IN', label: 'Hindi (हिन्दी)' },
-                      ]}
-                    />
-                  </div>
                 </div>
               </div>
               <div className='flex flex-col gap-4'>
@@ -747,34 +722,11 @@ export const SettingsPopup = ({
                     </div>
                   )}
                 </div>
-                <div>
-                  <div className='flex justify-between text-xs text-gray-500 dark:text-zinc-400'>
-                    <span>Voice</span>
-                    <span>
-                      {voiceLimit
-                        ? `${Math.floor(voiceUsed / 60)} / ${Math.floor(voiceLimit / 60)} mins`
-                        : `${Math.floor(voiceUsed / 60)} mins used`}
-                    </span>
-                  </div>
-                  {voiceLimit && (
-                    <div className='mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-zinc-800'>
-                      <div
-                        className='h-full rounded-full bg-brand-600 transition-all duration-300'
-                        style={{ width: `${voicePct}%` }}
-                      />
-                    </div>
-                  )}
-                  {usage && usage.bonusVoiceSeconds > 0 && (
-                    <p className='mt-1 text-xs text-gray-400 dark:text-zinc-500'>
-                      Includes {Math.floor(usage.bonusVoiceSeconds / 60)} bonus mins from referrals.
-                    </p>
-                  )}
-                </div>
               </div>
               <div className='border-t border-gray-100 pt-6 dark:border-zinc-800'>
                 <SectionHeading
                   title='Referral'
-                  subtitle='Share your link. Rewards are added after your friend verifies email or uses voice'
+                  subtitle='Share your link. Rewards are added after your friend verifies email'
                 />
                 <div className='mt-3'>
                   <ReferralHub

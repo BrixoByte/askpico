@@ -15,7 +15,7 @@ Sensitive data never reaches the AI model, logs, or Pico's servers. It flows thr
 | Area | Beta | v1 | v2 | v3+ |
 |---|---|---|---|---|
 | Kotlin WebView shell loading the web app | Yes | — | — | — |
-| Native voice input bridge (Android `SpeechRecognizer`) | Yes | On-device Whisper upgrade | — | — |
+| Native voice input bridge | Removed (text-only beta, round 63); see docs/plans/modules/voice-mode.md for the archived design | — | — | — |
 | Splash screen, back-button and lifecycle handling | Yes | — | — | — |
 | Share and open-in-browser actions | Yes | — | — | — |
 | Push notifications | Yes — announcement broadcasts via FCM | — | Rich/actionable | — |
@@ -34,7 +34,7 @@ Sensitive data never reaches the AI model, logs, or Pico's servers. It flows thr
 
 **Phasing rationale**
 
-- **Beta ships the full non-accessibility feature set** — WebView, voice, auth, chat, splash/back/share, push, intent actions (voice command → call placed, app opened, WhatsApp composer filled, alarms/timers, URLs), the whole-app shield (usage access + overlay), Pico Vault, and the onboarding consent flow. It proves mobile control is real while containing no `AccessibilityService` — no declaration, near-zero review risk.
+- **Beta ships the full non-accessibility feature set** — WebView, auth, chat, splash/back/share, push, intent actions (call placed, app opened, WhatsApp composer filled, alarms/timers, URLs), the whole-app shield (usage access + overlay), Pico Vault, and the onboarding consent flow. It proves mobile control is real while containing no `AccessibilityService` — no declaration, near-zero review risk.
 - **v1 is the production release of the beta feature set** — same features, hardened for the store listing; no new capability, just stability and polish.
 - **v2 adds the accessibility layer** with the declaration and demo video once v1 is live and the user base exists; agentic mode activates through the in-app opt-in (separate ToS), dormant by default.
 - **v3 ships full automation** — selector recipes, remote-config updates, and telemetry-driven maintenance — because it is the most fragile surface and deserves a dedicated release.
@@ -46,7 +46,6 @@ Kotlin shell
  ├── WebView (loads go.askpico.app over HTTPS)
  │    └── Pico web build (React + Vite)
  ├── Native layer
- │    ├── SpeechRecognizer bridge (voice input)
  │    ├── Share sheet
  │    ├── Back button / lifecycle
  │    └── Session storage (cookies shared with WebView)
@@ -78,8 +77,8 @@ The app has four screens plus system overlays, matching the web app.
 |---|---|---|
 | **Onboarding** | Intro to agent features, progressive permission consent, Pico Vault explanation | First run only. Every gate is skippable; features degrade gracefully |
 | **Auth** | Email magic link form, guest continuation | First screen on cold start. Magic link opens inside the WebView through the auth subdomain |
-| **Chat** | Same chat UI as web: sidebar, greeting, composer with mic | Sidebar becomes a drawer. Mic button uses the native bridge when available |
-| **Profile** | Name, plan, voice minutes used, referral code, log out, delete account | Account deletion is required by Google Play |
+| **Chat** | Same chat UI as web: sidebar, greeting, composer | Sidebar becomes a drawer |
+| **Profile** | Name, plan, referral code, log out, delete account | Account deletion is required by Google Play |
 
 **UI rules**
 
@@ -94,10 +93,6 @@ Methods exposed as `window.PicoBridge`. The web app checks `window.PicoBridge` e
 
 | Method | Direction | Purpose |
 |---|---|---|
-| `startVoiceInput(language)` | Web → Native | Opens the mic with Android `SpeechRecognizer` |
-| `stopVoiceInput()` | Web → Native | Cancels the current recognition |
-| `onSpeechResult(text, isFinal)` | Native → Web | Pushes partial and final transcripts into the composer |
-| `onSpeechError(code)` | Native → Web | Reports mic errors so the UI can fall back to typing |
 | `share(text)` | Web → Native | Opens the Android share sheet |
 | `openExternal(url)` | Web → Native | Opens a URL in the device browser |
 | `getAppVersion()` | Web → Native | Returns version name/code for the profile screen |
@@ -108,12 +103,9 @@ Methods exposed as `window.PicoBridge`. The web app checks `window.PicoBridge` e
 | `vaultSet(key, value)` / `vaultHas(key)` | Web → Native | Stores or checks a secret without the model seeing it |
 | `setShield(rules)` | Web → Native | Configures distraction-shield surfaces per app |
 
-**Voice bridge behavior**
+**Voice bridge**
 
-- `SpeechRecognizer` runs on the main thread with `RecognitionListener`. Partial results stream to `onSpeechResult` with `isFinal=false`; the final result sends `isFinal=true`.
-- Silence timeout and barge-in are handled on the web side; the bridge only reports speech events.
-- If `SpeechRecognizer` is unavailable or the permission is denied, `onSpeechError` fires and the web UI shows the typed fallback.
-- Transcribed text goes through the normal composer. Audio never leaves the device.
+Voice mode removed (text-only beta, round 63). See docs/plans/modules/voice-mode.md for the archived design.
 
 ## 6. Device actions (agent layer)
 
@@ -156,7 +148,7 @@ The agent can do what a user can do with a finger on the screen — nothing more
 - Progressive consent screens during onboarding — each gate explains why Pico needs it and what Pico does **not** do with it.
 - Agentic mode arrives with the v2 update and stays dormant until the user opts in through a dedicated consent screen with its own ToS plus the system permission grants; v1 users see only the normal app under the normal ToS.
 - The agent code is part of the installed bundle — Play policy forbids downloading executable code outside Play's update mechanism, so "module download" means feature **activation**, not a code download.
-- Order: accessibility (core agent), overlay (shield), usage access (fallback detection), mic (voice), phone (calls), contacts (vault resolution).
+- Order: accessibility (core agent), overlay (shield), usage access (fallback detection), phone (calls), contacts (vault resolution).
 - Every gate is skippable. Skipping disables only that feature; the rest of the app works.
 - A dedicated settings screen re-opens any gate later.
 - A prominent disclosure runs before enabling accessibility, as required by Play policy.
@@ -190,7 +182,6 @@ The vault is Pico's privacy boundary — the `.env` file for the AI. Functions c
 | Permission | Why | Notes |
 |---|---|---|
 | `INTERNET` | Required for the WebView | Always granted |
-| `RECORD_AUDIO` | Voice input | Runtime permission with prominent disclosure |
 | `CALL_PHONE` | Place calls on user command | Runtime permission with disclosure |
 | `READ_CONTACTS` | Vault resolves names to numbers locally | Runtime; contacts stay on-device |
 | `POST_NOTIFICATIONS` | Action status and shield reminders | Runtime (Android 13+) |
@@ -220,14 +211,13 @@ The vault is Pico's privacy boundary — the `.env` file for the AI. Functions c
 The full mandatory list lives in the [Beta launch](../product/beta-launch.md) section 8. App-specific items:
 
 - In-app account deletion and a public web deletion link.
-- Mic permission disclosure before the first recording.
 - Beta and v1 need no accessibility declaration — the build contains no `AccessibilityService`. The declaration lands with the v2 update.
 - Accessibility API declaration form with a demo video showing the agent and shield working (v2).
 - The declaration describes the agent as dormant-by-default: it activates only after the in-app opt-in consent and the user's own system permission grants.
 - Prominent disclosure before enabling accessibility, and justification that the agent is core functionality — not a workaround.
 - Data safety form entries that match reality: contacts, usage, and vault data marked as on-device only, not shared.
-- At least one native feature beyond a plain web wrapper: the voice bridge, agent actions, and shield all count.
-- Fallback plan: if Play rejects the accessibility declaration, ship a reduced build (shell + voice) to Play and distribute the full agent build through a side channel.
+- At least one native feature beyond a plain web wrapper: agent actions and the shield both count.
+- Fallback plan: if Play rejects the accessibility declaration, ship a reduced build (shell only) to Play and distribute the full agent build through a side channel.
 
 ## 15. Milestones
 
@@ -236,7 +226,7 @@ The full mandatory list lives in the [Beta launch](../product/beta-launch.md) se
 | A1 | Beta | Kotlin shell, WebView, splash, back handling | App opens Chat over HTTPS on a device |
 | A2 | Beta | Session and auth | Guest and magic-link sign-in work inside the app |
 | A3 | Beta | JS bridge core | `share`, `openExternal`, `getAppVersion` callable from the web app |
-| A4 | Beta | Voice bridge | Spoken input lands in the composer; error falls back to typing |
+| A4 | Beta | Voice bridge | Voice mode removed (text-only beta, round 63). See docs/plans/modules/voice-mode.md for the archived design. |
 | A5 | Beta | Onboarding consent flow | Every gate explainable, skippable, and re-openable in settings |
 | A6 | Beta | Pico Vault | Secrets resolve through actions without entering model context, logs, or network calls |
 | A7 | Beta | Intent actions + whole-app shield | Call/app-open/WhatsApp-prefill work; overlay blocks user-picked apps |
@@ -255,7 +245,6 @@ The full mandatory list lives in the [Beta launch](../product/beta-launch.md) se
 
 - Devices: one low-end Android (4 GB RAM) and one mid-range, both on the minimum supported Android version.
 - Scenarios S3, S16, and S18 from the [Beta launch](../product/beta-launch.md) section 5.
-- Voice: dictation works in the app, permission denial shows the typed fallback, and quota blocks at the limit.
 - Agent: WhatsApp send end-to-end, call intent, shield toggling per surface, and every permission-denial path.
 - Vault: verify no secret value appears in logs, network payloads, model context, or screenshots (`FLAG_SECURE`).
 - Network: airplane mode, captive portal, and a dropped connection mid-session.
@@ -266,7 +255,6 @@ The full mandatory list lives in the [Beta launch](../product/beta-launch.md) se
 - **UI automation fragility:** WhatsApp and Instagram layouts change per version and OEM. Mitigate with selector-based recipes (no coordinates), remote-config recipe updates, telemetry-driven prioritisation, and a "finish this step manually" fallback.
 - **Overlay restrictions:** Android 12+ tightens overlay and untrusted-touch rules. Test shield behaviour on target API levels early.
 - **Vault trust gap:** accessibility can technically read screen text; the promise is on-device-only processing. Mitigate by keeping the agent/vault layer minimal, auditable, and free of analytics on accessibility events — and consider publishing it for external review.
-- **WebView speech gap:** covered by the native bridge; verify `SpeechRecognizer` on target devices early.
 - **WebView updates:** the app depends on the device WebView version; test on older WebView builds.
 - **Magic link deep-linking:** misconfigured intent filters open the browser and break sign-in. Test the link flow end to end.
 

@@ -13,7 +13,6 @@ import androidx.core.content.ContextCompat
 object Capabilities {
 
     fun runtimePermission(feature: String): String? = when (feature) {
-        "microphone" -> Manifest.permission.RECORD_AUDIO
         "notifications" ->
             if (Build.VERSION.SDK_INT >= 33) Manifest.permission.POST_NOTIFICATIONS else null
         else -> null

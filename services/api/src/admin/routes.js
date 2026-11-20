@@ -6,10 +6,8 @@ import { z } from 'zod';
 import { supabase, getUserFromToken } from '../supabase.js';
 import { logger } from '../logger.js';
 import { dailyTokenLimit } from '../tokenQuotaPolicy.js';
-import { dailyVoiceLimitSeconds } from '../voiceQuotaPolicy.js';
 import { aiSpendRouter, alertsHandler } from './aiSpendRoutes.js';
 import { flagRouter } from './flagRoutes.js';
-import { voiceRouter } from './voiceRoutes.js';
 import { infraRouter } from './infraRoutes.js';
 
 export const adminRouter = express.Router();
@@ -43,7 +41,6 @@ export const requireAdmin = async (req, res, next) => {
 adminRouter.use(requireAdmin);
 adminRouter.use('/ai-spend', aiSpendRouter);
 adminRouter.use('/flags', flagRouter);
-adminRouter.use('/voice', voiceRouter);
 adminRouter.use('/infra', infraRouter);
 adminRouter.get('/alerts', alertsHandler);
 
@@ -248,7 +245,7 @@ adminRouter.get('/users', async (req, res) => {
     const sortCol = sort === 'email' ? 'email' : sort === 'tokens' ? 'tokens_used_today' : 'created_at';
     let query = supabase
       .from('profiles')
-      .select('id, email, name, created_at, role, tokens_used_today, voice_seconds_used_today', { count: 'exact' })
+      .select('id, email, name, created_at, role, tokens_used_today', { count: 'exact' })
       .neq('role', 'admin')
       .order(sortCol, { ascending: dir === 'asc', nullsFirst: false });
     if (search) query = query.ilike('email', `%${search.replace(/[%_]/g, '')}%`);
@@ -288,8 +285,6 @@ adminRouter.get('/users', async (req, res) => {
         dailyTokenCap: l?.daily_token_cap ?? null,
         tokenLimit,
         tokensToday: p.tokens_used_today ?? 0,
-        voiceSecondsToday: p.voice_seconds_used_today ?? 0,
-        voiceLimitSeconds: dailyVoiceLimitSeconds(planInfo.plan),
         flagReason: l?.flag_reason ?? null,
       };
     });
@@ -306,7 +301,7 @@ const loadUserDetail = async (userId) => {
   const [profile, subs, limits, usage] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, email, name, created_at, role, tokens_used_today, tokens_reset_at, voice_seconds_used_today, last_reset_timestamp, voice_sessions_completed')
+      .select('id, email, name, created_at, role, tokens_used_today, tokens_reset_at')
       .eq('id', userId)
       .maybeSingle(),
     supabase.from('subscriptions').select('plan, expires_at, updated_at').eq('user_id', userId).maybeSingle(),
@@ -327,16 +322,15 @@ const loadUserDetail = async (userId) => {
     ? subs.data.plan
     : 'free';
 
-  // Collapse per-request logs into a UTC-day series (AI tokens vs voice requests).
+  // Collapse per-request logs into a UTC-day series (AI tokens).
   const byDay = new Map();
   for (const r of usage.data ?? []) {
     const d = r.created_at.slice(0, 10);
-    const row = byDay.get(d) ?? { day: d, tokens: 0, requests: 0, costUsd: 0, voiceRequests: 0 };
+    const row = byDay.get(d) ?? { day: d, tokens: 0, requests: 0, costUsd: 0 };
     const tokens = (r.prompt_tokens ?? 0) + (r.completion_tokens ?? 0);
     row.tokens += tokens;
     row.requests += 1;
     row.costUsd += Number(r.cost_usd ?? 0);
-    if (r.feature === 'voice') row.voiceRequests += 1;
     byDay.set(d, row);
   }
 
@@ -354,9 +348,6 @@ const loadUserDetail = async (userId) => {
     quota: {
       tokensToday: profile.data.tokens_used_today ?? 0,
       tokenLimit: limits.data?.daily_token_cap ?? dailyTokenLimit(plan),
-      voiceSecondsToday: profile.data.voice_seconds_used_today ?? 0,
-      voiceLimitSeconds: dailyVoiceLimitSeconds(plan),
-      voiceSessionsCompleted: profile.data.voice_sessions_completed ?? 0,
     },
     usage30d: [...byDay.values()],
   };
@@ -473,53 +464,6 @@ adminRouter.get('/stats/users', async (_req, res) => {
   } catch (err) {
     console.error(`admin user stats failed: ${err.message}`);
     res.status(502).json({ error: 'User stats are unavailable.' });
-  }
-});
-
-// ── Stats: voice usage ───────────────────────────────────────────────
-adminRouter.get('/stats/voice-usage', async (_req, res) => {
-  try {
-    const monthStart = monthStartUtc();
-    const [seconds, monthVoice, topProfiles] = await Promise.all([
-      // Today's voice seconds live on profiles (reset daily at UTC midnight).
-      supabase.from('profiles').select('id, voice_seconds_used_today').gt('voice_seconds_used_today', 0),
-      // No duration column exists for past days — this month is counted in sessions.
-      supabase.from('request_logs').select('id', { count: 'exact', head: true })
-        .eq('feature', 'voice').gte('created_at', monthStart.toISOString()),
-      supabase
-        .from('profiles')
-        .select('id, email, name, voice_seconds_used_today, voice_sessions_completed')
-        .gt('voice_sessions_completed', 0)
-        .order('voice_seconds_used_today', { ascending: false })
-        .limit(10),
-    ]);
-    const firstErr = [seconds, monthVoice, topProfiles].find((r) => r.error);
-    if (firstErr) throw new Error(firstErr.error.message);
-
-    const ids = (topProfiles.data ?? []).map((p) => p.id);
-    const { data: monthRows, error: mErr } = ids.length
-      ? await supabase.from('request_logs').select('user_id').eq('feature', 'voice')
-          .gte('created_at', monthStart.toISOString()).in('user_id', ids)
-      : { data: [], error: null };
-    if (mErr) throw new Error(mErr.message);
-    const sessionsByUser = new Map();
-    for (const r of monthRows ?? []) sessionsByUser.set(r.user_id, (sessionsByUser.get(r.user_id) ?? 0) + 1);
-
-    res.json({
-      todaySeconds: (seconds.data ?? []).reduce((s, p) => s + (p.voice_seconds_used_today ?? 0), 0),
-      monthSessions: monthVoice.count ?? 0,
-      topUsers: (topProfiles.data ?? []).map((p) => ({
-        userId: p.id,
-        email: p.email,
-        name: p.name,
-        todaySeconds: p.voice_seconds_used_today ?? 0,
-        monthSessions: sessionsByUser.get(p.id) ?? 0,
-        lifetimeSessions: p.voice_sessions_completed ?? 0,
-      })),
-    });
-  } catch (err) {
-    console.error(`admin voice stats failed: ${err.message}`);
-    res.status(502).json({ error: 'Voice stats are unavailable.' });
   }
 });
 

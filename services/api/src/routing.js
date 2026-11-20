@@ -1,7 +1,6 @@
 import { routeModelDefaults, routingGlobalCaps, routingLimits, llmProvider } from './config.js';
 
 const INT_MAX = 2147483647;
-const MODE_LEVEL = { quick: 0, smart: 1, deep_fast: 2, deep_pro: 3 };
 const COMPLEX_KEYWORDS = /multi-file|full app|complete|analy[sz]|summar|document|report|build|website|project/i;
 
 export const estimateComplexity = (message = '', attachmentCount = 0) => {
@@ -19,18 +18,15 @@ const autoMode = (score) => {
   return 'quick';
 };
 
-export const chooseMode = ({ requestType, requested, message = '', attachmentCount = 0 } = {}) => {
+export const chooseMode = ({ requested, message = '', attachmentCount = 0 } = {}) => {
   const score = estimateComplexity(message, attachmentCount);
-  let mode;
   if (requested === 'quick' || requested === 'smart') {
-    mode = requested;
-  } else if (requested === 'deep') {
-    mode = score >= 3 ? 'deep_pro' : 'deep_fast';
-  } else {
-    mode = autoMode(score);
+    return requested;
   }
-  if (requestType === 'voice' && MODE_LEVEL[mode] > MODE_LEVEL.smart) return 'smart';
-  return mode;
+  if (requested === 'deep') {
+    return score >= 3 ? 'deep_pro' : 'deep_fast';
+  }
+  return autoMode(score);
 };
 
 export const capModeForPlan = (mode, plan) => {

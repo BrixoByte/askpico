@@ -34,19 +34,8 @@ import { truncateAgentMessages } from './agentStore.js';
 import { indexTurnMemorySafe } from './memory/vectorWorker.js';
 import { formatRetrievedContext, recallContextSafe } from './memory/vectorSearch.js';
 import { getUserBrain, getUserFromToken, getUserPlan, getUserTheme, saveUserBrain, saveUserTheme, supabase } from './supabase.js';
-import { debitVoiceQuota } from './voiceQuota.js';
-import { debitGuestVoice } from './guestVoice.js';
-import {
-  HEARTBEAT_SECONDS,
-  dailyVoiceLimitSeconds,
-  guestClaimSeconds,
-  guestVoiceLimitBody,
-  usesGuestVoiceTrial,
-  voicePlan,
-} from './voiceQuotaPolicy.js';
-import { voiceTurnQuotaCheck } from './voiceTurnGate.js';
-import { clientIp, hashGuestIp, hashSignal } from './guestTrialIp.js';
-import { dailyTokenLimit, isDailyTokenCapReached, requestLogTokens, shouldCheckTokenCap } from './tokenQuotaPolicy.js';
+import { hashSignal } from './guestTrialIp.js';
+import { dailyTokenLimit, isDailyTokenCapReached, requestLogTokens } from './tokenQuotaPolicy.js';
 import { adminRouter, getSystemFlag, getUserLimitState } from './admin/routes.js';
 import { startAdminWorkers } from './workers/index.js';
 import { classifyIntent } from './workers/intentClassifier.js';
@@ -56,8 +45,6 @@ import {
   extractAttachmentText,
   truncateForModel,
 } from './attachments.js';
-import { isRateLimited, maxTextLength, synthesize, ttsStatus } from './tts.js';
-import { recordHeartbeat, startVoiceProbes } from './voiceHealth.js';
 import { healthSnapshot, startLocalHealthSampling } from './localHealth.js';
 import { createLimiter, isSafeFileName, rateLimit, rejectIfLimited, validateChatMessages } from './security.js';
 
@@ -71,8 +58,6 @@ const userLimits = {
   memoryWrite: createLimiter({ max: 30 }),
   themeWrite: createLimiter({ max: 30 }),
   truncate: createLimiter({ max: 30 }),
-  voice: createLimiter({ max: 20 }),
-  tts: createLimiter({ max: 20 }),
   couponValidate: createLimiter({ max: 10 }),
   couponRedeem: createLimiter({ max: 5 }),
   referralClaim: createLimiter({ max: 10 }),
@@ -91,9 +76,7 @@ const estimateCostUsd = (promptTokens, completionTokens) =>
 // log_request() also trips the circuit_breaker_active flag server-side
 // once the daily budget is crossed.
 const recordRequest = ({ userId, mode, feature, promptTokens, completionTokens, intentTag = null }) => {
-  // Voice turns are billed in voice seconds: the request_logs row and real cost
-  // still land, but p_tokens stays 0 so tokens_used_today only grows on text.
-  const counted = requestLogTokens(feature, promptTokens, completionTokens);
+  const counted = requestLogTokens(promptTokens, completionTokens);
   supabase
     .rpc('log_request', {
       p_user_id: userId,
@@ -157,7 +140,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
-  const { messages, stream = false, mode: requestedMode, requestType, replyLanguage, agentId, memories, focus, maxTokens, chatId } = req.body ?? {};
+  const { messages, stream = false, mode: requestedMode, replyLanguage, agentId, memories, focus, maxTokens, chatId } = req.body ?? {};
 
   const requestId = randomUUID().slice(0, 8);
   const startedAt = Date.now();
@@ -175,7 +158,7 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     const plan = await getUserPlan(user.id);
     const { data: tokensToday, error: tokensErr } = await supabase.rpc('roll_daily_tokens', { p_user_id: user.id });
     if (tokensErr) throw new Error(tokensErr.message);
-    if (shouldCheckTokenCap(requestType) && isDailyTokenCapReached(plan, Number(tokensToday ?? 0))) {
+    if (isDailyTokenCapReached(plan, Number(tokensToday ?? 0))) {
       return res.status(429).json({
         error: 'QUOTA_EXHAUSTED',
         message: 'Daily token limit reached. Upgrade or share your referral link to keep chatting today.',
@@ -187,8 +170,6 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     console.error(`[${requestId}] token quota check failed: ${err.message}`);
     return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
   }
-
-  if (requestType === 'voice' && (await blockVoiceTurnOverQuota(res, user, requestId, 'chat', req))) return;
 
   // Admin kill switch + per-user enforcement (ban / throttle cap).
   try {
@@ -236,7 +217,6 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     mode = await resolveRoutingMode({
       userId: user.id,
       requested: requestedMode,
-      requestType,
       message: typeof lastUserText === 'string' ? lastUserText : '',
     });
   } catch (err) {
@@ -254,13 +234,8 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
   res.setHeader('x-pico-requested-mode', typeof requestedMode === 'string' ? requestedMode : 'auto');
 
   const persona = Object.hasOwn(agentPersonas, agentId) ? agentPersonas[agentId] : null;
-  const voiceRule =
-    requestType === 'voice'
-      ? '\n\nVoice mode: the user spoke this message aloud, so talk the way a warm, friendly person talks in a real conversation. Reply in Urdu by default, written in Roman Urdu (Latin letters), in 1-3 short spoken sentences. If the user writes in Urdu script, reply in Urdu script. If the user explicitly asks for Urdu (for example "Urdu mein jawab do"), reply in Urdu script. Never reply in Hindi or Devanagari script. Only reply in English if the user explicitly asks for English. Use natural everyday wording, contractions where they fit, and briefly react to what the user said so it sounds caring, not robotic. Plain conversational text only: no markdown, bullet points, headings, links, emojis, or stage directions. Write numbers, units and symbols as words, for example thirty degrees instead of 30°C, so they are easy to say aloud. If the user explicitly asks for a document, code, or an artifact, still produce the required document/code fence with full content, but keep all text outside the fence to one short spoken sentence.'
-      : '';
   const baseSystem =
     withThread(withMemory(persona ? `${systemPrompt}\n\n${persona}` : systemPrompt, memories), sanitizeFocus(focus), []) +
-    voiceRule +
     replyLanguageRule(replyLanguage);
   const outgoingMessages = [
     { role: 'system', content: retrieved ? `${baseSystem}\n\n${retrieved}` : baseSystem },
@@ -306,7 +281,7 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
       controller.signal,
       requestId
     );
-    const feature = requestType === 'voice' ? 'voice' : 'text';
+    const feature = 'text';
     if (!result.upstream) {
       logger.error(`[${requestId}] all models unavailable (status ${result.status}) after ${elapsed()}`);
       // Failed calls still go on the ledger — cost is 0 but they exist.
@@ -575,7 +550,7 @@ app.post('/api/coupons/redeem', async (req, res) => {
 
 const REFERRAL_CODE_PATTERN = /^[\w-]{3,64}$/;
 const DEVICE_ID_PATTERN = /^[\w-]{8,64}$/;
-// hashSignal moved to guestTrialIp.js so the guest-trial cap shares the same keyed hash.
+// hashSignal lives in guestTrialIp.js so referral abuse signals share one keyed hash.
 
 // Links the caller to the referrer who shared the ?ref= code.
 // Self and repeat referrals return their own status so the client can
@@ -681,12 +656,11 @@ app.get('/api/referral/stats', async (req, res) => {
   const user = await requireSignedInUser(req, res);
   if (!user) return;
   try {
-    const [referrals, profile, clicks] = await Promise.all([
+    const [referrals, clicks] = await Promise.all([
       supabase.from('referrals').select('referred_id, status').eq('referrer_id', user.id),
-      supabase.from('profiles').select('bonus_voice_seconds').eq('id', user.id).maybeSingle(),
       supabase.from('referral_clicks').select('id', { count: 'exact', head: true }).eq('referrer_id', user.id),
     ]);
-    const firstErr = [referrals, profile, clicks].find((r) => r.error);
+    const firstErr = [referrals, clicks].find((r) => r.error);
     if (firstErr) throw new Error(firstErr.error.message);
     const referredIds = referrals.data.map((r) => r.referred_id);
     const paidIds = new Set();
@@ -710,147 +684,10 @@ app.get('/api/referral/stats', async (req, res) => {
       paidUpgrades: referrals.data.filter((r) => paidIds.has(r.referred_id)).length,
       successful: countOf('rewarded'),
       pending: countOf('pending'),
-      earnedSeconds: Number(profile.data?.bonus_voice_seconds ?? 0),
     });
   } catch (err) {
     logger.warn(`referral stats failed: ${err.message}`);
     res.status(502).json({ error: 'Referral stats could not be loaded. Please try again.' });
-  }
-});
-
-// Called once per voice session after the first completed reply. Counts as the
-// qualifying voice activity for any pending referral reward.
-app.post('/api/voice/session-complete', async (req, res) => {
-  const user = await requireSignedInUser(req, res);
-  if (!user) return;
-  if (rejectIfLimited(userLimits.voice, user.id, res)) return;
-  try {
-    const { data: profile, error: readErr } = await supabase
-      .from('profiles')
-      .select('voice_sessions_completed')
-      .eq('id', user.id)
-      .maybeSingle();
-    if (readErr) throw new Error(readErr.message);
-    const { error: updErr } = await supabase
-      .from('profiles')
-      .update({ voice_sessions_completed: (profile?.voice_sessions_completed ?? 0) + 1 })
-      .eq('id', user.id);
-    if (updErr) throw new Error(updErr.message);
-    const { data, error } = await supabase.rpc('complete_referral_reward', {
-      p_user_id: user.id,
-      p_trigger: 'voice_session',
-    });
-    if (error) throw new Error(error.message);
-    res.json({ ok: true, referral: data?.status ?? 'none' });
-  } catch (err) {
-    logger.warn(`voice session complete failed: ${err.message}`);
-    res.status(502).json({ error: 'Voice session could not be recorded.' });
-  }
-});
-
-// Voice quota: the server is the only authority. Clients never report their own timers as truth.
-// Guest voice trial: lifetime allowance, charged from the client's claimed active seconds.
-// Every debit is logged with its reason so Railway logs can reconstruct a session's billing.
-const handleGuestVoice = async (res, user, claimed, label, reason, ipHash) => {
-  try {
-    const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed, touch: true, ipHash });
-    logger.info(
-      `[voice-trial] ${label} user=${user.id.slice(-8)} claimed=${claimed} charged=${trial.chargedSeconds} ` +
-        `used=${trial.usedSeconds} remaining=${trial.remainingSeconds} reason=${reason ?? 'n/a'}`,
-    );
-    if (trial.exhausted) return res.status(403).json(guestVoiceLimitBody());
-    res.json({ remainingSeconds: trial.remainingSeconds, limitSeconds: trial.limitSeconds });
-  } catch (err) {
-    logger.warn(`${label} failed: ${err.message}`);
-    res.status(502).json({ error: 'Voice trial could not be checked. Please try again.' });
-  }
-};
-
-// Voice turns (chat + agent chat) share one quota gate: guests are charged against the
-// lifetime trial, signed-in users get the daily-quota read-only check. Both are logged.
-const blockVoiceTurnOverQuota = async (res, user, requestId, label, req) => {
-  try {
-    const result = await voiceTurnQuotaCheck({
-      user,
-      plan: usesGuestVoiceTrial(user) ? null : voicePlan(user, await getUserPlan(user.id)),
-      debitGuest: ({ userId, claimed }) =>
-        debitGuestVoice({ client: supabase, userId, claimed, touch: true, ipHash: hashGuestIp(clientIp(req)) }),
-      debitDaily: debitVoiceQuota,
-    });
-    logger.info(
-      `[voice-turn] ${label} user=${user.id.slice(-8)} anon=${user.is_anonymous === true} ` +
-        `charged=${result.chargedSeconds ?? 0} blocked=${result.blocked}`,
-    );
-    if (!result.blocked) return false;
-    res.status(result.status).json(result.body);
-    return true;
-  } catch (err) {
-    console.error(`[${requestId}] voice quota check failed: ${err.message}`);
-    res.status(502).json({ error: 'Voice quota could not be checked. Please try again.' });
-    return true;
-  }
-};
-
-// A short client-supplied label for why a heartbeat was sent (beat | pause | end).
-// Logged only; it never affects billing, which stays claim + wall-clock based.
-const heartbeatReason = (body) => {
-  const reason = typeof body?.reason === 'string' ? body.reason : '';
-  return /^[a-z_]{1,24}$/.test(reason) ? reason : 'n/a';
-};
-
-const handleVoiceQuota = (increment, label) => async (req, res) => {
-  const user = await requireUser(req, res);
-  if (!user) return;
-  if (rejectIfLimited(userLimits.voice, user.id, res)) return;
-  if (usesGuestVoiceTrial(user)) {
-    return handleGuestVoice(
-      res,
-      user,
-      guestClaimSeconds(increment, req.body),
-      label,
-      heartbeatReason(req.body),
-      hashGuestIp(clientIp(req)),
-    );
-  }
-  try {
-    const quota = await debitVoiceQuota({
-      userId: user.id,
-      plan: voicePlan(user, await getUserPlan(user.id)),
-      increment,
-    });
-    if (quota.exhausted) {
-      return res.status(403).json({
-        error: 'QUOTA_EXHAUSTED',
-        message: 'Daily voice limit reached. End the voice session. Upgrade or invite friends for more minutes.',
-        ...quota,
-      });
-    }
-    res.json(quota);
-  } catch (err) {
-    logger.warn(`${label} failed: ${err.message}`);
-    res.status(502).json({ error: 'Voice quota could not be checked. Please try again.' });
-  }
-};
-
-// Called before a voice session starts. Read-only: it blocks if no balance is left.
-// The IP limit stops a script from opening guest sessions in bulk; a real user starts a few per minute at most.
-app.post('/api/voice/session-start', rateLimit({ max: 12 }), handleVoiceQuota(0, 'voice session start'));
-
-// Called every HEARTBEAT_SECONDS while voice mode is on. Adds the interval to the daily total
-// (guests: adds the client's claimed active seconds, capped by the server's clock).
-app.post('/api/voice/heartbeat', handleVoiceQuota(HEARTBEAT_SECONDS, 'voice heartbeat'));
-
-// Guest voice balance for the sidebar row. Read-only: it never starts or extends a session.
-app.get('/api/voice/trial', async (req, res) => {
-  const user = await requireUser(req, res);
-  if (!user) return;
-  if (!usesGuestVoiceTrial(user)) return res.json({ guest: false });
-  try {
-    const trial = await debitGuestVoice({ client: supabase, userId: user.id, claimed: 0, touch: false });
-    res.json({ guest: true, limitSeconds: trial.limitSeconds, remainingSeconds: trial.remainingSeconds });
-  } catch (err) {
-    logger.warn(`voice trial read failed: ${err.message}`);
-    res.status(502).json({ error: 'Voice trial could not be loaded. Please try again.' });
   }
 });
 
@@ -873,21 +710,10 @@ app.get('/api/usage', async (req, res) => {
     const plan = await getUserPlan(user.id);
     const { data: tokensToday, error: tokensErr } = await supabase.rpc('roll_daily_tokens', { p_user_id: user.id });
     if (tokensErr) throw new Error(tokensErr.message);
-    const { data: profile, error: profileErr } = await supabase
-      .from('profiles')
-      .select('voice_seconds_used_today, bonus_voice_seconds, is_flagged')
-      .eq('id', user.id)
-      .maybeSingle();
-    if (profileErr) throw new Error(profileErr.message);
-    const voiceLimit = dailyVoiceLimitSeconds(voicePlan(user, plan));
-    const bonus = profile?.is_flagged ? 0 : Number(profile?.bonus_voice_seconds ?? 0);
     res.json({
       plan,
       tokensUsed: Number(tokensToday ?? 0),
       tokenLimit: dailyTokenLimit(plan),
-      voiceUsedSeconds: Number(profile?.voice_seconds_used_today ?? 0),
-      voiceLimitSeconds: voiceLimit === null ? null : voiceLimit + bonus,
-      bonusVoiceSeconds: bonus,
     });
   } catch (err) {
     logger.warn(`usage read failed: ${err.message}`);
@@ -1036,9 +862,7 @@ app.post('/api/agent/chat', async (req, res) => {
   const user = await requireUser(req, res);
   if (!user) return;
   if (rejectIfLimited(userLimits.agent, user.id, res)) return;
-  const { agentId, chatId, turn, message, mode: requestedMode, requestType, replyLanguage, memories, focus, recent } = req.body ?? {};
-
-  if (requestType === 'voice' && (await blockVoiceTurnOverQuota(res, user, requestId, 'agent', req))) return;
+  const { agentId, chatId, turn, message, mode: requestedMode, replyLanguage, memories, focus, recent } = req.body ?? {};
 
   if (typeof chatId !== 'string' || !CHAT_ID_PATTERN.test(chatId)) {
     return res.status(400).json({ error: 'chatId is required' });
@@ -1059,7 +883,7 @@ app.post('/api/agent/chat', async (req, res) => {
   try {
     const [retrievedMatches, mode] = await Promise.all([
       recallContextSafe({ userId: user.id, query: message }),
-      resolveRoutingMode({ userId: user.id, requested: requestedMode, requestType, message }),
+      resolveRoutingMode({ userId: user.id, requested: requestedMode, message }),
     ]);
     const reply = await runSpecialist({
       userId: user.id,
@@ -1072,7 +896,6 @@ app.post('/api/agent/chat', async (req, res) => {
       recent: sanitizeThreadMessages(recent),
       retrieved: formatRetrievedContext(retrievedMatches),
       mode,
-      requestType,
       replyLanguage,
       signal: AbortSignal.timeout(60000),
     });
@@ -1213,65 +1036,6 @@ setInterval(() => {
   }
 }, IMAGE_RATE_WINDOW_MS).unref();
 
-// ── TTS (voice mode Step 4) ────────────────────────────────────────────────
-// Provider chain lives in tts.js; guests may use it (voice works for guest
-// sessions) so auth is optional and abuse is bounded by a per-IP rate limit.
-
-app.get('/api/tts/status', (_req, res) => {
-  res.json(ttsStatus());
-});
-
-// Laptop TTS machine posts here every ~30s: curl -X POST /api/tts/heartbeat
-//   -H "x-pico-heartbeat: $TTS_HEARTBEAT_SECRET" -d '{"meta":{...}}'
-// No auth user is involved — the shared secret is the credential. Sleep, IP
-// changes, and tunnel drops all just delay the next post; last_seen is what
-// the health page reads.
-const HEARTBEAT_SECRET = process.env.TTS_HEARTBEAT_SECRET || '';
-app.post('/api/tts/heartbeat', express.json({ limit: '8kb' }), async (req, res) => {
-  if (!HEARTBEAT_SECRET || req.headers['x-pico-heartbeat'] !== HEARTBEAT_SECRET) {
-    return res.status(403).json({ error: 'forbidden' });
-  }
-  const meta = req.body && typeof req.body === 'object' ? req.body.meta : null;
-  const ok = await recordHeartbeat(meta && typeof meta === 'object' ? meta : {});
-  res.status(ok ? 200 : 502).json({ ok });
-});
-
-app.post('/api/tts', async (req, res) => {
-  const user = await requireSignedInUser(req, res);
-  if (!user) return;
-  if (rejectIfLimited(userLimits.tts, user.id, res)) return;
-  const text = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
-  if (text === '') return res.status(400).json({ error: 'text is required' });
-  if (text.length > maxTextLength) {
-    return res.status(400).json({ error: `text exceeds ${maxTextLength} characters` });
-  }
-
-  const ip = req.ip || req.socket?.remoteAddress || 'unknown';
-  if (isRateLimited(ip)) {
-    return res.status(429).json({ error: 'Too many voice requests. Try again in a minute.' });
-  }
-
-  const lang = /^[a-z]{2,3}(-[a-zA-Z0-9]{2,8}){0,2}$/i.test(req.body?.lang ?? '')
-    ? req.body.lang
-    : undefined;
-
-  const result = await synthesize(text, lang, { userId: user.id });
-  if (!result) {
-    // Client falls back to browser speechSynthesis — voice never goes silent.
-    return res.status(503).json({ error: 'tts_unavailable' });
-  }
-
-  res.setHeader('Content-Type', result.contentType);
-  res.setHeader('X-TTS-Provider', result.provider);
-  res.setHeader('Cache-Control', 'no-store');
-  result.stream.on('error', (err) => {
-    logger.warn(`tts: stream error (${result.provider}): ${err.message}`);
-    if (!res.headersSent) res.status(502).end();
-    else res.destroy();
-  });
-  result.stream.pipe(res);
-});
-
 app.get('/api/image/providers', (req, res) => {
   res.json({ providers: listConfiguredImageProviders() });
 });
@@ -1340,6 +1104,5 @@ startAdminWorkers();
 app.listen(serverConfig.port, () => {
   logger.info(`Backend running on http://localhost:${serverConfig.port}`);
   startProviderSync();
-  startVoiceProbes();
   startLocalHealthSampling();
 });

@@ -3,7 +3,6 @@ import React from 'react';
 const PRODUCT_LINKS = [
   { label: 'Features', href: '#features' },
   { label: 'Pricing', href: '#pricing' },
-  { label: 'Voice Mode', href: '#voice-mode' },
 ];
 
 const RESOURCE_LINKS = [

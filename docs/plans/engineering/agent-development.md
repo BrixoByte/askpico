@@ -8,7 +8,7 @@
 
 Each agent chats with the user as a distinct persona and has its own set of tools. Each tool can be built quickly. When no agent is selected, the core Pico assistant answers as a helpful newcomer.
 
-This plan covers agents, personas, and tools. Core emotion and persona behavior, modes, and the voice system are specified in [Agent persona](../modules/agent-persona.md) and [Voice mode](../modules/voice-mode.md).
+This plan covers agents, personas, and tools. Core emotion and persona behavior and modes are specified in [Agent persona](../modules/agent-persona.md). The voice system was removed (text-only beta, round 63); the archived design is in [Voice mode](../modules/voice-mode.md).
 
 ## 2. Working Rules
 
@@ -228,7 +228,7 @@ Mini features and tools that are not yet built, or were added after this plan, g
 
 ## 11. Core Features (Outside Agent Scope)
 
-These features run with the core chat in every agent and are not part of this plan's phases: voice notes (4), continuous speech-to-text (25), voice-to-voice (26), animated companion (27), guardrail (29), Pico Voice (24), voice quota (30), movie suggestions (37), anime suggestions (new), game suggestions (new), and free games (38). Voice features are specified in [Voice mode](../modules/voice-mode.md).
+These features run with the core chat in every agent and are not part of this plan's phases: animated companion (27), guardrail (29), movie suggestions (37), anime suggestions (new), game suggestions (new), and free games (38). The voice features (4, 24, 25, 26, 30) were removed (text-only beta, round 63); archived in [Voice mode](../modules/voice-mode.md).
 
 ## 12. Remaining Build List
 

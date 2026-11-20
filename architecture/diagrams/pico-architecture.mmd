@@ -19,14 +19,12 @@ flowchart LR
         SRV["server.js — routes / middleware"]
         ORCH["orchestrator.js — routing + specialists"]
         LLMC["llmClient.js — provider fallback + SSE"]
-        TTS["tts.js — voice synthesis"]
         MEM["memory.js — Global Brain prompt block"]
         WRK["workers/ — admin jobs + intent tags"]
     end
     %% @node SRV role=api desc="Express routes, CORS, rate limits, auth" file="services/api/src/server.js"
     %% @node ORCH role=agent desc="Specialist router, tool planner, fact-check" file="services/api/src/orchestrator.js"
     %% @node LLMC role=llm desc="Model fallback chain, SSE sanitizer" file="services/api/src/llmClient.js"
-    %% @node TTS role=voice desc="TTS provider chain" file="services/api/src/tts.js"
     %% @node MEM role=memory desc="Global Brain, server side" file="services/api/src/memory.js"
     %% @node WRK role=async desc="Admin workers, watchdog, intent classifier" file="services/api/src/workers/index.js"
 
@@ -59,7 +57,6 @@ flowchart LR
     ORCH --> AGMSG
     SRV --> MEMV
     SRV --> SUBS
-    SRV --> TTS
     Web --> MEMSTORE --> FILT
     FILT -->|"GET/PUT /api/memory"| SRV
     Web <--> AUTH

@@ -27,7 +27,6 @@ const plans: PricingPlan[] = [
     icon: 'zap',
     description: 'For individuals and small teams getting started.',
     features: [
-      '2 hours of voice per day',
       'Priority agent routing',
       'Deep mode for complex tasks',
       'All Pro features for 7 days',
@@ -42,7 +41,6 @@ const plans: PricingPlan[] = [
     icon: 'sparkle',
     description: 'For growing teams that need smarter workflows.',
     features: [
-      '5 hours of voice per day',
       'Priority agent routing',
       'Deep mode for complex tasks',
       'Local payment methods',

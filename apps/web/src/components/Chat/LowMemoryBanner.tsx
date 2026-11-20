@@ -2,7 +2,7 @@ import React, { useSyncExternalStore } from 'react';
 import { isLowMemoryMode, subscribeLowMemory } from '@utils/nativeAgent';
 
 // Shown after the Android shell reports a memory trim (window.PicoMemory).
-// Previews and the shield overlay are paused; chat and voice keep working.
+// Previews and the shield overlay are paused; chat keeps working.
 const LowMemoryBanner = () => {
   const low = useSyncExternalStore(subscribeLowMemory, isLowMemoryMode, () => false);
   if (!low) return null;

@@ -16,13 +16,13 @@ flowchart TD
         AUTHX["requireUser — Bearer token to Supabase user"]
         UL["userLimits.chat — per user, 30 per 60s"]
         VAL["validateChatMessages — roles + size caps"]
-        QUOTA["Account and system checks — token cap, voice quota, pause and budget flags, ban status"]
+        QUOTA["Account and system checks — token cap, pause and budget flags, ban status"]
     end
     %% @node RL role=safety desc="Fixed-window limiter keyed by IP; 429 + Retry-After" file="services/api/src/security.js"
     %% @node AUTHX role=auth desc="requireUser calls getUserFromToken; other routes use requireSignedInUser" file="services/api/src/server.js"
     %% @node UL role=safety desc="Keyed by user id, so token refresh does not reset it" file="services/api/src/server.js"
     %% @node VAL role=safety desc="Max 200 messages x 100k chars, role allowlist" file="services/api/src/security.js"
-    %% @node QUOTA role=api desc="roll_daily_tokens, debitVoiceQuota (voice requests), llm_requests_paused, circuit_breaker_active, banned status" file="services/api/src/server.js"
+    %% @node QUOTA role=api desc="roll_daily_tokens, llm_requests_paused, circuit_breaker_active, banned status" file="services/api/src/server.js"
 
     MW --> CORS --> RL --> AUTHX --> UL --> VAL --> QUOTA
 
@@ -71,8 +71,6 @@ flowchart TD
         AGENTEP["/api/agent/route, chat, truncate — specialist pipeline"]
         THREADEP["/api/thread/focus — thread facts"]
         MEMEP["/api/memory + /api/preferences/theme — signed-in only"]
-        VOICEP["/api/voice/session-start, heartbeat, session-complete — voice quota"]
-        TTSEP["/api/tts — signed-in only"]
         TOOLEP["/api/tools/:tool, attachments/extract, artifact/css, artifact/submission"]
         IMGEP["/api/image/generate + providers"]
         ACCTEP["usage, account, referral, coupons, client-log, admin"]
@@ -80,8 +78,6 @@ flowchart TD
     %% @node AGENTEP role=api desc="Specialist pipeline (see agents.mmd)" file="services/api/src/server.js"
     %% @node THREADEP role=memory desc="Sanitized thread focus facts" file="services/api/src/server.js"
     %% @node MEMEP role=memory desc="Global Brain and theme persistence" file="services/api/src/server.js"
-    %% @node VOICEP role=voice desc="Daily voice seconds quota" file="services/api/src/voiceQuota.js"
-    %% @node TTSEP role=voice desc="TTS synthesis through tts.js providers" file="services/api/src/tts.js"
     %% @node TOOLEP role=tool desc="External tools, attachment text extraction, artifact CSS and submissions" file="services/api/src/server.js"
     %% @node IMGEP role=tool desc="Provider chain for image generation" file="services/api/src/imageProviders/index.js"
     %% @node ACCTEP role=api desc="Account, referral, coupon, usage routes and /api/admin router" file="services/api/src/server.js"

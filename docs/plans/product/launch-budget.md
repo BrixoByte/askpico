@@ -33,7 +33,6 @@ This document lists the initial budget needed to develop, launch, and run the Pi
 | Resend (magic-link email) | 100/day, 3,000/month | Rate-limit the auth flow so abuse cannot burn the quota |
 | Groq (Quick tier) | Free tier | Rate limits per model |
 | Web hosting (marketing + app) | Free tier host | Bandwidth and build minutes |
-| Edge TTS | Free (unofficial) | Fallback chain per the beta plan |
 | Android Studio | Free | — |
 
 ## 5. API deposits
