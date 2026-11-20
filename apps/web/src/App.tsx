@@ -24,8 +24,6 @@ import Toast from '@components/Toast';
 import UpgradePlanModal from '@components/UpgradeModal/UpgradePlanModal';
 import AuthGateModal from '@components/Auth/AuthGateModal';
 import ResetPasswordModal from '@components/Auth/ResetPasswordModal';
-import PermissionPrompt from '@components/Permissions/PermissionPrompt';
-import VoiceController from '@components/Voice/VoiceController';
 import OfflineBanner from '@components/Chat/OfflineBanner';
 import LowMemoryBanner from '@components/Chat/LowMemoryBanner';
 import useUsageStore from '@store/usage-store';
@@ -213,14 +211,12 @@ function App() {
         <Chat />
       </ErrorBoundary>
       <Toast />
-      <VoiceController />
       {upgradeOpen && <UpgradePlanModal onClose={() => setUpgradeOpen(false)} />}
       {quotaOpen && null /* quota UI is the inline QuotaBanner above the composer */}
       <AuthGateModal />
       <OfflineBanner />
       <LowMemoryBanner />
       {recoveryOpen && <ResetPasswordModal onClose={() => setRecoveryOpen(false)} />}
-      <PermissionPrompt />
     </div>
   );
 }

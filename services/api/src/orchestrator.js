@@ -296,7 +296,7 @@ export const routeAttachment = async (message, extensions, { signal }) => {
   return tool;
 };
 
-export const runSpecialist = async ({ userId, agentId, chatId, turn, message, memories, focus, recent, retrieved = '', mode, requestType, replyLanguage, signal }) => {
+export const runSpecialist = async ({ userId, agentId, chatId, turn, message, memories, focus, recent, retrieved = '', mode, replyLanguage, signal }) => {
   if (agentId === 'doctor') {
     const warning = findEmergency(message);
     if (warning) return warning;
@@ -305,11 +305,7 @@ export const runSpecialist = async ({ userId, agentId, chatId, turn, message, me
   const history = await recentAgentMessages(userId, agentId, chatId, HISTORY_LIMIT);
   logger.debug(`specialist "${agentId}" history=${history.length} messages, user=${userId.slice(0, 8)}`);
   const persona = agentPersonas[agentId];
-  const voiceRule =
-    requestType === 'voice'
-      ? '\n\nVoice mode: the user spoke this message aloud, so talk the way a warm, friendly person talks in a real conversation. Reply in Urdu by default, written in Roman Urdu (Latin letters), in 1-3 short spoken sentences. If the user writes in Urdu script, reply in Urdu script. If the user explicitly asks for Urdu (for example "Urdu mein jawab do"), reply in Urdu script. Never reply in Hindi or Devanagari script. Only reply in English if the user explicitly asks for English. Use natural everyday wording, contractions where they fit, and briefly react to what the user said so it sounds caring, not robotic. Plain conversational text only: no markdown, bullet points, headings, links, emojis, or stage directions. Write numbers, units and symbols as words, for example thirty degrees instead of 30°C, so they are easy to say aloud. If the user explicitly asks for a document, code, or an artifact, still produce the required document/code fence with full content, but keep all text outside the fence to one short spoken sentence.'
-      : '';
-  const system = `${withThread(withMemory(`${systemPrompt}\n\n${persona}`, memories), focus, recent)}${retrieved ? `\n\n${retrieved}` : ''}${voiceRule}${replyLanguageRule(replyLanguage)}`;
+  const system = `${withThread(withMemory(`${systemPrompt}\n\n${persona}`, memories), focus, recent)}${retrieved ? `\n\n${retrieved}` : ''}${replyLanguageRule(replyLanguage)}`;
   const reply = await callLlm(
     [
       { role: 'system', content: system },

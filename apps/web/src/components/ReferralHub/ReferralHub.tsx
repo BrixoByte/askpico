@@ -46,7 +46,7 @@ const ReferralHub = ({ isSignedIn, referralLink, stats, error }: ReferralHubProp
       <div>
         <div className='text-sm font-semibold text-gray-900 dark:text-white'>Your referral link</div>
         <div className='text-xs text-gray-500 dark:text-gray-400'>
-          Rewards are added after your friend verifies email or uses voice.
+          Rewards are added after your friend verifies email.
         </div>
       </div>
 

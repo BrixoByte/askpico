@@ -11,7 +11,7 @@
 - **Google login:** `apps/web/src/store/cloud-auth-store.ts` stores Google access and refresh tokens, used only for Google Drive sync. It is not an app login.
 - **Backend identity:** `services/api/src/server.js` uses an anonymous `anonId` for agent routes. There are no user accounts, sessions, or subscription checks.
 - **Backend storage:** `services/api/src/agentStore.js` stores agent messages in the Supabase `agent_messages` table (the earlier `node:sqlite` file was removed). It is a good base for the user database, but it stores agent chat only.
-- **Home screen (reference screenshot):** a sidebar with New Chat, Explore, Library, Project, and Studio; the greeting "Hello, Guest" with "How can I assist you today?"; a glowing purple orb; a chat input with Deeper Research, web, zoom, Image, mic, Saved prompts, and Attach file; a bottom-left account card showing "Guest, Free plan" with a logout icon.
+- **Home screen (reference screenshot):** a sidebar with New Chat, Explore, Library, Project, and Studio; the greeting "Hello, Guest" with "How can I assist you today?"; a glowing purple orb; a chat input with Deeper Research, web, zoom, Image, Saved prompts, and Attach file; a bottom-left account card showing "Guest, Free plan" with a logout icon.
 
 ## 2. Goals
 
@@ -44,7 +44,7 @@ Tables (SQLite first; column names are the same for Postgres):
 - `pico_state`: `user_id`, `hunger_level`, `recovery_step`, `last_session_date`, `updated_at`. The server owns this, matching [Pico character](../modules/pico-character.md), section 4.
 - `referrals`: `id`, `referrer_user_id`, `referred_user_id` (unique), `code`, `created_at`, `rewarded_at`.
 - `referral_codes`: `user_id` (unique), `code` (unique, short, case-insensitive).
-- `voice_ledger` (for [Voice mode](../modules/voice-mode.md) Step 5): `id`, `user_id`, `delta_seconds`, `reason`, `created_at`. Append-only. The balance is the sum.
+- `voice_ledger` (from the archived [Voice mode](../modules/voice-mode.md) plan, Step 5): `id`, `user_id`, `delta_seconds`, `reason`, `created_at`. Append-only. Voice mode removed (text-only beta, round 63) — table may remain in the database unused.
 
 Rules:
 
@@ -91,7 +91,7 @@ apps/web/src/
   components/Home/
     HomeGreeting.tsx           # "Hello, {name}" and the question line
     HomeOrb.tsx                # animated orb, reads state
-    HomeComposer.tsx           # input, tools, mic, attach (reuses chat input)
+    HomeComposer.tsx           # input, tools, attach (reuses chat input)
     HomeSuggestions.tsx        # saved prompts and starter chips
   components/Account/
     AccountCard.tsx            # bottom-left card: avatar, name, plan, logout
@@ -117,7 +117,7 @@ Notes:
 | Question line | Always "How can I assist you today?" | Localized through `i18n.ts` |
 | Model selector | Current model | Unchanged |
 | Composer tools | Deeper Research, web, zoom, Image | Shows a locked badge when the plan does not allow it |
-| Mic button | Shows only when speech is supported | Connects to [Voice mode](../modules/voice-mode.md) Step 1 |
+| Mic button | Removed (text-only beta, round 63) | Archived in [Voice mode](../modules/voice-mode.md) |
 | Saved prompts | Guest and signed-in | Stored per account on the server later; local for guests now |
 | Attach file | Always | Same limits as chat |
 | Account card | Avatar, name, plan label, logout icon | Click opens the account menu (Account, Referral, Plan, Log out) |
@@ -147,13 +147,13 @@ Flow:
 2. The user shares `https://<domain>/?ref=<code>`.
 3. On first visit, the frontend keeps the code in memory and sends it with `/api/auth/guest` or sign-up. It is not stored in `localStorage` as a trusted value.
 4. The server checks the code, links `referrals`, and rejects self-referrals and duplicates.
-5. Rewards are added to `voice_ledger` on the server (amounts in [Voice mode](../modules/voice-mode.md), Step 5).
+5. Rewards were previously added to `voice_ledger` on the server (amounts in the archived [Voice mode](../modules/voice-mode.md), Step 5). Voice mode removed (text-only beta, round 63); the reward mechanism is a separate decision.
 
 Anti-abuse (required before launch):
 
 - One referral reward per referred account, ever. Unique index on `referred_user_id`.
 - Reward only after the referred account completes a real action (for example, one completed chat or a verified email), not on sign-up alone.
-- Limit referrals per IP address and per device fingerprint (see [Voice mode](../modules/voice-mode.md), Step 5).
+- Limit referrals per IP address and per device fingerprint (see the archived [Voice mode](../modules/voice-mode.md), Step 5).
 - Show the referrer only a count, never the referred users' emails.
 
 Acceptance: a self-referral and a second use of the same account both give zero reward, checked in the database.
@@ -168,7 +168,7 @@ Acceptance: a self-referral and a second use of the same account both give zero 
 ## 11. Security
 
 - HttpOnly cookies for sessions. Logout revokes the server session.
-- `isPaid`, plan, voice balance, and referral rewards are checked on the server only.
+- `isPaid`, plan, and referral rewards are checked on the server only.
 - Google OAuth: validate `state` and `nonce`, and verify the ID token signature and `aud`.
 - Magic links: single use, expire in 15 minutes, stored as hashes.
 - Rate limit `/api/auth/*`, `/api/referral/apply`, and `/api/pico/session`.

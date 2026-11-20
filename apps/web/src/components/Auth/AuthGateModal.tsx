@@ -68,7 +68,7 @@ const AuthGateModal = () => {
         <h2 className='text-lg font-semibold text-ink'>Sign in to continue</h2>
         <p className='mt-2 text-sm text-ink-muted'>{message}</p>
         <p className='mt-2 text-xs text-ink-muted'>
-          Free accounts keep your chats and memory across devices, and unlock voice, images and file uploads.
+          Free accounts keep your chats and memory across devices, and unlock images and file uploads.
         </p>
         <div className='mt-5 flex justify-end gap-2'>
           <button

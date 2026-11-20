@@ -2,7 +2,7 @@
 // Every call is guarded: on desktop browsers the bridge is absent and
 // the helpers return safe defaults so the web app works unchanged.
 
-export type AgentFeature = 'overlay' | 'usage' | 'microphone' | 'notifications';
+export type AgentFeature = 'overlay' | 'usage' | 'notifications';
 
 export type AgentActionName =
   | 'open_app'
@@ -46,7 +46,7 @@ export const openAppSettings = (): void => {
   } catch {
     // Fall through to the manual instructions below.
   }
-  alert('Open your phone settings > Apps > Pico > Permissions > Microphone to enable access.');
+  alert('Open your phone settings > Apps > Pico > Permissions to enable access.');
 };
 
 export const hasCapability = (feature: AgentFeature): boolean => {
@@ -120,7 +120,7 @@ pico.PicoAction = {
 // Low-memory signal from the native shell (MainActivity.onTrimMemory posts to
 // window.PicoMemory.onLowMemory). Latched for the session — Android has no
 // "memory ok again" callback. Heavy surfaces (artifact preview, shield
-// overlay) pause while latched; chat and voice keep working.
+// overlay) pause while latched; chat keeps working.
 let lowMemoryLatched = false;
 const lowMemoryListeners = new Set<() => void>();
 

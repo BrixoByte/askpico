@@ -4,7 +4,6 @@ import useStore from '@store/store';
 import SidebarHeader from './SidebarHeader';
 import ChatHistoryList from './ChatHistoryList';
 import ProfileCard from './ProfileCard';
-import GuestVoiceTrialRow from './GuestVoiceTrialRow';
 
 import CrossIcon2 from '@icon/CrossIcon2';
 import SunIcon from '@icon/SunIcon';
@@ -64,7 +63,6 @@ const MobileSidebarDrawer = () => {
           <SidebarHeader hideCollapse />
           <ChatHistoryList fillHeight={false} />
         </div>
-        <GuestVoiceTrialRow />
         <MobileThemeToggle />
         <ProfileCard />
         <button

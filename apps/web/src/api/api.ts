@@ -1,7 +1,6 @@
 import { ShareGPTSubmitBodyInterface } from '@type/api';
 import { ImageAspectRatio, MessageInterface, ModelOptions } from '@type/chat';
 import useStore from '@store/store';
-import { markGuestTrialOver, TRIAL_OVER_MESSAGE } from '@store/guest-voice-store';
 import { getAccessToken } from './supabase';
 
 // Default: the API lives on the same host as this page, port 3001. Works for
@@ -163,7 +162,7 @@ export const askSpecialistAgent = async (
   chatId: string,
   turn: number,
   mode: RoutingMode = 'auto',
-  requestType: 'text' | 'voice' = 'text',
+  requestType: 'text' = 'text',
   memories: string[] = [],
   context: ThreadContext = {}
 ): Promise<string> => {
@@ -173,10 +172,6 @@ export const askSpecialistAgent = async (
     body: JSON.stringify({ agentId, chatId, turn, message, mode: mode === 'auto' ? undefined : mode, requestType, memories, ...context }),
   });
   const data = await response.json().catch(() => null);
-  if (data?.error === 'GUEST_VOICE_LIMIT') {
-    markGuestTrialOver();
-    throw new Error(TRIAL_OVER_MESSAGE);
-  }
   if (!response.ok) throw new Error(data?.error ?? `Agent request failed (${response.status})`);
   return data.reply as string;
 };
@@ -206,7 +201,7 @@ export const getChatCompletionStream = async (
   focus?: string,
   maxTokens?: number,
   chatId?: string,
-  requestType: 'text' | 'voice' = 'text'
+  requestType: 'text' = 'text'
 ): Promise<ChatStreamResult> => {
   const response = await fetchWithRetry(`${backendUrl}/api/chat`, {
     method: 'POST',
@@ -218,16 +213,11 @@ export const getChatCompletionStream = async (
     const text = await response.text();
     let error = text;
     let busy = false;
-    let trialOver = false;
     try {
       const body = JSON.parse(text);
       busy = body.code === 'UPSTREAM_BUSY';
-      trialOver = body.error === 'GUEST_VOICE_LIMIT';
     } catch { /* not JSON */ }
-    if (trialOver) {
-      markGuestTrialOver();
-      error = TRIAL_OVER_MESSAGE;
-    } else if (busy) error = 'Service is busy. Please try again.';
+    if (busy) error = 'Service is busy. Please try again.';
     else if (response.status === 429) error += '\nRate limited!';
     throw new Error(error);
   }
@@ -332,9 +322,6 @@ export interface UsageSummary {
   plan: 'free' | 'weekly' | 'monthly';
   tokensUsed: number;
   tokenLimit: number | null;
-  voiceUsedSeconds: number;
-  voiceLimitSeconds: number | null;
-  bonusVoiceSeconds: number;
 }
 
 export const fetchUsage = async (): Promise<UsageSummary> => {
@@ -344,46 +331,6 @@ export const fetchUsage = async (): Promise<UsageSummary> => {
   const data = await response.json().catch(() => null);
   if (!response.ok) throw new Error(data?.error ?? `Usage failed (${response.status})`);
   return data as UsageSummary;
-};
-
-export const notifyVoiceSessionComplete = async (): Promise<void> => {
-  const response = await fetch(`${backendUrl}/api/voice/session-complete`, {
-    method: 'POST',
-    headers: await authHeaders(),
-  });
-  if (!response.ok) throw new Error(`Voice session report failed (${response.status})`);
-};
-
-// Guest voice trial. The server decides; these return the balance or the refusal code.
-export type GuestVoiceResult = { ok: true; remainingSeconds: number } | { ok: false; code: string };
-
-const guestVoiceRequest = async (path: string, body?: unknown): Promise<GuestVoiceResult> => {
-  const response = await fetch(`${backendUrl}${path}`, {
-    method: 'POST',
-    headers: await authHeaders(),
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-  const data = await response.json().catch(() => null);
-  if (response.ok) return { ok: true, remainingSeconds: Number(data?.remainingSeconds ?? 0) };
-  return { ok: false, code: data?.error ?? `HTTP_${response.status}` };
-};
-
-export const startGuestVoice = (): Promise<GuestVoiceResult> => guestVoiceRequest('/api/voice/session-start');
-
-export const sendGuestVoiceHeartbeat = (seconds: number, reason?: 'beat' | 'pause' | 'end'): Promise<GuestVoiceResult> =>
-  guestVoiceRequest('/api/voice/heartbeat', { seconds, reason });
-
-// Signed-in users: the route debits a fixed HEARTBEAT_SECONDS per call, so the
-// `seconds` claim is guest-only and deliberately omitted. `reason` is a log label.
-export const sendVoiceHeartbeat = (reason?: 'beat' | 'pause' | 'end'): Promise<GuestVoiceResult> =>
-  guestVoiceRequest('/api/voice/heartbeat', { reason });
-
-// Null when the balance cannot be read; the sidebar row then stays hidden rather than guessing.
-export const fetchGuestVoiceTrial = async (): Promise<number | null> => {
-  const response = await fetch(`${backendUrl}/api/voice/trial`, { headers: await authHeaders() });
-  const data = await response.json().catch(() => null);
-  if (!response.ok || !data?.guest) return null;
-  return Number(data.remainingSeconds ?? 0);
 };
 
 export const fetchReferralCode = async (): Promise<string> => {

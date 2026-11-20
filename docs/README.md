@@ -18,7 +18,7 @@ This folder holds the product, module, and engineering plans for Pico. Each docu
 |---|---|
 | [Pico character](plans/modules/pico-character.md) | Character state, visual layers, and the multi-agent router |
 | [Agent persona](plans/modules/agent-persona.md) | Persona model, emotional states, reactions, and the chibi character's style and animation |
-| [Voice mode](plans/modules/voice-mode.md) | Step-by-step voice input, speech output, quota, and voice-to-voice plan |
+| [Voice mode](plans/modules/voice-mode.md) | Archived — voice removed (text-only beta, round 63); kept for reference |
 | [Memory system](plans/modules/memory-system.md) | Three-layer memory: global brain, 10-message thread window, and pgvector long-term recall |
 | [Pico vault](plans/modules/pico-vault.md) | Encrypted on-device vault that tokenizes personal data before it reaches the AI |
 
@@ -27,7 +27,7 @@ This folder holds the product, module, and engineering plans for Pico. Each docu
 | Document | Purpose |
 |---|---|
 | [Agent development](plans/engineering/agent-development.md) | Agent framework, persona assignments, tool build order, and API routing |
-| [Android app](plans/engineering/android-app.md) | Kotlin WebView shell, JS and voice bridges, screens, and Play Store release plan |
+| [Android app](plans/engineering/android-app.md) | Kotlin WebView shell, JS bridges, screens, and Play Store release plan |
 | [Authentication](plans/engineering/authentication.md) | Accounts, sessions, home page, referrals, and phased rollout |
 | [Database](plans/engineering/database.md) | Current storage inventory and the Supabase migration plan |
 | [Telemetry and feedback](plans/engineering/telemetry-and-feedback.md) | Usage analytics, device and break-point error reports, auto and manual feedback, and the admin views for them |

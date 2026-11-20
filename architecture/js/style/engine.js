@@ -11,7 +11,7 @@
 
   const KEY = 'pico-mermaid-style';
   const DOC_KEY = 'pico-mermaid-doc';
-  const ROLE_ORDER = ['client', 'api', 'agent', 'llm', 'voice', 'memory', 'auth', 'db', 'client-state', 'safety', 'tool', 'artifact', 'async'];
+  const ROLE_ORDER = ['client', 'api', 'agent', 'llm', 'memory', 'auth', 'db', 'client-state', 'safety', 'tool', 'artifact', 'async'];
   const ARROW_RE = /-->|-\.->|==>|---|-\.-|===/g;
   let lastRun = null;
 

@@ -13,7 +13,6 @@
 | Chat history and agent messages | Browser storage, backend database | High |
 | Email, name, plan, and referral data | Backend database | High |
 | Uploaded files and extracted text | Browser memory, backend during extraction | High |
-| Voice audio | Browser speech APIs | Medium |
 | Usage counts and quota state | Backend database | Medium |
 
 ## 2. Trust Boundaries
@@ -27,7 +26,7 @@
 
 | # | Threat | Control | Status |
 |---|---|---|---|
-| T1 | Client changes plan, model tier, or voice quota | Plan and quota are read from the database on the server. Client values are ignored | Planned |
+| T1 | Client changes plan, model tier, or quota | Plan and quota are read from the database on the server. Client values are ignored | Planned |
 | T2 | API keys leak to the browser or repository | Keys live in `services/api/.env`, which is git-ignored. `.env.example` holds names only | In place for the backend |
 | T3 | Brute force or abuse of auth and image routes | Rate limiting on every auth route and on image generation | Partly in place (images) |
 | T4 | Cross-site request forgery on session routes | `SameSite=Lax` cookies and checked request origins | Planned |

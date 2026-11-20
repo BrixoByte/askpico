@@ -10,7 +10,6 @@ import {
 const CAPABILITIES: { id: AgentFeature; label: string; help: string }[] = [
   { id: 'usage', label: 'Usage access', help: 'Lets the shield detect which app is open.' },
   { id: 'overlay', label: 'Display over other apps', help: 'Lets the shield cover blocked apps.' },
-  { id: 'microphone', label: 'Microphone', help: 'Lets Pico hear your voice.' },
 ];
 
 const VAULT_KINDS = ['contact', 'note', 'credential'] as const;

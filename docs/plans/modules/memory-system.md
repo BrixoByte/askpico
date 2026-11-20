@@ -6,7 +6,7 @@
 
 ## 1. Purpose
 
-Pico remembers two kinds of things: the conversation right now, and facts from the past. This document defines the three-layer memory design that keeps every prompt small, fast, and inside the $50/month API budget while still letting Pico recall old decisions across threads and voice sessions.
+Pico remembers two kinds of things: the conversation right now, and facts from the past. This document defines the three-layer memory design that keeps every prompt small, fast, and inside the $50/month API budget while still letting Pico recall old decisions across threads. (Voice mode removed — text-only beta, round 63; voice-specific passages below are kept for the archived design.)
 
 ## 2. Architecture overview
 
@@ -22,14 +22,14 @@ Pico remembers two kinds of things: the conversation right now, and facts from t
 ┌──────────────────────────────┐          ┌──────────────────────────────┐
 │  LAYER 2: SHORT-TERM WINDOW  │          │  LAYER 3: LONG-TERM MEMORY   │
 │  Last 10 messages of the     │          │  Supabase pgvector archive   │
-│  active thread / voice call  │          │  searched only when needed   │
+│  active thread               │          │  searched only when needed   │
 └──────────────────────────────┘          └──────────────────────────────┘
 ```
 
 | Layer | Storage | Scope | When it loads |
 |---|---|---|---|
-| **Global Brain** | Supabase `user_brain` + local cache | All threads and voice | Every turn, always |
-| **Short-Term Window** | Room DB (Android) / IndexedDB (web) | One thread or voice session | Every turn, last 10 messages |
+| **Global Brain** | Supabase `user_brain` + local cache | All threads | Every turn, always |
+| **Short-Term Window** | Room DB (Android) / IndexedDB (web) | One thread | Every turn, last 10 messages |
 | **Long-Term Memory** | Supabase `memory_items` (pgvector) | All history, all threads | Only on semantic match ≥ threshold |
 
 ## 3. Layer 1 — Global Brain
@@ -64,7 +64,7 @@ A small, structured profile that is always present in the system prompt. Not a m
 - Each chat thread has its own local message table. When the LLM payload is built, only the **last 10 messages** of the active thread are included.
 - Threads stay isolated: while chatting in Thread B, Thread A's messages are never sent unless retrieved through Layer 3.
 - Token bound: the window keeps input near ~1–2k tokens per turn, predictable for cost.
-- Voice mode uses the same rule with a **Voice Session Buffer** — the last 10–15 spoken turns held in memory while the mic session is live. When the call ends, the turns are written to the thread like normal messages.
+- (Archived) Voice mode used the same rule with a **Voice Session Buffer** — the last 10–15 spoken turns held in memory while the mic session was live. Voice mode removed (text-only beta, round 63).
 
 ## 5. Layer 3 — Long-Term Vector Memory
 
@@ -80,7 +80,7 @@ Messages that scroll out of the window are not deleted — they are embedded and
 Source: Thread A, 2026-10-30 — "Decided 26 early coupons for Pro Monthly, expiry Dec 31 2026."
 ```
 
-- Cross-thread recall works automatically because the index is global: a query in Thread B can surface a chunk from Thread A or from a past voice call.
+- Cross-thread recall works automatically because the index is global: a query in Thread B can surface a chunk from Thread A or from a past voice call (`memory_items.source` keeps the `'voice'` value for historical rows).
 
 ## 6. Write pipeline (non-blocking)
 
@@ -102,7 +102,7 @@ Thread open flow:
 - If local data is missing or stale → fetch from Supabase once, write to local DB, then render.
 - Subsequent turns read locally only; Supabase is touched for writes and vector recall, not for chat display.
 
-This keeps voice latency under the ~500 ms target and lets past chats render offline.
+This keeps chat latency under the ~500 ms target and lets past chats render offline.
 
 ## 8. Prompt assembly order
 
@@ -143,7 +143,7 @@ The sliding window is the main budget protector: a 100-turn thread still sends ~
 | M-B | `user_brain` table + local cache + Memory panel (Layer 1) | Brain edits reflect in the system prompt |
 | M-C | pgvector table + embedding job (Layer 3 write) | Old messages are indexed automatically |
 | M-D | Recall path: intent check + similarity search (Layer 3 read) | Cross-thread question retrieves the right chunk |
-| M-E | Voice session buffer integration | Voice recalls facts and writes turns back |
+| M-E | ~~Voice session buffer integration~~ | Removed (text-only beta, round 63) |
 
 Recommendation for beta: **M-A and M-B** land with the Supabase migration; **M-C–M-E** can ship during the beta window or right after, since the UI works without them.
 
@@ -157,5 +157,5 @@ Recommendation for beta: **M-A and M-B** land with the Supabase migration; **M-C
 ## 13. Decisions
 
 - **Embedding provider:** `text-embedding-3-small` (1536 dimensions). Practically free at beta scale; a local FastEmbed/ONNX model can be revisited later if offline embedding becomes a requirement.
-- **Voice indexing:** per-call summary, not per-turn. Voice turns are short and noisy, so at call end a 2–4 line summary is written to `memory_items` with `source='voice'`. Cheaper and higher retrieval quality.
+- **Voice indexing (archived):** per-call summary, not per-turn. Voice turns were short and noisy, so at call end a 2–4 line summary was written to `memory_items` with `source='voice'`. Voice mode removed (text-only beta, round 63); the `source` enum keeps `'voice'` for historical rows.
 - **Memory panel UX:** suggestion-confirmation flow. The system proposes an extracted fact; the user taps Save or Dismiss. Saved facts can be viewed and deleted in the panel.

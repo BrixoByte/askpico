@@ -6,7 +6,7 @@
 
 ## 1. Purpose
 
-Pico handles personal chats, voice input, uploaded files, and account data. This folder defines how that data is protected, what threats the system is designed against, and how security issues are reported and handled.
+Pico handles personal chats, uploaded files, and account data. This folder defines how that data is protected, what threats the system is designed against, and how security issues are reported and handled.
 
 ## 2. Documents
 
@@ -20,7 +20,7 @@ Pico handles personal chats, voice input, uploaded files, and account data. This
 ## 3. Principles
 
 - **Secrets stay on the server.** Provider keys and service tokens are never sent to the browser or committed to the repository.
-- **Plan and quota checks are server-side.** The client never decides a user's plan, model tier, or voice quota.
+- **Plan and quota checks are server-side.** The client never decides a user's plan, model tier, or quota.
 - **Least data.** Collect only what a feature needs, and keep it only as long as required.
 - **Fail closed.** When an auth or quota check cannot complete, the request is rejected.
 

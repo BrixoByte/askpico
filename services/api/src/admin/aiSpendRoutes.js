@@ -62,20 +62,6 @@ aiSpendRouter.get('/summary', async (req, res) => {
     const projected = now.getUTCDate() > 0 ? (monthUsd / now.getUTCDate()) * daysInMonth : monthUsd;
 
     const activeUsers = new Set(rows.filter((r) => r.user_id).map((r) => r.user_id)).size;
-    const voiceRows = rows.filter((r) => r.feature === 'voice');
-
-    // Honest metric: today's voice-tagged LLM spend ÷ today's voice seconds.
-    // Historical voice minutes aren't stored, so only today is computable.
-    const { data: voiceProfiles, error: vErr } = await supabase
-      .from('profiles')
-      .select('voice_seconds_used_today')
-      .gt('voice_seconds_used_today', 0);
-    if (vErr) throw new Error(vErr.message);
-    const voiceSecondsToday = (voiceProfiles ?? []).reduce((s, p) => s + (p.voice_seconds_used_today ?? 0), 0);
-    const todayIso = dayStartUtc().toISOString();
-    const voiceUsdToday = rows
-      .filter((r) => r.feature === 'voice' && r.ts >= todayIso)
-      .reduce((s, r) => s + Number(r.cost_usd ?? 0), 0);
 
     const unpricedModels = [
       ...new Set(rows.filter((r) => r.cost_usd === null && r.success && r.model).map((r) => r.model)),
@@ -108,9 +94,6 @@ aiSpendRouter.get('/summary', async (req, res) => {
       projectedMonthEndUsd: projected,
       activeUsers,
       costPerUserUsd: activeUsers > 0 ? sumUsd(rows) / activeUsers : 0,
-      voiceMinutesToday: voiceSecondsToday / 60,
-      costPerVoiceMinuteTodayUsd: voiceSecondsToday > 0 ? voiceUsdToday / (voiceSecondsToday / 60) : 0,
-      voiceUsd: sumUsd(voiceRows),
       unpricedModels,
       modelKeys: [...topModels, 'other'],
       dailyModels,

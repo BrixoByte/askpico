@@ -13,7 +13,7 @@ These rules apply to every `.mmd` file in this folder. Read them before editing 
 
 ## Node annotations
 - Give every node a `%% @node <ID> role=<role> desc="<one line>" file="<real path>"` line directly below its subgraph or edge block.
-- `role` is one of: `client`, `api`, `agent`, `llm`, `voice`, `memory`, `auth`, `db`, `client-state`, `safety`, `tool`, `artifact`, `async`.
+- `role` is one of: `client`, `api`, `agent`, `llm`, `memory`, `auth`, `db`, `client-state`, `safety`, `tool`, `artifact`, `async`.
 - `file` must be a real path in the repo. If you are not sure, write the best guess and add `%% TODO: confirm` at the end of the line.
 
 ## Facts

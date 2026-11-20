@@ -97,7 +97,6 @@ export default defineConfig({
       '@api/': fileURLToPath(new URL('./src/api/', import.meta.url)) + '/',
       '@components/': fileURLToPath(new URL('./src/components/', import.meta.url)) + '/',
       '@utils/': fileURLToPath(new URL('./src/utils/', import.meta.url)) + '/',
-      '@voice/': fileURLToPath(new URL('./src/voice/', import.meta.url)) + '/',
       '@src/': fileURLToPath(new URL('./src/', import.meta.url)) + '/',
     },
   },

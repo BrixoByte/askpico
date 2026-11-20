@@ -22,7 +22,6 @@ import { limitMessageTokens, updateTotalTokenUsed } from '@utils/messageUtils';
 import { selectContextWindow } from '@utils/contextWindow';
 import useMemoryStore from '@store/memory-store';
 import useUsageStore, { FREE_DEEP_LIMIT } from '@store/usage-store';
-import useVoiceStore from '@store/voice-store';
 import { _defaultChatConfig } from '@constants/chat';
 import { extractArtifacts } from '@utils/artifactParser';
 import { prefetchMermaidAssets } from '@utils/mermaidDoc';
@@ -182,15 +181,11 @@ const useSubmit = () => {
 
   const handleSubmit = async () => {
     const chats = useStore.getState().chats;
-    // Read generating fresh: voice barge-in can flip it false microseconds
-    // before this runs, and the hook value may lag a render behind.
+    // Read generating fresh: the hook value can lag a render behind a
+    // just-finished (or just-stopped) generation.
     if (useStore.getState().generating || !chats) return;
     const currentChatIndex = useStore.getState().currentChatIndex;
-    const requestType =
-      useVoiceStore.getState().pendingVoiceTurn
-        ? 'voice'
-        : 'text';
-    useVoiceStore.getState().setPendingVoiceTurn(false);
+    const requestType = 'text';
 
     // Deep mode is capped per day on the free plan.
     if (
@@ -280,10 +275,8 @@ const useSubmit = () => {
       let liveToolData = '';
       let liveNowInfo = '';
       const fileExtensions = [...new Set((lastUserMessage?.attachments ?? []).map((a) => a.ext))];
-      // Voice turns go straight to the core chat stream: the routing round-trip
-      // (and history cleanup) would add seconds before the first spoken word.
       const bypassRouting = consumeRouteBypass();
-      if (requestType !== 'voice' && !bypassRouting && typeof lastUserText === 'string' && lastUserText.trim() !== '') {
+      if (!bypassRouting && typeof lastUserText === 'string' && lastUserText.trim() !== '') {
         const { setHandoff } = useStore.getState();
         const chatId = chats[currentChatIndex].id;
         const userTurn = chats[currentChatIndex].messages.map((m) => m.role).lastIndexOf('user');
@@ -478,10 +471,6 @@ const useSubmit = () => {
         trace('3. core: stream finished with an empty reply');
         setError('The model returned an empty answer. Please try again.');
       }
-
-      // Voice replies are spoken from the stream, so the end of the stream is signalled
-      // before any post-reply work (titles, checks) that would otherwise hold the last sentence.
-      if (requestType === 'voice') useVoiceStore.getState().markReplyStreamDone();
 
       // finalize artifacts for the reply; the tab is only switched on completion
       const finishedNaturally = useStore.getState().generating;

@@ -13,7 +13,7 @@
 | Name | Backend database (`profiles`) | Display name | Until account deletion |
 | Plan and subscription status | Backend database (`subscriptions`) | Feature and quota access | Until account deletion |
 | Referral code and reward records | Backend database | Referral program | Until account deletion |
-| Usage counts (voice minutes, tokens) | Backend database | Quota enforcement | Until account deletion |
+| Usage counts (tokens) | Backend database | Quota enforcement | Until account deletion |
 | Chats, folders, and settings | Browser local storage, then cloud sync (post-beta) | Core product | Until the user deletes them or clears the browser |
 | Agent chat history | Backend database (`agent_messages`) | Agent context | Until the user deletes the chat or the account |
 | Generated images | Browser IndexedDB | Image studio output | Until the user deletes them |
