@@ -1,0 +1,500 @@
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "global_kill_switch" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "maintenance_mode" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+ai_usage spend sum failed: Could not find the table 'public.ai_usage' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
+flag lookup "voice_enabled" failed, using default: Could not find the table 'public.feature_flags' in the schema cache
+tts_health_checks insert failed: Could not find the table 'public.tts_health_checks' in the schema cache
