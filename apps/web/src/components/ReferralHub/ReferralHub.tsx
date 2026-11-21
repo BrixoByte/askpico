@@ -10,6 +10,12 @@ interface ReferralHubProps {
 
 const COPIED_MS = 2000;
 
+const bonusMinutes = (earnedSeconds: number | null | undefined): string => {
+  const seconds = Number(earnedSeconds);
+  const minutes = Number.isFinite(seconds) ? Math.floor(seconds / 60) : 0;
+  return minutes.toLocaleString();
+};
+
 const MetricCard = ({ label, value, hint }: { label: string; value: string; hint: string }) => (
   <div className='rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/60'>
     <div className='truncate text-xs font-medium text-gray-500 dark:text-gray-400'>{label}</div>
@@ -77,7 +83,7 @@ const ReferralHub = ({ isSignedIn, referralLink, stats, error }: ReferralHubProp
           <MetricCard label='Paid upgrades' value={stats.paidUpgrades.toLocaleString()} hint='Referred, on a paid plan' />
           <MetricCard
             label='Bonus minutes'
-            value={Math.floor(stats.earnedSeconds / 60).toLocaleString()}
+            value={bonusMinutes(stats.earnedSeconds)}
             hint='Earned from referrals'
           />
         </div>
