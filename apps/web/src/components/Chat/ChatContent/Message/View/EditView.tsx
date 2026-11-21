@@ -29,13 +29,10 @@ import { isMobileDevice } from '@utils/device';
 
 import SendIcon from '@icon/SendIcon';
 import { SparkleIcon } from '@icon/ui';
+import { isSupportedAttachment, TEXT_EXTENSIONS } from '@utils/attachmentTypes';
+import { canSendDraft } from '@utils/composerSend';
 
 const ATTACH_MAX_BYTES = 10 * 1024 * 1024;
-const TEXT_EXTENSIONS = new Set([
-  '.txt', '.md', '.json', '.csv', '.log', '.py', '.js', '.jsx', '.ts', '.tsx', '.html', '.css',
-  '.xml', '.yaml', '.yml', '.sql', '.sh', '.java', '.c', '.cpp', '.h', '.go', '.rs', '.rb',
-  '.php', '.swift', '.kt',
-]);
 
 interface PendingAttachment {
   id: string;
@@ -293,6 +290,8 @@ const EditView = ({
     handleSubmit();
   };
 
+  const sendDisabled = !generating && !canSendDraft({ text: _content, attachmentCount: attachments.length });
+
   const handleGenerate = () => {
     if (useStore.getState().apiKey === '') {
       setIsModalOpen(true);
@@ -312,6 +311,7 @@ const EditView = ({
     setAttachments((prev) => [...prev, { id, name: file.name, status: 'loading', file }]);
     try {
       if (file.size > ATTACH_MAX_BYTES) throw new Error(String(t('attachTooLarge')));
+      if (!isSupportedAttachment(file.name, file.type)) throw new Error(String(t('attachUnsupported')));
       if (file.type.startsWith('image/')) {
         update({ status: 'ready', isImage: true });
         return;
@@ -488,12 +488,14 @@ const EditView = ({
                   generating
                     ? 'bg-red-500 text-white hover:bg-red-600'
                     : 'bg-brand-500 text-white hover:bg-brand-600 dark:bg-[#9EFF00] dark:text-black dark:hover:bg-[#86D900]'
-                }`}
+                } disabled:cursor-not-allowed disabled:opacity-40`}
                 onClick={
                   generating
                     ? () => useStore.getState().setGenerating(false)
                     : handleGenerate
                 }
+                disabled={sendDisabled}
+                aria-disabled={sendDisabled || undefined}
                 aria-label={generating ? 'stop generating' : 'send message'}
               >
                 {generating ? (
