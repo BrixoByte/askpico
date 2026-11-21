@@ -39,6 +39,7 @@ import { dailyTokenLimit, requestLogTokens } from './tokenQuotaPolicy.js';
 import { quotaCapBody } from './dailyCap.js';
 import {
   chatReserveAmount,
+  userPromptTokens,
   createSettler,
   FOCUS_TOKEN_ESTIMATE,
   reserveTokens,
@@ -281,7 +282,7 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
   }
 
   const reserveAmount = chatReserveAmount({
-    promptTokens: estimateTokens(outgoingMessages.map((m) => (typeof m.content === 'string' ? m.content : '')).join('')),
+    promptTokens: userPromptTokens(messages),
     maxTokens: clampCompletionTokens(maxTokens),
   });
   let budget;
