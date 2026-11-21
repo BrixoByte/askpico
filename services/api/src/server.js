@@ -36,7 +36,15 @@ import { formatRetrievedContext, recallContextSafe } from './memory/vectorSearch
 import { getUserBrain, getUserFromToken, getUserPlan, getUserTheme, saveUserBrain, saveUserTheme, supabase } from './supabase.js';
 import { hashSignal } from './guestTrialIp.js';
 import { dailyTokenLimit, requestLogTokens } from './tokenQuotaPolicy.js';
-import { checkDailyCap, quotaCapBody } from './dailyCap.js';
+import { quotaCapBody } from './dailyCap.js';
+import {
+  createSettler,
+  FOCUS_TOKEN_ESTIMATE,
+  reserveTokens,
+  ROUTE_TOKEN_ESTIMATE,
+  VERIFY_OVERHEAD_TOKENS,
+  AGENT_CHAT_OVERHEAD_TOKENS,
+} from './tokenBudget.js';
 import { apiNotFound, requireJsonBody } from './httpGuards.js';
 import { adminRouter, getSystemFlag, getUserLimitState } from './admin/routes.js';
 import { startAdminWorkers } from './workers/index.js';
@@ -143,10 +151,15 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
-const rollDailyTokens = async (userId) => {
-  const { data, error } = await supabase.rpc('roll_daily_tokens', { p_user_id: userId });
-  if (error) throw new Error(error.message);
-  return data;
+// Reserves `amount` tokens for an LLM call before it runs. Throws on lookup
+// failure (callers answer 502). Returns { allowed, status, body } or { allowed, reservationId, amount }.
+const reserveRouteTokens = async (userId, amount) =>
+  reserveTokens({ supabase, userId, plan: await getUserPlan(userId), amount });
+
+// Settles the reservation when the response closes. Default charge is the full
+// reservation (conservative: the provider may have generated tokens).
+const settleOnClose = (res, settle) => {
+  res.on('close', () => settle());
 };
 
 app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
@@ -164,14 +177,6 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     console.warn(`[${requestId}] rejected: ${invalidMessages}`);
     return res.status(400).json({ error: invalidMessages });
   }
-  try {
-    const capped = await checkDailyCap({ userId: user.id, getPlan: getUserPlan, rollTokens: rollDailyTokens });
-    if (capped) return res.status(capped.status).json(capped.body);
-  } catch (err) {
-    console.error(`[${requestId}] token quota check failed: ${err.message}`);
-    return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
-  }
-
   // Admin kill switch + per-user enforcement (ban / throttle cap).
   try {
     if (await getSystemFlag('llm_requests_paused')) {
@@ -274,6 +279,20 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     }
   }
 
+  const reserveAmount =
+    estimateTokens(outgoingMessages.map((m) => (typeof m.content === 'string' ? m.content : '')).join('')) +
+    (clampCompletionTokens(maxTokens) ?? completionTokenLimits.max);
+  let budget;
+  try {
+    budget = await reserveRouteTokens(user.id, reserveAmount);
+  } catch (err) {
+    console.error(`[${requestId}] token quota check failed: ${err.message}`);
+    return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
+  }
+  if (!budget.allowed) return res.status(budget.status).json(budget.body);
+  const settle = createSettler({ supabase, reservation: budget });
+  let handedOff = false;
+
   const controller = new AbortController();
   res.on('close', () => controller.abort());
 
@@ -296,6 +315,7 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
         success: false,
         errorCode: `upstream_${result.status}`,
       });
+      await settle(0);
       return res.status(result.status === 429 ? 429 : 503).json({ error: 'Service is busy. Please try again.', code: 'UPSTREAM_BUSY' });
     }
     const { upstream, model: servedModel } = result;
@@ -318,6 +338,7 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
         const promptTokens = realUsage ? streamUsage.prompt_tokens : promptEstimate();
         const completionTokens = realUsage ? streamUsage.completion_tokens : estimateTokens(fullText);
         recordRequest({ userId: user.id, mode, feature, intentTag, promptTokens, completionTokens });
+        void settle(promptTokens + completionTokens);
         logLlmCall({
           model: servedModel,
           feature,
@@ -332,6 +353,10 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
         logger.warn(`[${requestId}] upstream stream failed mid-reply: ${err.message}`);
         res.destroy();
       });
+      // A stream that ends early (client closed, upstream error) never reaches
+      // onDone; the response 'close' settles the reservation at full charge.
+      handedOff = true;
+      settleOnClose(res, settle);
       body.pipe(res);
       return;
     }
@@ -345,6 +370,7 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
       ? usage.completion_tokens
       : estimateTokens(data?.choices?.[0]?.message?.content);
     recordRequest({ userId: user.id, mode, feature, intentTag, promptTokens, completionTokens });
+    await settle(promptTokens + completionTokens);
     logLlmCall({
       model: servedModel,
       feature,
@@ -372,6 +398,8 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     }
     console.error(`[${requestId}] upstream fetch error after ${elapsed()}: ${err.message}`);
     res.status(502).json({ error: 'Service is unavailable. Please try again.' });
+  } finally {
+    if (!handedOff) await settle();
   }
 });
 
@@ -748,13 +776,17 @@ app.post('/api/agent/route', async (req, res) => {
     return res.status(500).json({ error: `${llmConfig.keyName} is not set on the server` });
   }
 
+  const routeAmount = estimateTokens(message) + ROUTE_TOKEN_ESTIMATE;
+  let budget;
   try {
-    const capped = await checkDailyCap({ userId: user.id, getPlan: getUserPlan, rollTokens: rollDailyTokens });
-    if (capped) return res.status(capped.status).json(capped.body);
+    budget = await reserveRouteTokens(user.id, routeAmount);
   } catch (err) {
     logger.warn(`[${requestId}] token quota check failed: ${err.message}`);
     return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
   }
+  if (!budget.allowed) return res.status(budget.status).json(budget.body);
+  const settle = createSettler({ supabase, reservation: budget });
+  settleOnClose(res, settle);
 
   const signal = AbortSignal.timeout(20000);
   if (fileExtensions.length > 0) {
@@ -832,6 +864,20 @@ app.post('/api/thread/focus', async (req, res) => {
     return res.status(500).json({ error: `${llmConfig.keyName} is not set on the server` });
   }
 
+  const focusAmount =
+    estimateTokens(typeof previous === 'string' ? previous : '') +
+    messages.reduce((sum, m) => sum + estimateTokens(typeof m?.content === 'string' ? m.content : ''), 0) +
+    FOCUS_TOKEN_ESTIMATE;
+  let budget;
+  try {
+    budget = await reserveRouteTokens(user.id, focusAmount);
+  } catch (err) {
+    logger.warn(`[${requestId}] token quota check failed: ${err.message}`);
+    return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
+  }
+  if (!budget.allowed) return res.status(budget.status).json(budget.body);
+  settleOnClose(res, createSettler({ supabase, reservation: budget }));
+
   try {
     const focus = await summarizeThread(previous, messages, { signal: AbortSignal.timeout(20000) });
     res.json({ focus });
@@ -855,13 +901,20 @@ app.post('/api/chat/verify', async (req, res) => {
   if (!llmConfig.apiKey) {
     return res.json({ corrected: reply, flagged: 0 });
   }
+  const verifyAmount =
+    estimateTokens(reply) +
+    estimateTokens(typeof userText === 'string' ? userText.slice(0, 8000) : '') +
+    VERIFY_OVERHEAD_TOKENS;
+  let budget;
   try {
-    const capped = await checkDailyCap({ userId: user.id, getPlan: getUserPlan, rollTokens: rollDailyTokens });
-    if (capped) return res.status(capped.status).json(capped.body);
+    budget = await reserveRouteTokens(user.id, verifyAmount);
   } catch (err) {
     logger.warn(`[${requestId}] token quota check failed: ${err.message}`);
     return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
   }
+  if (!budget.allowed) return res.status(budget.status).json(budget.body);
+  settleOnClose(res, createSettler({ supabase, reservation: budget }));
+
   try {
     const result = await verifyReply(reply, {
       focus: sanitizeFocus(focus),
@@ -898,13 +951,21 @@ app.post('/api/agent/chat', async (req, res) => {
   if (!llmConfig.apiKey) {
     return res.status(500).json({ error: `${llmConfig.keyName} is not set on the server` });
   }
+  const agentPromptTokens =
+    estimateTokens(message) +
+    estimateTokens(typeof focus === 'string' ? focus : '') +
+    estimateTokens(JSON.stringify(recent ?? [])) +
+    AGENT_CHAT_OVERHEAD_TOKENS;
+  let budget;
   try {
-    const capped = await checkDailyCap({ userId: user.id, getPlan: getUserPlan, rollTokens: rollDailyTokens });
-    if (capped) return res.status(capped.status).json(capped.body);
+    budget = await reserveRouteTokens(user.id, agentPromptTokens + completionTokenLimits.specialist);
   } catch (err) {
     logger.warn(`[${requestId}] token quota check failed: ${err.message}`);
     return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
   }
+  if (!budget.allowed) return res.status(budget.status).json(budget.body);
+  const settle = createSettler({ supabase, reservation: budget });
+  settleOnClose(res, settle);
 
   try {
     const [retrievedMatches, mode] = await Promise.all([
@@ -926,17 +987,20 @@ app.post('/api/agent/chat', async (req, res) => {
       signal: AbortSignal.timeout(60000),
     });
     indexTurnMemorySafe({ userId: user.id, chatId, userText: message, assistantText: reply });
+    const completionTokens = estimateTokens(reply);
     recordRequest({
       userId: user.id,
       mode,
       feature: 'agent',
       intentTag: classifyIntent(message),
-      promptTokens: estimateTokens(message),
-      completionTokens: estimateTokens(reply),
+      promptTokens: agentPromptTokens,
+      completionTokens,
     });
+    await settle(agentPromptTokens + completionTokens);
     res.json({ agentId, reply });
   } catch (err) {
     console.error(`[${requestId}] specialist ${agentId} failed: ${err.message}`);
+    await settle(0);
     res.status(502).json({ error: 'Agent request failed. Please try again.' });
   }
 });
