@@ -37,6 +37,7 @@ import { getUserBrain, getUserFromToken, getUserPlan, getUserTheme, saveUserBrai
 import { hashSignal } from './guestTrialIp.js';
 import { dailyTokenLimit, requestLogTokens } from './tokenQuotaPolicy.js';
 import { checkDailyCap, quotaCapBody } from './dailyCap.js';
+import { apiNotFound, requireJsonBody } from './httpGuards.js';
 import { adminRouter, getSystemFlag, getUserLimitState } from './admin/routes.js';
 import { startAdminWorkers } from './workers/index.js';
 import { classifyIntent } from './workers/intentClassifier.js';
@@ -50,6 +51,7 @@ import { healthSnapshot, startLocalHealthSampling } from './localHealth.js';
 import { createLimiter, isSafeFileName, rateLimit, rejectIfLimited, validateChatMessages } from './security.js';
 
 const app = express();
+app.disable('x-powered-by');
 
 // Per-user limits for signed-in routes. Keys are user IDs, so a token refresh does not reset them.
 const userLimits = {
@@ -98,6 +100,7 @@ const clampCompletionTokens = (value) =>
   Number.isInteger(value) && value > 0 ? Math.min(value, completionTokenLimits.max) : undefined;
 
 const defaultJson = express.json({ limit: '2mb' });
+app.use('/api', requireJsonBody);
 app.use((req, res, next) =>
   req.path === '/api/artifact/submission' || req.path === '/api/attachments/extract'
     ? next()
@@ -1123,6 +1126,8 @@ process.on('uncaughtException', (err) => {
 });
 
 startAdminWorkers();
+
+app.use('/api', apiNotFound);
 
 app.listen(serverConfig.port, () => {
   logger.info(`Backend running on http://localhost:${serverConfig.port}`);

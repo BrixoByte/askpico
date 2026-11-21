@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -8,6 +8,11 @@ const MarkdownToHtml = () => {
   const [markdown, setMarkdown] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
   const [html, setHtml] = useState<string>('');
+  const outputRef = useRef<HTMLPreElement>(null);
+
+  useEffect(() => {
+    if (html) outputRef.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [html]);
 
   const convert = () => {
     const body = renderToStaticMarkup(
@@ -46,6 +51,15 @@ const MarkdownToHtml = () => {
           Download .html
         </button>
       </div>
+      {html && (
+        <pre
+          ref={outputRef}
+          aria-label='html output'
+          className='max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-lg border border-surface-line bg-surface-muted px-3 py-2 font-mono text-xs'
+        >
+          {html}
+        </pre>
+      )}
     </div>
   );
 };
