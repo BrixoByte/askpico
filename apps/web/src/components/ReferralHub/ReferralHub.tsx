@@ -17,10 +17,10 @@ const bonusMinutes = (earnedSeconds: number | null | undefined): string => {
 };
 
 const MetricCard = ({ label, value, hint }: { label: string; value: string; hint: string }) => (
-  <div className='rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/60'>
+  <div className='min-w-0 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/60'>
     <div className='truncate text-xs font-medium text-gray-500 dark:text-gray-400'>{label}</div>
     <div className='mt-1 text-2xl font-semibold text-gray-900 dark:text-white'>{value}</div>
-    <div className='mt-1 text-xs text-gray-400 dark:text-gray-500'>{hint}</div>
+    <div className='mt-1 truncate text-xs text-gray-400 dark:text-gray-500'>{hint}</div>
   </div>
 );
 

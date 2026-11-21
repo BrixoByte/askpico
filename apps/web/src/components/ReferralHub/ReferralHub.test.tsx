@@ -62,5 +62,11 @@ describe('ReferralHub', () => {
     expect(bonusValue()).toBe('2');
   });
 
-
+  it('truncates metric hints so they do not clip at large font scales', () => {
+    renderHub(baseStats);
+    for (const hint of ['Referred, on free plan', 'Referred, on a paid plan']) {
+      const el = screen.getByText(hint);
+      expect(el.className).toContain('truncate');
+    }
+  });
 });
