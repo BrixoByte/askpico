@@ -67,3 +67,14 @@ export const createSettler = ({ supabase, reservation }) => {
     });
   };
 };
+
+// Tokens for the messages the user controls (history and the new message). The fixed
+// system prompt, persona and memories are left out of the up-front reservation; the
+// real usage including them is settled after the call.
+export const userPromptTokens = (messages) =>
+  estimateTokens(
+    (Array.isArray(messages) ? messages : [])
+      .filter((m) => m && m.role !== 'system')
+      .map((m) => (typeof m.content === 'string' ? m.content : ''))
+      .join('')
+  );

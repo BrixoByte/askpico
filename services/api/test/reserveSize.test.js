@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { chatReserveAmount, CHAT_RESERVE_COMPLETION_TOKENS } from '../src/tokenBudget.js';
+import { chatReserveAmount, CHAT_RESERVE_COMPLETION_TOKENS, userPromptTokens } from '../src/tokenBudget.js';
 import { reserveTokens } from '../src/tokenBudget.js';
 
 const fakeSupabase = (used) => ({
@@ -31,4 +31,14 @@ test('the cap still refuses a request that would really exceed it', async () => 
   const result = await reserveTokens({ supabase: fakeSupabase(9500), userId: 'u1', plan: 'free', amount });
   assert.equal(result.allowed, false);
   assert.equal(result.status, 429);
+});
+
+test('the reservation counts user-controlled prompt text, not the fixed system prompt', () => {
+  const big = 'x'.repeat(9809);
+  const tokens = userPromptTokens([
+    { role: 'system', content: big },
+    { role: 'user', content: 'hi' },
+    { role: 'assistant', content: 'hello' },
+  ]);
+  assert.equal(tokens, Math.ceil((2 + 5) / 4));
 });
