@@ -261,6 +261,13 @@ const EditView = ({
     if (sendInFlight.current || useStore.getState().generating || sendBlocked()) return;
     sendInFlight.current = true;
     setSendPending(true);
+    if (draftKey) {
+      try {
+        localStorage.removeItem(draftKey);
+      } catch {
+        /* storage blocked */
+      }
+    }
     try {
       ensureActiveChat();
       const { content, fileContext, images, files, attachments: documents, modelNote } =
