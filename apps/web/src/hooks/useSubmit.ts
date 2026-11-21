@@ -28,6 +28,7 @@ import { prefetchMermaidAssets } from '@utils/mermaidDoc';
 import { withTimeout } from '@utils/verifyLink';
 import { logger } from '@utils/logger';
 import { consumeRouteBypass } from '@utils/routeBypass';
+import { quotaDismissedRecently, quotaKindForError } from '@utils/quotaBanner';
 
 // A hung request or stalled stream must never leave `generating` on forever —
 // error out with a friendly message so the user can resend (60 s is generous:
@@ -356,6 +357,7 @@ const useSubmit = () => {
       }
 
       if (agentReply !== null) {
+        useUsageStore.getState().setQuotaOpen(false);
         const repliedChats: ChatInterface[] = JSON.parse(JSON.stringify(useStore.getState().chats));
         const repliedMessages = repliedChats[currentChatIndex].messages;
         repliedMessages[repliedMessages.length - 1].content = agentReply;
@@ -375,6 +377,8 @@ const useSubmit = () => {
           'The server took too long to reply. Check your connection and try again.'
         );
         stream = result.stream;
+        // A reply came back, so a quota banner from an earlier send no longer applies.
+        useUsageStore.getState().setQuotaOpen(false);
         // Server quota enforcement: the user asked for Deep but the backend
         // granted a lower tier (daily limit or global cap exhausted).
         if (selectedMode === 'deep' && result.grantedMode && result.grantedMode !== 'deep') {
@@ -600,18 +604,11 @@ const useSubmit = () => {
           setError('Connection to Pico was lost while generating. Check your network and try again.');
         } else {
           logger.error('chat submit failed:', err);
-          if (err.includes('QUOTA_EXHAUSTED') || err.includes('Rate limited!')) {
-            let dismissedRecently = false;
-            try {
-              const at = Number(localStorage.getItem('pico_quota_modal_dismissed_at') ?? 0);
-              dismissedRecently = Date.now() - at < 7 * 24 * 60 * 60 * 1000;
-            } catch {
-              dismissedRecently = false;
-            }
+          const kind = quotaKindForError(err);
+          if (kind) {
             const usage = useUsageStore.getState();
-            const kind = err.includes('Rate limited') ? 'busy' : 'cap';
             usage.setQuotaKind(kind);
-            if (!dismissedRecently) {
+            if (!quotaDismissedRecently()) {
               usage.setQuotaOpen(true);
             } else {
               setError(

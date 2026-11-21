@@ -213,11 +213,14 @@ export const getChatCompletionStream = async (
     const text = await response.text();
     let error = text;
     let busy = false;
+    let quota = false;
     try {
       const body = JSON.parse(text);
       busy = body.code === 'UPSTREAM_BUSY';
+      quota = body.error === 'QUOTA_EXHAUSTED';
     } catch { /* not JSON */ }
     if (busy) error = 'Service is busy. Please try again.';
+    else if (quota) error = 'QUOTA_EXHAUSTED';
     else if (response.status === 429) error += '\nRate limited!';
     throw new Error(error);
   }

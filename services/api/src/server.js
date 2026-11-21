@@ -35,7 +35,8 @@ import { indexTurnMemorySafe } from './memory/vectorWorker.js';
 import { formatRetrievedContext, recallContextSafe } from './memory/vectorSearch.js';
 import { getUserBrain, getUserFromToken, getUserPlan, getUserTheme, saveUserBrain, saveUserTheme, supabase } from './supabase.js';
 import { hashSignal } from './guestTrialIp.js';
-import { dailyTokenLimit, isDailyTokenCapReached, requestLogTokens } from './tokenQuotaPolicy.js';
+import { dailyTokenLimit, requestLogTokens } from './tokenQuotaPolicy.js';
+import { checkDailyCap, quotaCapBody } from './dailyCap.js';
 import { adminRouter, getSystemFlag, getUserLimitState } from './admin/routes.js';
 import { startAdminWorkers } from './workers/index.js';
 import { classifyIntent } from './workers/intentClassifier.js';
@@ -139,6 +140,12 @@ app.get('/api/health', (_req, res) => {
   });
 });
 
+const rollDailyTokens = async (userId) => {
+  const { data, error } = await supabase.rpc('roll_daily_tokens', { p_user_id: userId });
+  if (error) throw new Error(error.message);
+  return data;
+};
+
 app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
   const { messages, stream = false, mode: requestedMode, replyLanguage, agentId, memories, focus, maxTokens, chatId } = req.body ?? {};
 
@@ -155,17 +162,8 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     return res.status(400).json({ error: invalidMessages });
   }
   try {
-    const plan = await getUserPlan(user.id);
-    const { data: tokensToday, error: tokensErr } = await supabase.rpc('roll_daily_tokens', { p_user_id: user.id });
-    if (tokensErr) throw new Error(tokensErr.message);
-    if (isDailyTokenCapReached(plan, Number(tokensToday ?? 0))) {
-      return res.status(429).json({
-        error: 'QUOTA_EXHAUSTED',
-        message: 'Daily token limit reached. Upgrade or share your referral link to keep chatting today.',
-        tokensUsed: Number(tokensToday ?? 0),
-        tokenLimit: dailyTokenLimit(plan),
-      });
-    }
+    const capped = await checkDailyCap({ userId: user.id, getPlan: getUserPlan, rollTokens: rollDailyTokens });
+    if (capped) return res.status(capped.status).json(capped.body);
   } catch (err) {
     console.error(`[${requestId}] token quota check failed: ${err.message}`);
     return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
@@ -188,15 +186,18 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
       limits.dailyTokenCap != null &&
       limits.tokensToday >= limits.dailyTokenCap
     ) {
-      return res.status(429).json({ error: 'Daily token cap reached. Your quota resets at midnight UTC.' });
+      return res.status(429).json(quotaCapBody('Daily token cap reached. Your quota resets at midnight UTC.', {
+        tokensUsed: limits.tokensToday,
+        tokenLimit: limits.dailyTokenCap,
+      }));
     }
     if (user.is_anonymous && (await countGuestMessagesToday(user.id)) >= guestLimits.dailyMessages) {
-      return res.status(429).json({ error: 'Free guest limit reached for today. Sign in to keep chatting.' });
+      return res.status(429).json(quotaCapBody('Free guest limit reached for today. Sign in to keep chatting.'));
     }
     // Live admin cap: daily_request_cap_per_user (0 = unlimited).
     const dailyCap = await getFlag('daily_request_cap_per_user', 0);
     if (Number.isFinite(dailyCap) && dailyCap > 0 && (await countGuestMessagesToday(user.id)) >= dailyCap) {
-      return res.status(429).json({ error: 'Daily request cap reached. Your quota resets at midnight UTC.' });
+      return res.status(429).json(quotaCapBody('Daily request cap reached. Your quota resets at midnight UTC.'));
     }
   } catch (err) {
     logger.warn(`[${requestId}] enforcement check failed, allowing request: ${err.message}`);
@@ -744,6 +745,14 @@ app.post('/api/agent/route', async (req, res) => {
     return res.status(500).json({ error: `${llmConfig.keyName} is not set on the server` });
   }
 
+  try {
+    const capped = await checkDailyCap({ userId: user.id, getPlan: getUserPlan, rollTokens: rollDailyTokens });
+    if (capped) return res.status(capped.status).json(capped.body);
+  } catch (err) {
+    logger.warn(`[${requestId}] token quota check failed: ${err.message}`);
+    return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
+  }
+
   const signal = AbortSignal.timeout(20000);
   if (fileExtensions.length > 0) {
     try {
@@ -844,6 +853,13 @@ app.post('/api/chat/verify', async (req, res) => {
     return res.json({ corrected: reply, flagged: 0 });
   }
   try {
+    const capped = await checkDailyCap({ userId: user.id, getPlan: getUserPlan, rollTokens: rollDailyTokens });
+    if (capped) return res.status(capped.status).json(capped.body);
+  } catch (err) {
+    logger.warn(`[${requestId}] token quota check failed: ${err.message}`);
+    return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
+  }
+  try {
     const result = await verifyReply(reply, {
       focus: sanitizeFocus(focus),
       userText: typeof userText === 'string' ? userText.slice(0, 8000) : '',
@@ -878,6 +894,13 @@ app.post('/api/agent/chat', async (req, res) => {
   }
   if (!llmConfig.apiKey) {
     return res.status(500).json({ error: `${llmConfig.keyName} is not set on the server` });
+  }
+  try {
+    const capped = await checkDailyCap({ userId: user.id, getPlan: getUserPlan, rollTokens: rollDailyTokens });
+    if (capped) return res.status(capped.status).json(capped.body);
+  } catch (err) {
+    logger.warn(`[${requestId}] token quota check failed: ${err.message}`);
+    return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });
   }
 
   try {
