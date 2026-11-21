@@ -137,6 +137,10 @@ const EditView = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
+  // Guards the async window between tapping send and `generating` flipping
+  // true — a second tap in that gap would push a duplicate user bubble.
+  const sendInFlight = useRef(false);
+  const [sendPending, setSendPending] = useState(false);
   const signedIn = useIsSignedIn();
   const outgoingContent = [
     _content.trim(),
@@ -254,43 +258,54 @@ const EditView = ({
     // While a reply is generating, a new user message would land AFTER the
     // assistant placeholder and steal the streamed reply (it renders as a
     // user bubble with the user icon).
-    if (useStore.getState().generating || sendBlocked()) return;
-    ensureActiveChat();
-    const { content, fileContext, images, files, attachments: documents, modelNote } =
-      await prepareOutgoing();
-    const updatedChats: ChatInterface[] = JSON.parse(
-      JSON.stringify(useStore.getState().chats)
-    );
-    const chatIndex = useStore.getState().currentChatIndex;
-    updatedChats[chatIndex].messages.push({
-      role: 'user',
-      content,
-      images,
-      files,
-      attachments: documents,
-      fileContext,
-      modelNote,
-    });
-    _setContent('');
-    setAttachments([]);
-    resetTextAreaHeight();
-    setChats(updatedChats);
-    // Device intents (open app/link, call, timer…) are answered natively —
-    // no LLM round trip. Flag-gated; returns null on desktop / non-match.
-    const deviceReply = await tryDeviceIntent(content);
-    if (deviceReply !== null) {
-      const patched: ChatInterface[] = JSON.parse(JSON.stringify(useStore.getState().chats));
-      patched[useStore.getState().currentChatIndex].messages.push({
-        role: 'assistant',
-        content: deviceReply,
+    if (sendInFlight.current || useStore.getState().generating || sendBlocked()) return;
+    sendInFlight.current = true;
+    setSendPending(true);
+    try {
+      ensureActiveChat();
+      const { content, fileContext, images, files, attachments: documents, modelNote } =
+        await prepareOutgoing();
+      const updatedChats: ChatInterface[] = JSON.parse(
+        JSON.stringify(useStore.getState().chats)
+      );
+      const chatIndex = useStore.getState().currentChatIndex;
+      updatedChats[chatIndex].messages.push({
+        role: 'user',
+        content,
+        images,
+        files,
+        attachments: documents,
+        fileContext,
+        modelNote,
       });
-      setChats(patched);
-      return;
+      _setContent('');
+      setAttachments([]);
+      resetTextAreaHeight();
+      setChats(updatedChats);
+      // Device intents (open app/link, call, timer…) are answered natively —
+      // no LLM round trip. Flag-gated; returns null on desktop / non-match.
+      const deviceReply = await tryDeviceIntent(content);
+      if (deviceReply !== null) {
+        const patched: ChatInterface[] = JSON.parse(JSON.stringify(useStore.getState().chats));
+        patched[useStore.getState().currentChatIndex].messages.push({
+          role: 'assistant',
+          content: deviceReply,
+        });
+        setChats(patched);
+        return;
+      }
+      // handleSubmit flips `generating` synchronously, which turns this button
+      // into the stop control — so it is safe to drop the guard right after.
+      void handleSubmit();
+    } finally {
+      sendInFlight.current = false;
+      setSendPending(false);
     }
-    handleSubmit();
   };
 
-  const sendDisabled = !generating && !canSendDraft({ text: _content, attachmentCount: attachments.length });
+  const sendDisabled =
+    sendPending ||
+    (!generating && !canSendDraft({ text: _content, attachmentCount: attachments.length }));
 
   const handleGenerate = () => {
     if (useStore.getState().apiKey === '') {
