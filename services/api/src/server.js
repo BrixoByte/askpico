@@ -38,6 +38,7 @@ import { hashSignal } from './guestTrialIp.js';
 import { dailyTokenLimit, requestLogTokens } from './tokenQuotaPolicy.js';
 import { quotaCapBody } from './dailyCap.js';
 import {
+  chatReserveAmount,
   createSettler,
   FOCUS_TOKEN_ESTIMATE,
   reserveTokens,
@@ -279,9 +280,10 @@ app.post('/api/chat', rateLimit({ max: 30 }), async (req, res) => {
     }
   }
 
-  const reserveAmount =
-    estimateTokens(outgoingMessages.map((m) => (typeof m.content === 'string' ? m.content : '')).join('')) +
-    (clampCompletionTokens(maxTokens) ?? completionTokenLimits.max);
+  const reserveAmount = chatReserveAmount({
+    promptTokens: estimateTokens(outgoingMessages.map((m) => (typeof m.content === 'string' ? m.content : '')).join('')),
+    maxTokens: clampCompletionTokens(maxTokens),
+  });
   let budget;
   try {
     budget = await reserveRouteTokens(user.id, reserveAmount);
@@ -958,7 +960,7 @@ app.post('/api/agent/chat', async (req, res) => {
     AGENT_CHAT_OVERHEAD_TOKENS;
   let budget;
   try {
-    budget = await reserveRouteTokens(user.id, agentPromptTokens + completionTokenLimits.specialist);
+    budget = await reserveRouteTokens(user.id, chatReserveAmount({ promptTokens: agentPromptTokens }));
   } catch (err) {
     logger.warn(`[${requestId}] token quota check failed: ${err.message}`);
     return res.status(502).json({ error: 'Usage could not be checked. Please try again.' });

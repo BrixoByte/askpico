@@ -16,6 +16,14 @@ export const AGENT_CHAT_OVERHEAD_TOKENS = 1200;
 
 export const estimateTokens = (text) => Math.ceil((typeof text === 'string' ? text.length : 0) / 4);
 
+// Reply budget reserved up front for a chat call. Reserving the full max completion
+// (4096) made normal chats near the cap look over it. The real usage is settled after
+// the call, so this only decides when a request is refused.
+export const CHAT_RESERVE_COMPLETION_TOKENS = 1024;
+
+export const chatReserveAmount = ({ promptTokens, maxTokens }) =>
+  promptTokens + Math.min(Number.isInteger(maxTokens) && maxTokens > 0 ? maxTokens : CHAT_RESERVE_COMPLETION_TOKENS, CHAT_RESERVE_COMPLETION_TOKENS);
+
 // Reserve `amount` tokens for `userId` on `plan`. Returns either
 // { allowed: false, status: 429, body } (same body shape as before) or
 // { allowed: true, reservationId, amount }.
