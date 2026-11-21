@@ -440,7 +440,7 @@ const EditView = ({
           </div>
 
           <div className='mt-2 flex h-12 items-center justify-between gap-2 border-t border-gray-200/60 px-3 py-1.5 dark:border-zinc-800'>
-            <div className='flex flex-wrap items-center space-x-1'>
+            <div className='flex min-w-0 flex-wrap items-center space-x-1'>
               {sticky && (
                 <button
                   type='button'
@@ -490,9 +490,9 @@ const EditView = ({
               />
             </div>
 
-            <div className='flex items-center space-x-1'>
+            <div className='flex shrink-0 items-center space-x-1'>
               {sticky && activeModel && (
-                <div className='flex h-12 w-[180px] [&>div]:h-full [&>div]:w-full [&_button]:h-full [&_button]:w-full [&_button]:justify-between [&_button]:border-zinc-200 dark:[&_button]:border-zinc-700 [&_button]:transition-all [&_button]:duration-200 [&_button]:hover:border-emerald-500/50 [&_button]:bg-white [&_button]:px-3 [&_button]:text-zinc-900 dark:[&_button]:bg-zinc-800 dark:[&_button]:text-zinc-200'>
+                <div className='flex h-12 w-[180px] shrink-0 [&>div]:h-full [&>div]:w-full [&_button]:h-full [&_button]:w-full [&_button]:justify-between [&_button]:border-zinc-200 dark:[&_button]:border-zinc-700 [&_button]:transition-all [&_button]:duration-200 [&_button]:hover:border-emerald-500/50 [&_button]:bg-white [&_button]:px-3 [&_button]:text-zinc-900 dark:[&_button]:bg-zinc-800 dark:[&_button]:text-zinc-200'>
                   <ModeSelector currentMode={activeModel} onModeChange={handleModeChange} />
                 </div>
               )}
