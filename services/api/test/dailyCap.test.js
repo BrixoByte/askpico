@@ -51,10 +51,12 @@ test('a counter lookup failure throws so the route can fail closed', async () =>
   );
 });
 
-test('the three tool-path routes run the cap check before their first LLM call', () => {
+test('every LLM route reserves tokens before its first provider call', () => {
   const src = readFileSync(new URL('../src/server.js', import.meta.url), 'utf8');
   const routes = [
+    ['/api/chat', 'fetchWithFallback('],
     ['/api/agent/route', 'planDataTool('],
+    ['/api/thread/focus', 'summarizeThread('],
     ['/api/chat/verify', 'verifyReply('],
     ['/api/agent/chat', 'runSpecialist('],
   ];
@@ -63,10 +65,10 @@ test('the three tool-path routes run the cap check before their first LLM call',
     assert.ok(start >= 0, `route ${path} exists`);
     const end = src.indexOf('\napp.', start + 10);
     const body = src.slice(start, end < 0 ? undefined : end);
-    const guard = body.indexOf('checkDailyCap({');
+    const guard = body.indexOf('reserveRouteTokens(');
     const llm = body.indexOf(llmCall);
-    assert.ok(guard > 0, `${path} calls checkDailyCap`);
-    assert.ok(llm > guard, `${path} checks the cap before ${llmCall}`);
+    assert.ok(guard > 0, `${path} reserves tokens`);
+    assert.ok(llm > guard, `${path} reserves before ${llmCall}`);
   }
 });
 
